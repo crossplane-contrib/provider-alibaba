@@ -1,15 +1,11 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+/.cache
+/.work
+/_output
+cover.out
+/vendor
+/.vendor-new
 
-# Test binary, built with `go test -c`
-*.test
+/stack-package
 
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# ignore IDE folders
+.vscode/

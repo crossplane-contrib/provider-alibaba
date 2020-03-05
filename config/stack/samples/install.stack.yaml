@@ -1,0 +1,8 @@
+---
+apiVersion: stacks.crossplane.io/v1alpha1
+kind: ClusterStackInstall
+metadata:
+  name: provider-alibaba
+  namespace: alibaba
+spec:
+  package: "crossplane/provider-alibaba:master"
