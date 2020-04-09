@@ -26,7 +26,8 @@ import (
 type ProviderSpec struct {
 	runtimev1alpha1.ProviderSpec `json:",inline"`
 
-	// TODO(negz): Add any fields necessary to configure a provider account.
+	// Region for managed resources created using this Alibaba Cloud provider, e.g. "cn-hangzhou".
+	Region string `json:"region"`
 }
 
 // +kubebuilder:object:root=true

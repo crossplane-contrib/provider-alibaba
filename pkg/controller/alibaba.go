@@ -20,12 +20,18 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/provider-alibaba/pkg/controller/database"
 )
 
 // Setup creates all Alibaba controllers with the supplied logger and adds them
 // to the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger) error {
-	for _, setup := range []func(ctrl.Manager, logging.Logger) error{} {
+	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
+		database.SetupPostgreSQLInstanceClaimScheduling,
+		database.SetupPostgreSQLInstanceClaimDefaulting,
+		database.SetupPostgreSQLInstanceClaimBinding,
+		database.SetupRDSInstance,
+	} {
 		if err := setup(mgr, l); err != nil {
 			return err
 		}

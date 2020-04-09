@@ -65,6 +65,12 @@ spec:
               - name
               - namespace
               type: object
+            region:
+              description: Region for managed resources created using this Alibaba
+                Cloud provider, e.g. "cn-hangzhou".
+              type: string
+          required:
+          - region
           type: object
       required:
       - spec
