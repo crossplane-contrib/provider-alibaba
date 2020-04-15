@@ -23,6 +23,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	databasev1alpha1 "github.com/crossplane/crossplane/apis/database/v1alpha1"
+
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -30,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/claimdefaulting"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/claimscheduling"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	databasev1alpha1 "github.com/crossplane/crossplane/apis/database/v1alpha1"
+
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 )
 

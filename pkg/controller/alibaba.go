@@ -19,8 +19,9 @@ package controller
 import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/provider-alibaba/pkg/controller/database"
+
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 )
 
 // Setup creates all Alibaba controllers with the supplied logger and adds them
