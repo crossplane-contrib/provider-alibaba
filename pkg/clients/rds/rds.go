@@ -26,8 +26,8 @@ import (
 )
 
 var (
-	ErrDBInstanceNotFound        = errors.New("DBInstanceNotFound")
-	ErrDBInstanceNetinfoNotFound = errors.New("DBInstanceNetinfoNotFound")
+	// ErrDBInstanceNotFound indicates DBInstance not found
+	ErrDBInstanceNotFound = errors.New("DBInstanceNotFound")
 )
 
 // Client defines RDS client operations
@@ -121,7 +121,10 @@ func (c *client) CreateDBInstance(req *CreateDBInstanceRequest) (*DBInstance, er
 	accReq.AccountName = req.Username
 	accReq.AccountPassword = req.Password
 
-	c.rdsCli.CreateAccount(accReq)
+	_, err = c.rdsCli.CreateAccount(accReq)
+	if err != nil {
+		return nil, err
+	}
 
 	return &DBInstance{
 		Endpoint: &v1alpha1.Endpoint{
@@ -144,13 +147,13 @@ func (c *client) DeleteDBInstance(id string) error {
 	return nil
 }
 
-// LateInitialize fills the empty fields in *v1alpha3.RDSInstanceParameters with
+// LateInitialize fills the empty fields in *v1alpha1.RDSInstanceParameters with
 // the values seen in rds.DBInstance.
 func LateInitialize(in *v1alpha1.RDSInstanceParameters, db *DBInstance) {
 	in.Engine = db.Engine
 }
 
-// GenerateObservation is used to produce v1alpha3.RDSInstanceObservation from
+// GenerateObservation is used to produce v1alpha1.RDSInstanceObservation from
 // rds.DBInstance.
 func GenerateObservation(db *DBInstance) *v1alpha1.RDSInstanceObservation {
 	return &v1alpha1.RDSInstanceObservation{

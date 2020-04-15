@@ -164,7 +164,11 @@ spec:
                   description: SecurityIPList is the IP whitelist for RDS instances
                   type: string
               required:
+              - dbInstanceClass
+              - dbInstanceStorageInGB
               - engine
+              - engineVersion
+              - securityIPList
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used

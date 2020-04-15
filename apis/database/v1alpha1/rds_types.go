@@ -22,11 +22,6 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// Error strings
-const (
-	errResourceIsNotRDSInstance = "the managed resource is not an RDSInstance"
-)
-
 // SQL database engines.
 const (
 	MysqlEngine      = "MySQL"
@@ -114,13 +109,13 @@ type RDSInstanceParameters struct {
 	Engine string `json:"engine"`
 
 	// EngineVersion indicates the database engine version.
-	EngineVersion string `json:"engineVersion,omitempty"`
+	EngineVersion string `json:"engineVersion"`
 
 	// DBInstanceClass is the machine class of the instance, e.g. "rds.pg.s1.small"
-	DBInstanceClass string `json:"dbInstanceClass,omitempty"`
+	DBInstanceClass string `json:"dbInstanceClass"`
 
 	// DBInstanceStorageInGB indicates the size of the storage in GB.
-	DBInstanceStorageInGB int `json:"dbInstanceStorageInGB,omitempty"`
+	DBInstanceStorageInGB int `json:"dbInstanceStorageInGB"`
 
 	// MasterUsername is the name for the master user.
 	// MySQL
@@ -137,10 +132,10 @@ type RDSInstanceParameters struct {
 	//    * Cannot be a reserved word for the chosen database engine.
 	// +immutable
 	// +optional
-	MasterUsername *string `json:"masterUsername,omitempty"`
+	MasterUsername string `json:"masterUsername"`
 
 	// SecurityIPList is the IP whitelist for RDS instances
-	SecurityIPList string `json:"securityIPList,omitempty"`
+	SecurityIPList string `json:"securityIPList"`
 }
 
 // RDS instance states.

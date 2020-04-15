@@ -45,13 +45,9 @@ const (
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
-	errCreateFailed        = "cannot create RDS instance"
-	errModifyFailed        = "cannot modify RDS instance"
-	errAddTagsFailed       = "cannot add tags to RDS instance"
-	errDeleteFailed        = "cannot delete RDS instance"
-	errDescribeFailed      = "cannot describe RDS instance"
-	errPatchCreationFailed = "cannot create a patch object"
-	errUpToDateFailed      = "cannot check whether object is up-to-date"
+	errCreateFailed   = "cannot create RDS instance"
+	errDeleteFailed   = "cannot delete RDS instance"
+	errDescribeFailed = "cannot describe RDS instance"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
@@ -108,7 +104,6 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	e.log.Info("Observe", "ns/name", mg.GetNamespace()+"/"+mg.GetName())
 	cr, ok := mg.(*v1alpha1.RDSInstance)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRDSInstance)
@@ -149,7 +144,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	e.log.Info("Create", "ns/name", mg.GetNamespace()+"/"+mg.GetName())
+	e.log.Info("Create RDS", "name", mg.GetName())
 	cr, ok := mg.(*v1alpha1.RDSInstance)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRDSInstance)
@@ -164,11 +159,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 
-	var dbusername string
-
-	if cr.Spec.ForProvider.MasterUsername != nil {
-		dbusername = *cr.Spec.ForProvider.MasterUsername
-	}
+	dbusername := cr.Spec.ForProvider.MasterUsername
 
 	req := rds.MakeCreateDBInstanceRequest(meta.GetExternalName(cr), dbusername, pw, &cr.Spec.ForProvider)
 	instance, err := e.client.CreateDBInstance(req)
@@ -189,12 +180,12 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	e.log.Info("Update not implemented", "ns/name", mg.GetNamespace()+"/"+mg.GetName())
+	e.log.Info("Update RDS not implemented", "name", mg.GetName())
 	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	e.log.Info("Delete", "ns/name", mg.GetNamespace()+"/"+mg.GetName())
+	e.log.Info("Delete RDS", "name", mg.GetName())
 	cr, ok := mg.(*v1alpha1.RDSInstance)
 	if !ok {
 		return errors.New(errNotRDSInstance)
