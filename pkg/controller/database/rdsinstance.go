@@ -73,7 +73,6 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	c.log.Info("Connect", "ns/name", mg.GetNamespace()+"/"+mg.GetName())
 	cr, ok := mg.(*v1alpha1.RDSInstance)
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
@@ -146,7 +145,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	e.log.Info("Create RDS", "name", mg.GetName())
 	cr, ok := mg.(*v1alpha1.RDSInstance)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotRDSInstance)
@@ -182,12 +180,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	e.log.Info("Update RDS not implemented", "name", mg.GetName())
 	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	e.log.Info("Delete RDS", "name", mg.GetName())
 	cr, ok := mg.(*v1alpha1.RDSInstance)
 	if !ok {
 		return errors.New(errNotRDSInstance)
