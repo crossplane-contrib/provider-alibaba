@@ -61,7 +61,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.RDSInstance{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.RDSInstanceGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), log: l.WithValues("connector", "rds")}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -69,7 +69,6 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube client.Client
-	log  logging.Logger
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -95,13 +94,12 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	rdsClient, err := rds.NewClient(ctx, string(s.Data["accessKeyId"]), string(s.Data["accessSecret"]), p.Spec.Region)
-	return &external{client: rdsClient, kube: c.kube, log: c.log}, errors.Wrap(err, errCreateRDSClient)
+	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
 }
 
 type external struct {
 	client rds.Client
 	kube   client.Client
-	log    logging.Logger
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
