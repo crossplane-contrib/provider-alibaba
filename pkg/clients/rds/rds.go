@@ -142,10 +142,7 @@ func (c *client) DeleteDBInstance(id string) error {
 	request.DBInstanceId = id
 
 	_, err := c.rdsCli.DeleteDBInstance(request)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.RDSInstanceParameters with
