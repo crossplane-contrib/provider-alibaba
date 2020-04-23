@@ -1,0 +1,13 @@
+---
+apiVersion: database.crossplane.io/v1alpha1
+kind: PostgreSQLInstance
+metadata:
+  name: app-postgresql
+spec:
+  classSelector:
+    matchLabels:
+      example: "true"
+      engine: postgresql
+  writeConnectionSecretToRef:
+    name: postgresqlconn
+  engineVersion: "10.0"

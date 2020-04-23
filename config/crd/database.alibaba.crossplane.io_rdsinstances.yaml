@@ -142,7 +142,8 @@ spec:
                   type: string
                 dbInstanceStorageInGB:
                   description: DBInstanceStorageInGB indicates the size of the storage
-                    in GB.
+                    in GB. Increments by 5GB. For "rds.pg.s1.small", the range is
+                    20-600 (GB). See https://help.aliyun.com/document_detail/26312.html
                   type: integer
                 engine:
                   description: Engine is the name of the database engine to be used
@@ -150,6 +151,7 @@ spec:
                   type: string
                 engineVersion:
                   description: EngineVersion indicates the database engine version.
+                    MySQL：5.5/5.6/5.7/8.0 PostgreSQL：9.4/10.0/11.0/12.0
                   type: string
                 masterUsername:
                   description: 'MasterUsername is the name for the master user. MySQL
@@ -250,10 +252,20 @@ spec:
               description: RDSInstanceObservation is the representation of the current
                 state that is observed.
               properties:
+                accountReady:
+                  description: AccountReady specifies whether the initial user account
+                    (username + password) is ready
+                  type: boolean
+                dbInstanceID:
+                  description: DBInstanceID specifies the DB instance ID.
+                  type: string
                 dbInstanceStatus:
                   description: DBInstanceStatus specifies the current state of this
                     database.
                   type: string
+              required:
+              - accountReady
+              - dbInstanceID
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

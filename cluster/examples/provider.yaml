@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crossplane-system
+
+---
+apiVersion: alibaba.crossplane.io/v1alpha1
+kind: Provider
+metadata:
+  name: example
+spec:
+  credentialsSecretRef:
+    namespace: crossplane-system
+    name: alibaba-account-creds
+    key: credentials
+  region: cn-hangzhou
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alibaba-account-creds
+  namespace: crossplane-system
+type: Opaque
+stringData:
+  accessKeyId: ((ACCESS_KEY_ID))
+  accessKeySecret: ((ACCESS_KEY_SECRET))

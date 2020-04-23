@@ -3,6 +3,7 @@
 
 PROJECT_NAME := provider-alibaba
 PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
+IMG ?= crossplane/provider-alibaba:v1
 
 PLATFORMS ?= linux_amd64 linux_arm64
 # -include will silently skip missing files, which allows us
@@ -160,3 +161,15 @@ crossplane.help:
 help-special: crossplane.help
 
 .PHONY: crossplane.help help-special
+
+demo:
+	docker build . -t ${IMG} -f ./hack/demo/Dockerfile
+	kind load docker-image $(IMG) || { echo >&2 "kind not installed or error loading image: $(IMG)"; exit 1; }
+	kubectl apply -f ./config/crd
+	cat ./cluster/examples/provider.yaml | sed \
+		-e "s|((ACCESS_KEY_ID))|"${ACCESS_KEY_ID}"|g" \
+		-e "s|((ACCESS_KEY_SECRET))|"${ACCESS_KEY_SECRET}"|g" \
+		| kubectl apply -f -
+	./hack/demo/helm_install_crossplane_master.sh
+	kubectl apply -f ./cluster/examples/database/resource_class.yaml
+	kubectl apply -f ./hack/demo/deploy/
