@@ -18,8 +18,8 @@ package database
 
 import (
 	"context"
-	"reflect"
 
+	sdkerror "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -40,16 +40,16 @@ import (
 )
 
 const (
-	errNotRDSInstance   = "managed resource is not an RDS instance custom resource"
-	errKubeUpdateFailed = "cannot update RDS instance custom resource"
+	errNotRDSInstance = "managed resource is not an RDS instance custom resource"
 
 	errCreateRDSClient   = "cannot create RDS client"
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
-	errCreateFailed   = "cannot create RDS instance"
-	errDeleteFailed   = "cannot delete RDS instance"
-	errDescribeFailed = "cannot describe RDS instance"
+	errCreateFailed        = "cannot create RDS instance"
+	errCreateAccountFailed = "cannot create RDS database account"
+	errDeleteFailed        = "cannot delete RDS instance"
+	errDescribeFailed      = "cannot describe RDS instance"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
@@ -93,7 +93,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := rds.NewClient(ctx, string(s.Data["accessKeyId"]), string(s.Data["accessSecret"]), p.Spec.Region)
+	rdsClient, err := rds.NewClient(ctx, string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), p.Spec.Region)
 	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
 }
 
@@ -108,24 +108,26 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotRDSInstance)
 	}
 
-	instance, err := e.client.DescribeDBInstance(meta.GetExternalName(cr))
+	if cr.Status.AtProvider.DBInstanceID == "" {
+		return managed.ExternalObservation{}, nil
+	}
+
+	instance, err := e.client.DescribeDBInstance(cr.Status.AtProvider.DBInstanceID)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
 	}
 
-	current := cr.Spec.ForProvider.DeepCopy()
-	rds.LateInitialize(&cr.Spec.ForProvider, instance)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
-		}
-	}
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
 
+	var pw string
 	switch cr.Status.AtProvider.DBInstanceStatus {
 	case v1alpha1.RDSInstanceStateRunning:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 		resource.SetBindable(cr)
+		pw, err = e.createAccountIfneeded(cr)
+		if err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errCreateAccountFailed)
+		}
 	case v1alpha1.RDSInstanceStateCreating:
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
 	case v1alpha1.RDSInstanceStateDeleting:
@@ -134,12 +136,41 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
 
-	upToDate := rds.IsUpToDate(cr.Spec.ForProvider, instance)
-
-	return managed.ExternalObservation{
+	ob := managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: upToDate,
-	}, nil
+		ResourceUpToDate: true,
+	}
+
+	if pw != "" {
+		ob.ConnectionDetails = managed.ConnectionDetails{
+			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(cr.Spec.ForProvider.MasterUsername),
+			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(pw),
+		}
+	}
+	return ob, nil
+}
+
+func (e *external) createAccountIfneeded(cr *v1alpha1.RDSInstance) (string, error) {
+	if cr.Status.AtProvider.AccountReady {
+		return "", nil
+	}
+	pw, err := password.Generate()
+	if err != nil {
+		return "", err
+	}
+	err = e.client.CreateAccount(cr.Status.AtProvider.DBInstanceID, cr.Spec.ForProvider.MasterUsername, pw)
+	if err != nil {
+		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
+		if sdkErr, ok := err.(sdkerror.Error); ok {
+			if sdkErr.ErrorCode() == "InvalidAccountName.Duplicate" {
+				cr.Status.AtProvider.AccountReady = true
+				return "", nil
+			}
+		}
+		return "", err
+	}
+	cr.Status.AtProvider.AccountReady = true
+	return pw, nil
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
@@ -152,23 +183,18 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.DBInstanceStatus == v1alpha1.RDSInstanceStateCreating {
 		return managed.ExternalCreation{}, nil
 	}
-	pw, err := password.Generate()
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
 
-	dbusername := cr.Spec.ForProvider.MasterUsername
-
-	req := rds.MakeCreateDBInstanceRequest(meta.GetExternalName(cr), dbusername, pw, &cr.Spec.ForProvider)
+	req := rds.MakeCreateDBInstanceRequest(meta.GetExternalName(cr), &cr.Spec.ForProvider)
 	instance, err := e.client.CreateDBInstance(req)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
 	}
 
-	// emit username and password
+	// The crossplane runtime will send status update back to apiserver.
+	cr.Status.AtProvider.DBInstanceID = instance.ID
+
+	// Need to handle DB Account (username and password) in another resource.
 	conn := managed.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(pw),
-		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(dbusername),
 		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(instance.Endpoint.Address),
 		runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(instance.Endpoint.Port),
 	}
@@ -191,6 +217,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return nil
 	}
 
-	err := e.client.DeleteDBInstance(meta.GetExternalName(cr))
+	err := e.client.DeleteDBInstance(cr.Status.AtProvider.DBInstanceID)
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
 }

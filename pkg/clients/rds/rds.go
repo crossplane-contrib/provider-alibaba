@@ -19,6 +19,7 @@ package rds
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	alirds "github.com/aliyun/alibaba-cloud-sdk-go/services/rds"
@@ -34,12 +35,16 @@ var (
 // Client defines RDS client operations
 type Client interface {
 	DescribeDBInstance(id string) (*DBInstance, error)
+	CreateAccount(id, username, password string) error
 	CreateDBInstance(*CreateDBInstanceRequest) (*DBInstance, error)
 	DeleteDBInstance(id string) error
 }
 
 // DBInstance defines the DB instance information
 type DBInstance struct {
+	// Instance ID
+	ID string
+
 	// Database engine
 	Engine string
 
@@ -67,8 +72,8 @@ type client struct {
 }
 
 // NewClient creates new RDS RDSClient
-func NewClient(ctx context.Context, accessKeyID, accessSecret, region string) (Client, error) {
-	rdsCli, err := alirds.NewClientWithAccessKey(region, accessKeyID, accessSecret)
+func NewClient(ctx context.Context, accessKeyID, accessKeySecret, region string) (Client, error) {
+	rdsCli, err := alirds.NewClientWithAccessKey(region, accessKeyID, accessKeySecret)
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +96,7 @@ func (c *client) DescribeDBInstance(id string) (*DBInstance, error) {
 	}
 	rsp := response.Items.DBInstance[0]
 	in := &DBInstance{
+		ID:     rsp.DBInstanceId,
 		Engine: rsp.Engine,
 		Status: rsp.DBInstanceStatus,
 	}
@@ -110,29 +116,33 @@ func (c *client) CreateDBInstance(req *CreateDBInstanceRequest) (*DBInstance, er
 	request.SecurityIPList = req.SecurityIPList
 	request.DBInstanceNetType = "Internet"
 	request.PayType = "Postpaid"
+	request.ReadTimeout = 60 * time.Second
+	request.ClientToken = req.Name
 
 	resp, err := c.rdsCli.CreateDBInstance(request)
 	if err != nil {
 		return nil, err
 	}
 
-	accReq := alirds.CreateCreateAccountRequest()
-	accReq.Scheme = "https"
-	accReq.DBInstanceId = resp.DBInstanceId
-	accReq.AccountName = req.Username
-	accReq.AccountPassword = req.Password
-
-	_, err = c.rdsCli.CreateAccount(accReq)
-	if err != nil {
-		return nil, err
-	}
-
 	return &DBInstance{
+		ID: resp.DBInstanceId,
 		Endpoint: &v1alpha1.Endpoint{
 			Address: resp.ConnectionString,
 			Port:    resp.Port,
 		},
 	}, nil
+}
+
+func (c *client) CreateAccount(id, user, pw string) error {
+	request := alirds.CreateCreateAccountRequest()
+	request.Scheme = "https"
+	request.DBInstanceId = id
+	request.AccountName = user
+	request.AccountPassword = pw
+	request.ReadTimeout = 60 * time.Second
+
+	_, err := c.rdsCli.CreateAccount(request)
+	return err
 }
 
 func (c *client) DeleteDBInstance(id string) error {
@@ -153,14 +163,15 @@ func LateInitialize(in *v1alpha1.RDSInstanceParameters, db *DBInstance) {
 
 // GenerateObservation is used to produce v1alpha1.RDSInstanceObservation from
 // rds.DBInstance.
-func GenerateObservation(db *DBInstance) *v1alpha1.RDSInstanceObservation {
-	return &v1alpha1.RDSInstanceObservation{
+func GenerateObservation(db *DBInstance) v1alpha1.RDSInstanceObservation {
+	return v1alpha1.RDSInstanceObservation{
 		DBInstanceStatus: db.Status,
+		DBInstanceID:     db.ID,
 	}
 }
 
 // MakeCreateDBInstanceRequest generates CreateDBInstanceRequest
-func MakeCreateDBInstanceRequest(name, username, password string, p *v1alpha1.RDSInstanceParameters) *CreateDBInstanceRequest {
+func MakeCreateDBInstanceRequest(name string, p *v1alpha1.RDSInstanceParameters) *CreateDBInstanceRequest {
 	return &CreateDBInstanceRequest{
 		Name:                  name,
 		Engine:                p.Engine,
@@ -168,8 +179,6 @@ func MakeCreateDBInstanceRequest(name, username, password string, p *v1alpha1.RD
 		SecurityIPList:        p.SecurityIPList,
 		DBInstanceClass:       p.DBInstanceClass,
 		DBInstanceStorageInGB: p.DBInstanceStorageInGB,
-		Username:              username,
-		Password:              password,
 	}
 }
 
@@ -179,9 +188,4 @@ func IsErrorNotFound(err error) bool {
 		return false
 	}
 	return errors.Is(err, ErrDBInstanceNotFound)
-}
-
-// IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1alpha1.RDSInstanceParameters, db *DBInstance) bool {
-	return db != nil
 }

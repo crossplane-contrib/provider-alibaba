@@ -117,7 +117,7 @@ func SetupPostgreSQLInstanceClaimBinding(mgr ctrl.Manager, l logging.Logger) err
 // to be a RDSInstance) using the supplied resource claim (presumed to be a
 // PostgreSQLInstance) and resource class.
 func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
-	_, cmok := cm.(*databasev1alpha1.PostgreSQLInstance)
+	pg, cmok := cm.(*databasev1alpha1.PostgreSQLInstance)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.PostgreSQLInstanceGroupVersionKind)
 	}
@@ -139,6 +139,7 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 		ForProvider: rs.SpecTemplate.ForProvider,
 	}
 	spec.ForProvider.Engine = v1alpha1.PostgresqlEngine
+	spec.ForProvider.EngineVersion = pg.Spec.EngineVersion
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,

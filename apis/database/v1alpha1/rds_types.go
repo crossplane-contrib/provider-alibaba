@@ -98,7 +98,7 @@ type RDSInstanceSpec struct {
 // An RDSInstanceStatus represents the observed state of an RDSInstance.
 type RDSInstanceStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     *RDSInstanceObservation `json:"atProvider,omitempty"`
+	AtProvider                     RDSInstanceObservation `json:"atProvider,omitempty"`
 }
 
 // RDSInstanceParameters define the desired state of an RDS instance.
@@ -109,13 +109,21 @@ type RDSInstanceParameters struct {
 	Engine string `json:"engine"`
 
 	// EngineVersion indicates the database engine version.
+	// MySQL：5.5/5.6/5.7/8.0
+	// PostgreSQL：9.4/10.0/11.0/12.0
 	EngineVersion string `json:"engineVersion"`
 
 	// DBInstanceClass is the machine class of the instance, e.g. "rds.pg.s1.small"
 	DBInstanceClass string `json:"dbInstanceClass"`
 
 	// DBInstanceStorageInGB indicates the size of the storage in GB.
+	// Increments by 5GB.
+	// For "rds.pg.s1.small", the range is 20-600 (GB).
+	// See https://help.aliyun.com/document_detail/26312.html
 	DBInstanceStorageInGB int `json:"dbInstanceStorageInGB"`
+
+	// SecurityIPList is the IP whitelist for RDS instances
+	SecurityIPList string `json:"securityIPList"`
 
 	// MasterUsername is the name for the master user.
 	// MySQL
@@ -133,9 +141,6 @@ type RDSInstanceParameters struct {
 	// +immutable
 	// +optional
 	MasterUsername string `json:"masterUsername"`
-
-	// SecurityIPList is the IP whitelist for RDS instances
-	SecurityIPList string `json:"securityIPList"`
 }
 
 // RDS instance states.
@@ -152,6 +157,12 @@ const (
 type RDSInstanceObservation struct {
 	// DBInstanceStatus specifies the current state of this database.
 	DBInstanceStatus string `json:"dbInstanceStatus,omitempty"`
+
+	// DBInstanceID specifies the DB instance ID.
+	DBInstanceID string `json:"dbInstanceID"`
+
+	// AccountReady specifies whether the initial user account (username + password) is ready
+	AccountReady bool `json:"accountReady"`
 }
 
 // Endpoint is the database endpoint
