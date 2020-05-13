@@ -15,10 +15,45 @@ adds the following new functionality:
   abstractions](https://crossplane.io/docs/master/concepts.html), enabling
   Alibaba Cloud resources to fulfill a user's general need for cloud services
 
-## Getting Started and Documentation
+## Getting Started
 
-For getting started guides, installation, deployment, and administration, see
-our [Documentation](https://crossplane.io/docs/latest).
+In the following, We will deploy flight tracker app using OAM and Alibaba RDS resource:
+
+![alt text](./doc/img/flight-tracker.png)
+
+Make sure you have installed:
+
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- kubectl
+- [helm](https://helm.sh/)
+
+Then set up the environment on first trial:
+
+```bash
+helm repo add crossplane-master https://charts.crossplane.io/master/
+git clone git@github.com:crossplane/addon-oam-kubernetes-local.git ../addon-oam-kubernetes-local
+export ACCESS_KEY_ID=<your-access-key-id>
+export ACCESS_KEY_SECRET=<your-access-key-secret>
+```
+
+Access key should be obtained via Alibaba clooud.
+
+Then run command:
+```bash
+make demo
+```
+
+Use the following script to wait until the database and the app has been deployed successfully and do port-forward:
+
+```bash
+#!/usr/bin/env bash
+
+until kubectl port-forwrad deployment/web-ui 8080:8080; do
+  sleep 5
+done
+```
+
+The demo app could be access at http://localhost:8080 .
 
 ## Contributing
 
