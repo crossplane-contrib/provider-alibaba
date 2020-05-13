@@ -61,14 +61,45 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.RDSInstance{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.RDSInstanceGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{
+				reader:       &kube2ConnectorReader{kube: mgr.GetClient()},
+				newRDSClient: rds.NewClient,
+			}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
 type connector struct {
+	reader       connectorReader
+	newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
+}
+
+type kube2ConnectorReader struct {
 	kube client.Client
+}
+
+func (kr *kube2ConnectorReader) GetProvider(ctx context.Context, key client.ObjectKey) (*aliv1alpha1.Provider, error) {
+	obj := &aliv1alpha1.Provider{}
+	err := kr.kube.Get(ctx, key, obj)
+	if err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (kr *kube2ConnectorReader) GetSecret(ctx context.Context, key client.ObjectKey) (*corev1.Secret, error) {
+	obj := &corev1.Secret{}
+	err := kr.kube.Get(ctx, key, obj)
+	if err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+type connectorReader interface {
+	GetProvider(ctx context.Context, key client.ObjectKey) (*aliv1alpha1.Provider, error)
+	GetSecret(ctx context.Context, key client.ObjectKey) (*corev1.Secret, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -77,8 +108,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotRDSInstance)
 	}
 
-	p := &aliv1alpha1.Provider{}
-	err := c.kube.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p)
+	p, err := c.reader.GetProvider(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference))
 	if err != nil {
 		return nil, errors.Wrap(err, errGetProvider)
 	}
@@ -87,19 +117,18 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errGetProviderSecret)
 	}
 
-	s := &corev1.Secret{}
 	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.kube.Get(ctx, n, s); err != nil {
+	s, err := c.reader.GetSecret(ctx, n)
+	if err != nil {
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := rds.NewClient(ctx, string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), p.Spec.Region)
-	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
+	rdsClient, err := c.newRDSClient(ctx, string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), p.Spec.Region)
+	return &external{client: rdsClient}, errors.Wrap(err, errCreateRDSClient)
 }
 
 type external struct {
 	client rds.Client
-	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
