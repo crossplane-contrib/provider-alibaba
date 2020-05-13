@@ -63,8 +63,6 @@ type CreateDBInstanceRequest struct {
 	SecurityIPList        string
 	DBInstanceClass       string
 	DBInstanceStorageInGB int
-	Username              string
-	Password              string
 }
 
 type client struct {
