@@ -7,14 +7,18 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	crossplanemeta "github.com/crossplane/crossplane-runtime/pkg/meta"
+
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/rds"
 )
+
+const testName = "test"
 
 func TestConnector(t *testing.T) {
 	c := &connector{
@@ -44,12 +48,12 @@ func TestExternalClientObserve(t *testing.T) {
 	obj := &v1alpha1.RDSInstance{
 		Spec: v1alpha1.RDSInstanceSpec{
 			ForProvider: v1alpha1.RDSInstanceParameters{
-				MasterUsername: "test",
+				MasterUsername: testName,
 			},
 		},
 		Status: v1alpha1.RDSInstanceStatus{
 			AtProvider: v1alpha1.RDSInstanceObservation{
-				DBInstanceID: "test",
+				DBInstanceID: testName,
 			},
 		},
 	}
@@ -66,7 +70,7 @@ func TestExternalClientObserve(t *testing.T) {
 	if obj.Status.AtProvider.AccountReady != true {
 		t.Error("AccountReady should be true")
 	}
-	if string(ob.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretUserKey]) != "test" {
+	if string(ob.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretUserKey]) != testName {
 		t.Error("ConnectionDetails should include username=test")
 	}
 }
@@ -76,12 +80,12 @@ func TestExternalClientCreate(t *testing.T) {
 	obj := &v1alpha1.RDSInstance{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				crossplanemeta.AnnotationKeyExternalName: "test",
+				crossplanemeta.AnnotationKeyExternalName: testName,
 			},
 		},
 		Spec: v1alpha1.RDSInstanceSpec{
 			ForProvider: v1alpha1.RDSInstanceParameters{
-				MasterUsername:        "test",
+				MasterUsername:        testName,
 				Engine:                "PostgreSQL",
 				EngineVersion:         "10.0",
 				SecurityIPList:        "0.0.0.0/0",
@@ -94,7 +98,7 @@ func TestExternalClientCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if obj.Status.AtProvider.DBInstanceID != "test" {
+	if obj.Status.AtProvider.DBInstanceID != testName {
 		t.Error("DBInstanceID should be set to 'test'")
 	}
 	if string(ob.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretEndpointKey]) != "172.0.0.1" ||
@@ -108,7 +112,7 @@ func TestExternalClientDelete(t *testing.T) {
 	obj := &v1alpha1.RDSInstance{
 		Status: v1alpha1.RDSInstanceStatus{
 			AtProvider: v1alpha1.RDSInstanceObservation{
-				DBInstanceID: "test",
+				DBInstanceID: testName,
 			},
 		},
 	}
@@ -127,32 +131,32 @@ func (r *testConnectorReader) GetProvider(ctx context.Context, key client.Object
 			ProviderSpec: runtimev1alpha1.ProviderSpec{
 				CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
 					SecretReference: runtimev1alpha1.SecretReference{
-						Name:      "test",
-						Namespace: "test",
+						Name:      testName,
+						Namespace: testName,
 					},
 				},
 			},
-			Region: "test",
+			Region: testName,
 		},
 	}
 	return obj, nil
 }
 
 func (r *testConnectorReader) GetSecret(ctx context.Context, key client.ObjectKey) (*corev1.Secret, error) {
-	if key.Name != "test" || key.Namespace != "test" {
+	if key.Name != testName || key.Namespace != testName {
 		return nil, errors.New("GetSecret: reader doesn't work")
 	}
 	obj := &corev1.Secret{
 		Data: map[string][]byte{
-			"accessKeyId":     []byte("test"),
-			"accessKeySecret": []byte("test"),
+			"accessKeyId":     []byte(testName),
+			"accessKeySecret": []byte(testName),
 		},
 	}
 	return obj, nil
 }
 
 func testNewRDSClient(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error) {
-	if accessKeyID != "test" || accessKeySecret != "test" || region != "test" {
+	if accessKeyID != testName || accessKeySecret != testName || region != testName {
 		return nil, errors.New("testNewRDSClient: reader doesn't work")
 	}
 	return &fakeRDSClient{}, nil
@@ -162,7 +166,7 @@ type fakeRDSClient struct {
 }
 
 func (c *fakeRDSClient) DescribeDBInstance(id string) (*rds.DBInstance, error) {
-	if id != "test" {
+	if id != testName {
 		return nil, errors.New("DescribeDBInstance: client doesn't work")
 	}
 	return &rds.DBInstance{
@@ -172,11 +176,11 @@ func (c *fakeRDSClient) DescribeDBInstance(id string) (*rds.DBInstance, error) {
 }
 
 func (c *fakeRDSClient) CreateDBInstance(req *rds.CreateDBInstanceRequest) (*rds.DBInstance, error) {
-	if req.Name != "test" || req.Engine != "PostgreSQL" {
+	if req.Name != testName || req.Engine != "PostgreSQL" {
 		return nil, errors.New("CreateDBInstance: client doesn't work")
 	}
 	return &rds.DBInstance{
-		ID: "test",
+		ID: testName,
 		Endpoint: &v1alpha1.Endpoint{
 			Address: "172.0.0.1",
 			Port:    "8888",
@@ -185,14 +189,14 @@ func (c *fakeRDSClient) CreateDBInstance(req *rds.CreateDBInstanceRequest) (*rds
 }
 
 func (c *fakeRDSClient) CreateAccount(id, user, pw string) error {
-	if id != "test" {
+	if id != testName {
 		return errors.New("CreateAccount: client doesn't work")
 	}
 	return nil
 }
 
 func (c *fakeRDSClient) DeleteDBInstance(id string) error {
-	if id != "test" {
+	if id != testName {
 		return errors.New("DeleteDBInstance: client doesn't work")
 	}
 	return nil
