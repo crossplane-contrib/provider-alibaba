@@ -42,6 +42,7 @@ Then run command:
 ```bash
 make demo
 ```
+This will deploy the [Crossplane](https://github.com/crossplane/crossplane), [addon-oam-kubernetes-local](https://github.com/crossplane/addon-oam-kubernetes-local), setting up cloud provider, and finally deploy an OAM app with a cloud RDS database.
 
 Use the following script to wait until the database and the app has been deployed successfully and do port-forward:
 
