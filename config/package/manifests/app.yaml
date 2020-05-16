@@ -3,12 +3,12 @@ title: Crossplane Alibaba Cloud
 
 overviewShort: The Alibaba Cloud Crossplane provider enables infrastructure management for the Alibaba Cloud.
 overview: |-
-  The Alibaba Cloud Crossplane Stack adds support for managing Alibaba Cloud infrastructure in Kubernetes.
+  The Alibaba Cloud Crossplane Provider adds support for managing Alibaba Cloud infrastructure in Kubernetes.
 
 # Markdown description of this entry
 readme: |
  `provider-alibaba` is a Crossplane infrastructure for the [Alibaba Cloud](https://cloud.google.com).
- The stack that is built from the source code in this repository can be installed into a Crossplane control plane and adds the following new functionality:
+ The package that is built from the source code in this repository can be installed into a Crossplane control plane and adds the following new functionality:
 
  * Custom Resource Definitions (CRDs) that model Alibaba Cloud infrastructure and services
  * Controllers to provision these resources in Alibaba Cloud based on the users desired state captured in CRDs they create
@@ -27,7 +27,7 @@ owners:
 # Human readable company name
 company: Crossplane
 
-# Primary category describing this stack
+# Primary category describing this package
 category: Infrastructure
 
 # Type of package: Provider, Stack, or Application
@@ -43,7 +43,7 @@ keywords:
 website: "https://crossplane.io"
 source: "https://github.com/crossplane/provider-alibaba"
 
-# RBAC ClusterRoles will be generated permitting this stack to use all verbs on all
+# RBAC ClusterRoles will be generated permitting this package to use all verbs on all
 # resources in the groups listed below.
 permissionScope: Cluster
 dependsOn:
