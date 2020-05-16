@@ -28,10 +28,10 @@ I have:
 - [ ] Ensured this PR contains a neat, self documenting set of commits.
 - [ ] Updated any relevant [documentation], [examples], or [release notes].
 - [ ] Updated the dependencies in [`app.yaml`] to include any new role permissions.
-- [ ] Updated the [stack resources documentation] to include any new managed resources or classes.
+- [ ] Updated the [package resources documentation] to include any new managed resources or classes.
 
 [documentation]: https://github.com/crossplane/crossplane/tree/master/docs
 [examples]: https://github.com/crossplane/crossplane/tree/master/cluster/examples
 [release notes]: https://github.com/crossplane/crossplane/tree/master/PendingReleaseNotes.md
-[`app.yaml`]: https://github.com/crossplane/provider-alibaba/blob/master/config/stack/manifests/app.yaml
-[stack resources documentation]: https://github.com/crossplane/provider-alibaba/blob/master/config/stack/manifests/resources
+[`app.yaml`]: https://github.com/crossplane/provider-alibaba/blob/master/config/package/manifests/app.yaml
+[package resources documentation]: https://github.com/crossplane/provider-alibaba/blob/master/config/package/manifests/resources
