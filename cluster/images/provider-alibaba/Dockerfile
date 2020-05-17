@@ -6,7 +6,7 @@ ARG TINI_VERSION
 
 ADD provider /usr/local/bin/crossplane-alibaba-provider
 
-COPY stack-package /
+COPY package /
 
 EXPOSE 8080
 ENTRYPOINT ["crossplane-alibaba-provider"]
