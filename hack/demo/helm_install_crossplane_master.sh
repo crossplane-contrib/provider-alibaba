@@ -52,6 +52,3 @@ for myfile in ${files[@]}; do
   kubectl apply -f https://raw.githubusercontent.com/oam-dev/samples/1.0.0-alpha2/2.ServiceTracker_App/Components/${myfile}
 done
 
-echo "Applying the Application Configuration..."
-kubectl apply -f https://raw.githubusercontent.com/oam-dev/samples/1.0.0-alpha2/2.ServiceTracker_App/ApplicationConfiguration/tracker-app-config-managed.yaml
-
