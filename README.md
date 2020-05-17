@@ -49,7 +49,7 @@ Use the following script to wait until the database and the app has been deploye
 ```bash
 #!/usr/bin/env bash
 
-until kubectl port-forwrad deployment/web-ui 8080:8080; do
+until kubectl port-forward deployment/web-ui 8080:8080; do
   sleep 5
 done
 ```
