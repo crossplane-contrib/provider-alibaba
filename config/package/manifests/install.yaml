@@ -17,7 +17,6 @@ spec:
     spec:
       containers:
       - name: "provider-alibaba-controller"
-        image: "crossplane/provider-alibaba:master"
         env:
         - name: POD_NAME
           valueFrom:
