@@ -3,7 +3,7 @@
 
 PROJECT_NAME := provider-alibaba
 PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
-IMG ?= crossplane/provider-alibaba:v1
+IMG ?= crossplane/provider-alibaba:v0.0.1
 
 PLATFORMS ?= linux_amd64 linux_arm64
 # -include will silently skip missing files, which allows us

@@ -16,7 +16,7 @@ spec:
         control-plane: provider-alibaba
     spec:
       containers:
-      - image: crossplane/provider-alibaba:v1
+      - image: crossplane/provider-alibaba:v0.0.1
         name: provider
         command:
         - /app/provider
