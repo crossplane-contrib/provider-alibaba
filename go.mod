@@ -4,8 +4,8 @@ go 1.14
 
 require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.109
-	github.com/crossplane/crossplane v0.11.0-rc.0.20200518221518-c795a3103d7f
-	github.com/crossplane/crossplane-runtime v0.8.1-0.20200512204508-290de7349949
+	github.com/crossplane/crossplane v0.11.0
+	github.com/crossplane/crossplane-runtime v0.9.0
 	github.com/crossplane/crossplane-tools v0.0.0-20200412230150-efd0edd4565b
 	github.com/pkg/errors v0.8.1
 	golang.org/x/tools v0.0.0-20200410194907-79a7a3126eef // indirect
