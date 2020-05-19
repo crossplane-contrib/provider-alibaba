@@ -21,6 +21,10 @@ spec:
     type: string
   group: alibaba.crossplane.io
   names:
+    categories:
+    - crossplane
+    - provider
+    - alibaba
     kind: Provider
     listKind: ProviderList
     plural: providers
