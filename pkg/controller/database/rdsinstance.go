@@ -153,7 +153,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	case v1alpha1.RDSInstanceStateRunning:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 		resource.SetBindable(cr)
-		pw, err = e.createAccountIfneeded(cr)
+		pw, err = e.createAccountIfNeeded(cr)
 		if err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errCreateAccountFailed)
 		}
@@ -165,21 +165,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
 
-	ob := managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: true,
-	}
-
-	if pw != "" {
-		ob.ConnectionDetails = managed.ConnectionDetails{
-			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(cr.Spec.ForProvider.MasterUsername),
-			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(pw),
-		}
-	}
-	return ob, nil
+	return managed.ExternalObservation{
+		ResourceExists:    true,
+		ResourceUpToDate:  true,
+		ConnectionDetails: getConnectionDetails(pw, cr, instance),
+	}, nil
 }
 
-func (e *external) createAccountIfneeded(cr *v1alpha1.RDSInstance) (string, error) {
+func (e *external) createAccountIfNeeded(cr *v1alpha1.RDSInstance) (string, error) {
 	if cr.Status.AtProvider.AccountReady {
 		return "", nil
 	}
@@ -222,14 +215,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	// The crossplane runtime will send status update back to apiserver.
 	cr.Status.AtProvider.DBInstanceID = instance.ID
 
-	// Need to handle DB Account (username and password) in another resource.
-	conn := managed.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(instance.Endpoint.Address),
-		runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(instance.Endpoint.Port),
-	}
-
 	// Any connection details emitted in ExternalClient are cumulative.
-	return managed.ExternalCreation{ConnectionDetails: conn}, nil
+	return managed.ExternalCreation{ConnectionDetails: getConnectionDetails("", cr, instance)}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -248,4 +235,21 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	err := e.client.DeleteDBInstance(cr.Status.AtProvider.DBInstanceID)
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
+}
+
+func getConnectionDetails(password string, cr *v1alpha1.RDSInstance, instance *rds.DBInstance) managed.ConnectionDetails {
+	cd := managed.ConnectionDetails{
+		runtimev1alpha1.ResourceCredentialsSecretUserKey: []byte(cr.Spec.ForProvider.MasterUsername),
+	}
+
+	if password != "" {
+		cd[runtimev1alpha1.ResourceCredentialsSecretPasswordKey] = []byte(password)
+	}
+
+	if instance.Endpoint != nil {
+		cd[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(instance.Endpoint.Address)
+		cd[runtimev1alpha1.ResourceCredentialsSecretPortKey] = []byte(instance.Endpoint.Port)
+	}
+
+	return cd
 }
