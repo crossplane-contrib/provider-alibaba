@@ -12,6 +12,8 @@ import (
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	crossplanemeta "github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
@@ -153,6 +155,121 @@ func (r *testConnectorReader) GetSecret(ctx context.Context, key client.ObjectKe
 		},
 	}
 	return obj, nil
+}
+
+func TestGetConnectionDetails(t *testing.T) {
+	address := "0.0.0.0"
+	port := "3346"
+	password := "super-secret"
+
+	type args struct {
+		pw string
+		cr *v1alpha1.RDSInstance
+		i  *rds.DBInstance
+	}
+	type want struct {
+		conn managed.ConnectionDetails
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"SuccessfulNoPassword": {
+			args: args{
+				pw: "",
+				cr: &v1alpha1.RDSInstance{
+					ObjectMeta: metav1.ObjectMeta{
+						Annotations: map[string]string{
+							crossplanemeta.AnnotationKeyExternalName: testName,
+						},
+					},
+					Spec: v1alpha1.RDSInstanceSpec{
+						ForProvider: v1alpha1.RDSInstanceParameters{
+							MasterUsername: testName,
+						},
+					},
+				},
+				i: &rds.DBInstance{
+					Endpoint: &v1alpha1.Endpoint{
+						Address: address,
+						Port:    port,
+					},
+				},
+			},
+			want: want{
+				conn: managed.ConnectionDetails{
+					runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(testName),
+					runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(address),
+					runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(port),
+				},
+			},
+		},
+		"SuccessfulNoEndpoint": {
+			args: args{
+				pw: password,
+				cr: &v1alpha1.RDSInstance{
+					ObjectMeta: metav1.ObjectMeta{
+						Annotations: map[string]string{
+							crossplanemeta.AnnotationKeyExternalName: testName,
+						},
+					},
+					Spec: v1alpha1.RDSInstanceSpec{
+						ForProvider: v1alpha1.RDSInstanceParameters{
+							MasterUsername: testName,
+						},
+					},
+				},
+				i: &rds.DBInstance{},
+			},
+			want: want{
+				conn: managed.ConnectionDetails{
+					runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(testName),
+					runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
+				},
+			},
+		},
+		"Successful": {
+			args: args{
+				pw: password,
+				cr: &v1alpha1.RDSInstance{
+					ObjectMeta: metav1.ObjectMeta{
+						Annotations: map[string]string{
+							crossplanemeta.AnnotationKeyExternalName: testName,
+						},
+					},
+					Spec: v1alpha1.RDSInstanceSpec{
+						ForProvider: v1alpha1.RDSInstanceParameters{
+							MasterUsername: testName,
+						},
+					},
+				},
+				i: &rds.DBInstance{
+					Endpoint: &v1alpha1.Endpoint{
+						Address: address,
+						Port:    port,
+					},
+				},
+			},
+			want: want{
+				conn: managed.ConnectionDetails{
+					runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(testName),
+					runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
+					runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(address),
+					runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(port),
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			conn := getConnectionDetails(tc.args.pw, tc.args.cr, tc.args.i)
+			if diff := cmp.Diff(tc.want.conn, conn); diff != "" {
+				t.Errorf("getConnectionDetails(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
 }
 
 func testNewRDSClient(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error) {
