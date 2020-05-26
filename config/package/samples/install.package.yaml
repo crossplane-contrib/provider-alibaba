@@ -5,4 +5,4 @@ metadata:
   name: provider-alibaba
   namespace: alibaba
 spec:
-  package: "crossplane/provider-alibaba:v0.1.0"
+  package: "crossplane/provider-alibaba:v0.1.1"
