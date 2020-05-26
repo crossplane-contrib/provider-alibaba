@@ -1,0 +1,14 @@
+
+id: rdsinstance
+title: RDS Instance
+titlePlural: RDS Instances
+category: Database
+overviewShort: "An RDSInstance is a managed resource that represents an Alibaba Cloud ApsaraDB for RDS instance."
+overview: |
+ An RDSInstance is a managed resource that represents an Alibaba Cloud ApsaraDB for RDS instance.
+readme: |
+ ## ApsaraDB for RDS
+ ApsaraDB for RDS (Relational Database Service) is a stable, reliable, and scalable online database service. Based on a distributed file system designed by Alibaba Cloud and incorporated with high-performance SSDs, RDS supports MySQL, SQL Server, PostgreSQL, Postgre Plus Advanced Server (PPAS), and MariaDB engines. It provides a complete solution that includes backup, recovery, monitoring, migration, and more, and allows you to focus more on services rather than database O&M.
+ ---
+
+ This content is from the [Alibaba Cloud Documentation](https://github.com/AlibabaCloudDocs/mysql/blob/master/intl.en-US/Product%20Introduction/What%20is%20ApsaraDB%20for%20RDS.md), you can learn more at <https://www.alibabacloud.com/product>.

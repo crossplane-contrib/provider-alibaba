@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="65px" height="65px" viewBox="0 0 65 65" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Application Icons/Alibaba/RDS 65x65</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="65" height="65" rx="16"></rect>
+    </defs>
+    <g id="Application-Icons/Alibaba/RDS-65x65" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Mask" fill="#464646" fill-rule="nonzero" xlink:href="#path-1"></use>
+        <g id="Group" mask="url(#mask-2)" fill="#FFFFFF">
+            <g transform="translate(32.500000, 34.500000) rotate(-90.000000) translate(-32.500000, -34.500000) translate(16.000000, 17.500000)">
+                <polygon id="Path" points="16 26.0011292 20.2491688 18.5 28.7497229 18.5 33 26.0011292 28.7497229 33.5 20.2491688 33.5"></polygon>
+                <polygon id="Path-Copy" points="1.42108547e-13 17.0011292 4.24916879 9.5 12.7497229 9.5 17 17.0011292 12.7497229 24.5 4.24916879 24.5"></polygon>
+                <polygon id="Path-Copy-2" points="16 8.00112918 20.2491688 0.5 28.7497229 0.5 33 8.00112918 28.7497229 15.5 20.2491688 15.5"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>
