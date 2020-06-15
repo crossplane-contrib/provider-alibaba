@@ -11,8 +11,7 @@ adds the following new functionality:
   services
 * Controllers to provision these resources in Alibaba Cloud based on the users
   desired state captured in CRDs they create
-* Implementations of Crossplane's [portable resource
-  abstractions](https://crossplane.io/docs/master/concepts.html), enabling
+* Implementations of Crossplane's portable resource abstractions, enabling
   Alibaba Cloud resources to fulfill a user's general need for cloud services
 
 ## Getting Started
