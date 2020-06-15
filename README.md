@@ -36,7 +36,7 @@ export ACCESS_KEY_ID=<your-access-key-id>
 export ACCESS_KEY_SECRET=<your-access-key-secret>
 ```
 
-Access key should be obtained via Alibaba clooud.
+Access key should be obtained via Alibaba cloud.
 
 Then run command:
 ```bash
