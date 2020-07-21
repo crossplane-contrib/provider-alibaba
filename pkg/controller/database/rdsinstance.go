@@ -108,7 +108,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotRDSInstance)
 	}
 
-	p, err := c.reader.GetProvider(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference))
+	p, err := c.reader.GetProvider(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name})
 	if err != nil {
 		return nil, errors.Wrap(err, errGetProvider)
 	}

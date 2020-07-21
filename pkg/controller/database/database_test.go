@@ -30,7 +30,7 @@ func TestConnector(t *testing.T) {
 	obj := &v1alpha1.RDSInstance{
 		Spec: v1alpha1.RDSInstanceSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{},
+				ProviderReference: runtimev1alpha1.Reference{},
 			},
 		},
 	}
