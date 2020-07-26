@@ -14,7 +14,7 @@ spec:
           example: "true"
           engine: postgresql
       writeConnectionSecretToRef:
-        name: postgresqlconn
+        name: postgresqlconn # to override
       engineVersion: "10.0"
   parameters:
   - name: dbconn
