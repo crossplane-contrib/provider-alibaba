@@ -14,8 +14,6 @@ spec:
           value: trackerdbconn
         - name: dbname
           value: postgres
-        - name: dbport
-          value: "3433"
         - name: dbdriver
           value: "postgres"
         - name: dboptions
