@@ -26,7 +26,8 @@ import (
 type ProviderSpec struct {
 	runtimev1alpha1.ProviderSpec `json:",inline"`
 
-	// Region for managed resources created using this Alibaba Cloud provider, e.g. "cn-hangzhou".
+	// Region for managed resources created using this Alibaba Cloud provider,
+	// e.g. "cn-hangzhou".
 	Region string `json:"region"`
 }
 
@@ -34,7 +35,6 @@ type ProviderSpec struct {
 
 // A Provider configures an Alibaba Cloud 'provider', i.e. a connection to a
 // particular cloud account.
-// +kubebuilder:printcolumn:name="PROJECT-ID",type="string",JSONPath=".spec.projectID"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,provider,alibaba}
@@ -52,4 +52,36 @@ type ProviderList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Provider `json:"items"`
+}
+
+// A ProviderConfigSpec defines the desired state of a ProviderConfig.
+type ProviderConfigSpec struct {
+	runtimev1alpha1.ProviderConfigSpec `json:",inline"`
+
+	// Region for managed resources created using this Alibaba Cloud provider,
+	// e.g. "cn-hangzhou".
+	Region string `json:"region"`
+}
+
+// +kubebuilder:object:root=true
+
+// A ProviderConfig configures an Alibaba Cloud 'provider', i.e. a connection to
+// a particular cloud account.
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,provider,alibaba}
+type ProviderConfig struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec ProviderConfigSpec `json:"spec"`
+}
+
+// +kubebuilder:object:root=true
+
+// ProviderConfigList contains a list of ProviderConfig
+type ProviderConfigList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []ProviderConfig `json:"items"`
 }
