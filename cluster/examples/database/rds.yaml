@@ -1,12 +1,12 @@
 ---
 apiVersion: database.alibaba.crossplane.io/v1alpha1
-kind: RDSInstanceClass
+kind: RDSInstance
 metadata:
-  name: rdspostgresql-standard
+  name: example
   labels:
     example: "true"
     engine: postgresql
-specTemplate:
+spec:
   forProvider:
     engine: postgresql
     engineVersion: "10.0"
@@ -14,7 +14,9 @@ specTemplate:
     dbInstanceStorageInGB: 20
     securityIPList: "0.0.0.0/0"
     masterUsername: "test123"
-  writeConnectionSecretsToNamespace: crossplane-system
-  providerRef:
+  writeConnectionSecretToRef:
+    namespace: crossplane-system
+    name: example-rds
+  providerConfigRef:
     name: example
-  reclaimPolicy: Delete
+  deletionPolicy: Delete

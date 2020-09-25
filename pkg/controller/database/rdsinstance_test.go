@@ -2,18 +2,20 @@ package database
 
 import (
 	"context"
-	"errors"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	crossplanemeta "github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/google/go-cmp/cmp"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
@@ -23,25 +25,167 @@ import (
 const testName = "test"
 
 func TestConnector(t *testing.T) {
-	c := &connector{
-		reader:       &testConnectorReader{},
-		newRDSClient: testNewRDSClient,
+	errBoom := errors.New("boom")
+
+	type fields struct {
+		client       client.Client
+		newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
 	}
-	obj := &v1alpha1.RDSInstance{
-		Spec: v1alpha1.RDSInstanceSpec{
-			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: runtimev1alpha1.Reference{},
+
+	type args struct {
+		ctx context.Context
+		mg  resource.Managed
+	}
+
+	cases := map[string]struct {
+		reason string
+		fields fields
+		args   args
+		want   error
+	}{
+		"NotRDSInstance": {
+			reason: "Should return an error if the supplied managed resource is not an RDSInstance",
+			args: args{
+				mg: nil,
 			},
+			want: errors.New(errNotRDSInstance),
+		},
+		"GetProviderConfigError": {
+			reason: "Errors getting a ProviderConfig should be returned",
+			fields: fields{
+				client: &test.MockClient{
+					MockGet: test.NewMockGetFn(errBoom),
+				},
+			},
+			args: args{
+				mg: &v1alpha1.RDSInstance{
+					Spec: v1alpha1.RDSInstanceSpec{
+						ResourceSpec: runtimev1alpha1.ResourceSpec{
+							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						},
+					},
+				},
+			},
+			want: errors.Wrap(errBoom, errGetProviderConfig),
+		},
+		"GetProviderError": {
+			reason: "Errors getting a Provider should be returned",
+			fields: fields{
+				client: &test.MockClient{
+					MockGet: test.NewMockGetFn(errBoom),
+				},
+			},
+			args: args{
+				mg: &v1alpha1.RDSInstance{
+					Spec: v1alpha1.RDSInstanceSpec{
+						ResourceSpec: runtimev1alpha1.ResourceSpec{
+							ProviderReference: &runtimev1alpha1.Reference{},
+						},
+					},
+				},
+			},
+			want: errors.Wrap(errBoom, errGetProvider),
+		},
+		"NoConnectionSecretError": {
+			reason: "An error should be returned if no connection secret was specified",
+			fields: fields{
+				client: &test.MockClient{
+					MockGet: test.NewMockGetFn(nil),
+				},
+			},
+			args: args{
+				mg: &v1alpha1.RDSInstance{
+					Spec: v1alpha1.RDSInstanceSpec{
+						ResourceSpec: runtimev1alpha1.ResourceSpec{
+							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						},
+					},
+				},
+			},
+			want: errors.New(errNoConnectionSecret),
+		},
+		"GetConnectionSecretError": {
+			reason: "Errors getting a secret should be returned",
+			fields: fields{
+				client: &test.MockClient{
+					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
+						switch t := obj.(type) {
+						case *corev1.Secret:
+							return errBoom
+						case *aliv1alpha1.ProviderConfig:
+							*t = aliv1alpha1.ProviderConfig{
+								Spec: aliv1alpha1.ProviderConfigSpec{
+									ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
+										CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+											SecretReference: runtimev1alpha1.SecretReference{
+												Name: "coolsecret",
+											},
+										},
+									},
+								},
+							}
+						}
+						return nil
+					}),
+				},
+			},
+			args: args{
+				mg: &v1alpha1.RDSInstance{
+					Spec: v1alpha1.RDSInstanceSpec{
+						ResourceSpec: runtimev1alpha1.ResourceSpec{
+							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						},
+					},
+				},
+			},
+			want: errors.Wrap(errBoom, errGetConnectionSecret),
+		},
+		"NewRDSClientError": {
+			reason: "Errors getting a secret should be returned",
+			fields: fields{
+				client: &test.MockClient{
+					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
+						if t, ok := obj.(*aliv1alpha1.ProviderConfig); ok {
+							*t = aliv1alpha1.ProviderConfig{
+								Spec: aliv1alpha1.ProviderConfigSpec{
+									ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
+										CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+											SecretReference: runtimev1alpha1.SecretReference{
+												Name: "coolsecret",
+											},
+										},
+									},
+								},
+							}
+						}
+						return nil
+					}),
+				},
+				newRDSClient: func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error) {
+					return nil, errBoom
+				},
+			},
+			args: args{
+				mg: &v1alpha1.RDSInstance{
+					Spec: v1alpha1.RDSInstanceSpec{
+						ResourceSpec: runtimev1alpha1.ResourceSpec{
+							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						},
+					},
+				},
+			},
+			want: errors.Wrap(errBoom, errCreateRDSClient),
 		},
 	}
-	ext, err := c.Connect(context.Background(), obj)
-	if err != nil {
-		t.Fatal(err)
-	}
-	e := ext.(*external)
-	_, ok := e.client.(*fakeRDSClient)
-	if !ok {
-		t.Error("newRDSClient doesn't work")
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{client: tc.fields.client, newRDSClient: tc.fields.newRDSClient}
+			_, err := c.Connect(tc.args.ctx, tc.args.mg)
+			if diff := cmp.Diff(tc.want, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\nc.Connect(...) -want error, +got error:\n%s\n", tc.reason, diff)
+			}
+		})
 	}
 }
 
@@ -65,9 +209,6 @@ func TestExternalClientObserve(t *testing.T) {
 	}
 	if obj.Status.AtProvider.DBInstanceStatus != v1alpha1.RDSInstanceStateRunning {
 		t.Errorf("DBInstanceStatus (%v) should be %v", obj.Status.AtProvider.DBInstanceStatus, v1alpha1.RDSInstanceStateRunning)
-	}
-	if obj.GetBindingPhase() != runtimev1alpha1.BindingPhaseUnbound {
-		t.Errorf("Binding phase (%v) should be %v", obj.GetBindingPhase(), runtimev1alpha1.BindingPhaseUnbound)
 	}
 	if obj.Status.AtProvider.AccountReady != true {
 		t.Error("AccountReady should be true")
@@ -122,39 +263,6 @@ func TestExternalClientDelete(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-type testConnectorReader struct {
-}
-
-func (r *testConnectorReader) GetProvider(ctx context.Context, key client.ObjectKey) (*aliv1alpha1.Provider, error) {
-	obj := &aliv1alpha1.Provider{
-		Spec: aliv1alpha1.ProviderSpec{
-			ProviderSpec: runtimev1alpha1.ProviderSpec{
-				CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
-					SecretReference: runtimev1alpha1.SecretReference{
-						Name:      testName,
-						Namespace: testName,
-					},
-				},
-			},
-			Region: testName,
-		},
-	}
-	return obj, nil
-}
-
-func (r *testConnectorReader) GetSecret(ctx context.Context, key client.ObjectKey) (*corev1.Secret, error) {
-	if key.Name != testName || key.Namespace != testName {
-		return nil, errors.New("GetSecret: reader doesn't work")
-	}
-	obj := &corev1.Secret{
-		Data: map[string][]byte{
-			"accessKeyId":     []byte(testName),
-			"accessKeySecret": []byte(testName),
-		},
-	}
-	return obj, nil
 }
 
 func TestGetConnectionDetails(t *testing.T) {
@@ -270,13 +378,6 @@ func TestGetConnectionDetails(t *testing.T) {
 			}
 		})
 	}
-}
-
-func testNewRDSClient(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error) {
-	if accessKeyID != testName || accessKeySecret != testName || region != testName {
-		return nil, errors.New("testNewRDSClient: reader doesn't work")
-	}
-	return &fakeRDSClient{}, nil
 }
 
 type fakeRDSClient struct {

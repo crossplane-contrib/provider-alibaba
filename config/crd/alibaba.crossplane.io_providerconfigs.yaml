@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: providers.alibaba.crossplane.io
+  name: providerconfigs.alibaba.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .metadata.creationTimestamp
@@ -22,15 +22,15 @@ spec:
     - crossplane
     - provider
     - alibaba
-    kind: Provider
-    listKind: ProviderList
-    plural: providers
-    singular: provider
+    kind: ProviderConfig
+    listKind: ProviderConfigList
+    plural: providerconfigs
+    singular: providerconfig
   scope: Cluster
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: A Provider configures an Alibaba Cloud 'provider', i.e. a connection to a particular cloud account.
+      description: A ProviderConfig configures an Alibaba Cloud 'provider', i.e. a connection to a particular cloud account.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -41,7 +41,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: A ProviderSpec defines the desired state of a Provider.
+          description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
           properties:
             credentialsSecretRef:
               description: CredentialsSecretRef references a specific secret's key that contains the credentials that are used to connect to the provider.
