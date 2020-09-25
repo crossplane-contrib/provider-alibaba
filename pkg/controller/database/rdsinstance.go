@@ -42,9 +42,12 @@ import (
 const (
 	errNotRDSInstance = "managed resource is not an RDS instance custom resource"
 
-	errCreateRDSClient   = "cannot create RDS client"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
+	errNoProvider          = "no provider config or provider specified"
+	errCreateRDSClient     = "cannot create RDS client"
+	errGetProvider         = "cannot get provider"
+	errGetProviderConfig   = "cannot get provider config"
+	errNoConnectionSecret  = "no connection secret specified"
+	errGetConnectionSecret = "cannot get connection secret"
 
 	errCreateFailed        = "cannot create RDS instance"
 	errCreateAccountFailed = "cannot create RDS database account"
@@ -62,7 +65,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{
-				reader:       &kube2ConnectorReader{kube: mgr.GetClient()},
+				client:       mgr.GetClient(),
 				newRDSClient: rds.NewClient,
 			}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
@@ -71,35 +74,8 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	reader       connectorReader
+	client       client.Client
 	newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
-}
-
-type kube2ConnectorReader struct {
-	kube client.Client
-}
-
-func (kr *kube2ConnectorReader) GetProvider(ctx context.Context, key client.ObjectKey) (*aliv1alpha1.Provider, error) {
-	obj := &aliv1alpha1.Provider{}
-	err := kr.kube.Get(ctx, key, obj)
-	if err != nil {
-		return nil, err
-	}
-	return obj, nil
-}
-
-func (kr *kube2ConnectorReader) GetSecret(ctx context.Context, key client.ObjectKey) (*corev1.Secret, error) {
-	obj := &corev1.Secret{}
-	err := kr.kube.Get(ctx, key, obj)
-	if err != nil {
-		return nil, err
-	}
-	return obj, nil
-}
-
-type connectorReader interface {
-	GetProvider(ctx context.Context, key client.ObjectKey) (*aliv1alpha1.Provider, error)
-	GetSecret(ctx context.Context, key client.ObjectKey) (*corev1.Secret, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -108,22 +84,40 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotRDSInstance)
 	}
 
-	p, err := c.reader.GetProvider(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name})
-	if err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
+	var (
+		sel    *runtimev1alpha1.SecretKeySelector
+		region string
+	)
+	switch {
+	case cr.GetProviderConfigReference() != nil:
+		pc := &aliv1alpha1.ProviderConfig{}
+		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
+			return nil, errors.Wrap(err, errGetProviderConfig)
+		}
+		sel = pc.Spec.CredentialsSecretRef
+		region = pc.Spec.Region
+	case cr.GetProviderReference() != nil:
+		p := &aliv1alpha1.Provider{}
+		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
+			return nil, errors.Wrap(err, errGetProvider)
+		}
+		sel = p.Spec.CredentialsSecretRef
+		region = p.Spec.Region
+	default:
+		return nil, errors.New(errNoProvider)
 	}
 
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
+	if sel == nil {
+		return nil, errors.New(errNoConnectionSecret)
 	}
 
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	s, err := c.reader.GetSecret(ctx, n)
-	if err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
+	s := &corev1.Secret{}
+	nn := types.NamespacedName{Namespace: sel.Namespace, Name: sel.Name}
+	if err := c.client.Get(ctx, nn, s); err != nil {
+		return nil, errors.Wrap(err, errGetConnectionSecret)
 	}
 
-	rdsClient, err := c.newRDSClient(ctx, string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), p.Spec.Region)
+	rdsClient, err := c.newRDSClient(ctx, string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), region)
 	return &external{client: rdsClient}, errors.Wrap(err, errCreateRDSClient)
 }
 
