@@ -6,7 +6,7 @@ metadata:
 
 ---
 apiVersion: alibaba.crossplane.io/v1alpha1
-kind: Provider
+kind: ProviderConfig
 metadata:
   name: example
 spec:
