@@ -152,7 +152,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	switch cr.Status.AtProvider.DBInstanceStatus {
 	case v1alpha1.RDSInstanceStateRunning:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
-		resource.SetBindable(cr)
 		pw, err = e.createAccountIfNeeded(cr)
 		if err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errCreateAccountFailed)

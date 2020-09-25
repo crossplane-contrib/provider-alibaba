@@ -28,9 +28,6 @@ import (
 // to the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
-		database.SetupPostgreSQLInstanceClaimScheduling,
-		database.SetupPostgreSQLInstanceClaimDefaulting,
-		database.SetupPostgreSQLInstanceClaimBinding,
 		database.SetupRDSInstance,
 	} {
 		if err := setup(mgr, l); err != nil {

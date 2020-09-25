@@ -5,15 +5,14 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	crossplanemeta "github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
@@ -30,7 +29,7 @@ func TestConnector(t *testing.T) {
 	obj := &v1alpha1.RDSInstance{
 		Spec: v1alpha1.RDSInstanceSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: runtimev1alpha1.Reference{},
+				ProviderReference: &runtimev1alpha1.Reference{},
 			},
 		},
 	}
@@ -65,9 +64,6 @@ func TestExternalClientObserve(t *testing.T) {
 	}
 	if obj.Status.AtProvider.DBInstanceStatus != v1alpha1.RDSInstanceStateRunning {
 		t.Errorf("DBInstanceStatus (%v) should be %v", obj.Status.AtProvider.DBInstanceStatus, v1alpha1.RDSInstanceStateRunning)
-	}
-	if obj.GetBindingPhase() != runtimev1alpha1.BindingPhaseUnbound {
-		t.Errorf("Binding phase (%v) should be %v", obj.GetBindingPhase(), runtimev1alpha1.BindingPhaseUnbound)
 	}
 	if obj.Status.AtProvider.AccountReady != true {
 		t.Error("AccountReady should be true")
