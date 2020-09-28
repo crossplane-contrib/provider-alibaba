@@ -1,9 +1,0 @@
-id: provider
-title: Provider
-titlePlural: Providers
-category:
-overviewShort: "A Provider configures an Alibaba Cloud 'provider'"
-overview: |
- "A Provider configures an Alibaba Cloud 'provider'"
-readme: |
- Full documentation can be found in the Crossplane [API Reference docs](https://crossplane.io/docs/master/api/crossplane/provider-alibaba/alibaba-crossplane-io-v1alpha1.html).
