@@ -22,9 +22,10 @@ import (
 	sdkerror "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -46,6 +47,7 @@ const (
 	errCreateRDSClient     = "cannot create RDS client"
 	errGetProvider         = "cannot get provider"
 	errGetProviderConfig   = "cannot get provider config"
+	errApplyUsage          = "cannot apply provider config usage"
 	errNoConnectionSecret  = "no connection secret specified"
 	errGetConnectionSecret = "cannot get connection secret"
 
@@ -65,7 +67,10 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{
-				client:       mgr.GetClient(),
+				client: resource.ClientApplicator{
+					Client:     mgr.GetClient(),
+					Applicator: resource.NewAPIUpdatingApplicator(mgr.GetClient()),
+				},
 				newRDSClient: rds.NewClient,
 			}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
@@ -74,7 +79,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	client       client.Client
+	client       resource.ClientApplicator
 	newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
 }
 
@@ -84,6 +89,8 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotRDSInstance)
 	}
 
+	// TODO(negz): This connection logic should be generalised once this
+	// provider has more than one kind of managed resource.
 	var (
 		sel    *runtimev1alpha1.SecretKeySelector
 		region string
@@ -96,6 +103,31 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		}
 		sel = pc.Spec.CredentialsSecretRef
 		region = pc.Spec.Region
+
+		pcu := &aliv1alpha1.ProviderConfigUsage{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:            string(cr.GetUID()),
+				Labels:          map[string]string{runtimev1alpha1.LabelKeyProviderName: pc.GetName()},
+				OwnerReferences: []metav1.OwnerReference{meta.AsController(meta.TypedReferenceTo(cr, v1alpha1.RDSInstanceGroupVersionKind))},
+			},
+			ProviderConfigUsage: runtimev1alpha1.ProviderConfigUsage{
+				ProviderConfigReference: runtimev1alpha1.Reference{Name: pc.GetName()},
+				ResourceReference: runtimev1alpha1.TypedReference{
+					APIVersion: v1alpha1.Group,
+					Kind:       v1alpha1.RDSInstanceKind,
+					Name:       cr.GetName(),
+				},
+			},
+		}
+
+		if err := c.client.Apply(ctx, pcu,
+			resource.MustBeControllableBy(cr.GetUID()),
+			resource.AllowUpdateIf(func(current, _ runtime.Object) bool {
+				return current.(*aliv1alpha1.ProviderConfigUsage).ProviderConfigReference != pcu.ProviderConfigReference
+			}),
+		); resource.Ignore(resource.IsNotAllowed, err) != nil {
+			return nil, errors.Wrap(err, errApplyUsage)
+		}
 	case cr.GetProviderReference() != nil:
 		p := &aliv1alpha1.Provider{}
 		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {

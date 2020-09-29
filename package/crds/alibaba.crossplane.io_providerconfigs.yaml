@@ -25,7 +25,8 @@ spec:
     plural: providerconfigs
     singular: providerconfig
   scope: Cluster
-  subresources: {}
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: A ProviderConfig configures an Alibaba Cloud 'provider', i.e. a connection to a particular cloud account.
@@ -63,6 +64,14 @@ spec:
               type: string
           required:
           - region
+          type: object
+        status:
+          description: A ProviderConfigStatus represents the status of a ProviderConfig.
+          properties:
+            users:
+              description: Users of this provider configuration.
+              format: int64
+              type: integer
           type: object
       required:
       - spec

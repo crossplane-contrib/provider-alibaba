@@ -9,7 +9,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	crossplanemeta "github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -28,7 +27,7 @@ func TestConnector(t *testing.T) {
 	errBoom := errors.New("boom")
 
 	type fields struct {
-		client       client.Client
+		client       resource.ClientApplicator
 		newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
 	}
 
@@ -53,8 +52,10 @@ func TestConnector(t *testing.T) {
 		"GetProviderConfigError": {
 			reason: "Errors getting a ProviderConfig should be returned",
 			fields: fields{
-				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(errBoom),
+				client: resource.ClientApplicator{
+					Client: &test.MockClient{
+						MockGet: test.NewMockGetFn(errBoom),
+					},
 				},
 			},
 			args: args{
@@ -68,11 +69,34 @@ func TestConnector(t *testing.T) {
 			},
 			want: errors.Wrap(errBoom, errGetProviderConfig),
 		},
+		"ApplyProviderConfigUsageError": {
+			reason: "Errors applying a ProviderConfigUsage should be returned",
+			fields: fields{
+				client: resource.ClientApplicator{
+					Client: &test.MockClient{
+						MockGet: test.NewMockGetFn(nil),
+					},
+					Applicator: resource.ApplyFn(func(c context.Context, r runtime.Object, ao ...resource.ApplyOption) error { return errBoom }),
+				},
+			},
+			args: args{
+				mg: &v1alpha1.RDSInstance{
+					Spec: v1alpha1.RDSInstanceSpec{
+						ResourceSpec: runtimev1alpha1.ResourceSpec{
+							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						},
+					},
+				},
+			},
+			want: errors.Wrap(errBoom, errApplyUsage),
+		},
 		"GetProviderError": {
 			reason: "Errors getting a Provider should be returned",
 			fields: fields{
-				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(errBoom),
+				client: resource.ClientApplicator{
+					Client: &test.MockClient{
+						MockGet: test.NewMockGetFn(errBoom),
+					},
 				},
 			},
 			args: args{
@@ -89,8 +113,11 @@ func TestConnector(t *testing.T) {
 		"NoConnectionSecretError": {
 			reason: "An error should be returned if no connection secret was specified",
 			fields: fields{
-				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil),
+				client: resource.ClientApplicator{
+					Client: &test.MockClient{
+						MockGet: test.NewMockGetFn(nil),
+					},
+					Applicator: resource.ApplyFn(func(c context.Context, r runtime.Object, ao ...resource.ApplyOption) error { return nil }),
 				},
 			},
 			args: args{
@@ -107,26 +134,29 @@ func TestConnector(t *testing.T) {
 		"GetConnectionSecretError": {
 			reason: "Errors getting a secret should be returned",
 			fields: fields{
-				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
-						switch t := obj.(type) {
-						case *corev1.Secret:
-							return errBoom
-						case *aliv1alpha1.ProviderConfig:
-							*t = aliv1alpha1.ProviderConfig{
-								Spec: aliv1alpha1.ProviderConfigSpec{
-									ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
-										CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
-											SecretReference: runtimev1alpha1.SecretReference{
-												Name: "coolsecret",
+				client: resource.ClientApplicator{
+					Client: &test.MockClient{
+						MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
+							switch t := obj.(type) {
+							case *corev1.Secret:
+								return errBoom
+							case *aliv1alpha1.ProviderConfig:
+								*t = aliv1alpha1.ProviderConfig{
+									Spec: aliv1alpha1.ProviderConfigSpec{
+										ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
+											CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+												SecretReference: runtimev1alpha1.SecretReference{
+													Name: "coolsecret",
+												},
 											},
 										},
 									},
-								},
+								}
 							}
-						}
-						return nil
-					}),
+							return nil
+						}),
+					},
+					Applicator: resource.ApplyFn(func(c context.Context, r runtime.Object, ao ...resource.ApplyOption) error { return nil }),
 				},
 			},
 			args: args{
@@ -143,23 +173,26 @@ func TestConnector(t *testing.T) {
 		"NewRDSClientError": {
 			reason: "Errors getting a secret should be returned",
 			fields: fields{
-				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
-						if t, ok := obj.(*aliv1alpha1.ProviderConfig); ok {
-							*t = aliv1alpha1.ProviderConfig{
-								Spec: aliv1alpha1.ProviderConfigSpec{
-									ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
-										CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
-											SecretReference: runtimev1alpha1.SecretReference{
-												Name: "coolsecret",
+				client: resource.ClientApplicator{
+					Client: &test.MockClient{
+						MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
+							if t, ok := obj.(*aliv1alpha1.ProviderConfig); ok {
+								*t = aliv1alpha1.ProviderConfig{
+									Spec: aliv1alpha1.ProviderConfigSpec{
+										ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
+											CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+												SecretReference: runtimev1alpha1.SecretReference{
+													Name: "coolsecret",
+												},
 											},
 										},
 									},
-								},
+								}
 							}
-						}
-						return nil
-					}),
+							return nil
+						}),
+					},
+					Applicator: resource.ApplyFn(func(c context.Context, r runtime.Object, ao ...resource.ApplyOption) error { return nil }),
 				},
 				newRDSClient: func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error) {
 					return nil, errBoom

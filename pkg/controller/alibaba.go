@@ -19,6 +19,7 @@ package controller
 import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/provider-alibaba/pkg/controller/config"
 	"github.com/crossplane/provider-alibaba/pkg/controller/database"
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -28,6 +29,7 @@ import (
 // to the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
+		config.Setup,
 		database.SetupRDSInstance,
 	} {
 		if err := setup(mgr, l); err != nil {
