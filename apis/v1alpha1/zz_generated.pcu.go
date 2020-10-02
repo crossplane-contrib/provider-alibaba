@@ -25,7 +25,17 @@ func (p *ProviderConfigUsage) GetProviderConfigReference() runtimev1alpha1.Refer
 	return p.ProviderConfigReference
 }
 
+// GetResourceReference of this ProviderConfigUsage.
+func (p *ProviderConfigUsage) GetResourceReference() runtimev1alpha1.TypedReference {
+	return p.ResourceReference
+}
+
 // SetProviderConfigReference of this ProviderConfigUsage.
 func (p *ProviderConfigUsage) SetProviderConfigReference(r runtimev1alpha1.Reference) {
 	p.ProviderConfigReference = r
+}
+
+// SetResourceReference of this ProviderConfigUsage.
+func (p *ProviderConfigUsage) SetResourceReference(r runtimev1alpha1.TypedReference) {
+	p.ResourceReference = r
 }

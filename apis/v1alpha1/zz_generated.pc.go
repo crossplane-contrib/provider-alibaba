@@ -20,14 +20,24 @@ package v1alpha1
 
 import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
+// GetCondition of this ProviderConfig.
+func (p *ProviderConfig) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return p.Status.GetCondition(ct)
+}
+
 // GetCredentialsSecretReference of this ProviderConfig.
 func (p *ProviderConfig) GetCredentialsSecretReference() *runtimev1alpha1.SecretKeySelector {
 	return p.Spec.CredentialsSecretRef
 }
 
 // GetUsers of this ProviderConfig.
-func (p *ProviderConfig) GetUsers() *int64 {
+func (p *ProviderConfig) GetUsers() int64 {
 	return p.Status.Users
+}
+
+// SetConditions of this ProviderConfig.
+func (p *ProviderConfig) SetConditions(c ...runtimev1alpha1.Condition) {
+	p.Status.SetConditions(c...)
 }
 
 // SetCredentialsSecretReference of this ProviderConfig.
@@ -36,6 +46,6 @@ func (p *ProviderConfig) SetCredentialsSecretReference(r *runtimev1alpha1.Secret
 }
 
 // SetUsers of this ProviderConfig.
-func (p *ProviderConfig) SetUsers(i *int64) {
+func (p *ProviderConfig) SetUsers(i int64) {
 	p.Status.Users = i
 }
