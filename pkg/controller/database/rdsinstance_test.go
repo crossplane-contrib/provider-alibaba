@@ -29,6 +29,7 @@ func TestConnector(t *testing.T) {
 
 	type fields struct {
 		client       client.Client
+		usage        resource.Tracker
 		newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
 	}
 
@@ -50,12 +51,29 @@ func TestConnector(t *testing.T) {
 			},
 			want: errors.New(errNotRDSInstance),
 		},
+		"TrackProviderConfigUsageError": {
+			reason: "Errors tracking a ProviderConfigUsage should be returned",
+			fields: fields{
+				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return errBoom }),
+			},
+			args: args{
+				mg: &v1alpha1.RDSInstance{
+					Spec: v1alpha1.RDSInstanceSpec{
+						ResourceSpec: runtimev1alpha1.ResourceSpec{
+							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						},
+					},
+				},
+			},
+			want: errors.Wrap(errBoom, errTrackUsage),
+		},
 		"GetProviderConfigError": {
 			reason: "Errors getting a ProviderConfig should be returned",
 			fields: fields{
 				client: &test.MockClient{
 					MockGet: test.NewMockGetFn(errBoom),
 				},
+				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
 				mg: &v1alpha1.RDSInstance{
@@ -74,6 +92,7 @@ func TestConnector(t *testing.T) {
 				client: &test.MockClient{
 					MockGet: test.NewMockGetFn(errBoom),
 				},
+				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
 				mg: &v1alpha1.RDSInstance{
@@ -92,6 +111,7 @@ func TestConnector(t *testing.T) {
 				client: &test.MockClient{
 					MockGet: test.NewMockGetFn(nil),
 				},
+				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
 				mg: &v1alpha1.RDSInstance{
@@ -128,6 +148,7 @@ func TestConnector(t *testing.T) {
 						return nil
 					}),
 				},
+				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
 				mg: &v1alpha1.RDSInstance{
@@ -161,6 +182,7 @@ func TestConnector(t *testing.T) {
 						return nil
 					}),
 				},
+				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 				newRDSClient: func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error) {
 					return nil, errBoom
 				},
@@ -180,7 +202,7 @@ func TestConnector(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			c := &connector{client: tc.fields.client, newRDSClient: tc.fields.newRDSClient}
+			c := &connector{client: tc.fields.client, usage: tc.fields.usage, newRDSClient: tc.fields.newRDSClient}
 			_, err := c.Connect(tc.args.ctx, tc.args.mg)
 			if diff := cmp.Diff(tc.want, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\nc.Connect(...) -want error, +got error:\n%s\n", tc.reason, diff)

@@ -46,6 +46,7 @@ const (
 	errCreateRDSClient     = "cannot create RDS client"
 	errGetProvider         = "cannot get provider"
 	errGetProviderConfig   = "cannot get provider config"
+	errTrackUsage          = "cannot track provider config usage"
 	errNoConnectionSecret  = "no connection secret specified"
 	errGetConnectionSecret = "cannot get connection secret"
 
@@ -66,6 +67,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{
 				client:       mgr.GetClient(),
+				usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1alpha1.ProviderConfigUsage{}),
 				newRDSClient: rds.NewClient,
 			}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
@@ -75,6 +77,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	client       client.Client
+	usage        resource.Tracker
 	newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
 }
 
@@ -84,12 +87,18 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotRDSInstance)
 	}
 
+	// TODO(negz): This connection logic should be generalised once this
+	// provider has more than one kind of managed resource.
 	var (
 		sel    *runtimev1alpha1.SecretKeySelector
 		region string
 	)
 	switch {
 	case cr.GetProviderConfigReference() != nil:
+		if err := c.usage.Track(ctx, mg); err != nil {
+			return nil, errors.Wrap(err, errTrackUsage)
+		}
+
 		pc := &aliv1alpha1.ProviderConfig{}
 		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
 			return nil, errors.Wrap(err, errGetProviderConfig)
