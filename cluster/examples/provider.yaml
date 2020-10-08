@@ -8,12 +8,14 @@ metadata:
 apiVersion: alibaba.crossplane.io/v1alpha1
 kind: ProviderConfig
 metadata:
-  name: example
+  name: default
 spec:
-  credentialsSecretRef:
-    namespace: crossplane-system
-    name: alibaba-account-creds
-    key: credentials
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: alibaba-account-creds
+      key: credentials
   region: cn-hangzhou
 
 ---

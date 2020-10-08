@@ -86,6 +86,37 @@ func TestConnector(t *testing.T) {
 			},
 			want: errors.Wrap(errBoom, errGetProviderConfig),
 		},
+		"UnsupportedCredentialsError": {
+			reason: "An error should be returned if the selected credentials source is unsupported",
+			fields: fields{
+				client: &test.MockClient{
+					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
+						t := obj.(*aliv1alpha1.ProviderConfig)
+						*t = aliv1alpha1.ProviderConfig{
+							Spec: aliv1alpha1.ProviderConfigSpec{
+								ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
+									Credentials: runtimev1alpha1.ProviderCredentials{
+										Source: runtimev1alpha1.CredentialsSource("wat"),
+									},
+								},
+							},
+						}
+						return nil
+					}),
+				},
+				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
+			},
+			args: args{
+				mg: &v1alpha1.RDSInstance{
+					Spec: v1alpha1.RDSInstanceSpec{
+						ResourceSpec: runtimev1alpha1.ResourceSpec{
+							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						},
+					},
+				},
+			},
+			want: errors.Errorf(errFmtUnsupportedCredSource, "wat"),
+		},
 		"GetProviderError": {
 			reason: "Errors getting a Provider should be returned",
 			fields: fields{
@@ -109,7 +140,19 @@ func TestConnector(t *testing.T) {
 			reason: "An error should be returned if no connection secret was specified",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil),
+					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
+						t := obj.(*aliv1alpha1.ProviderConfig)
+						*t = aliv1alpha1.ProviderConfig{
+							Spec: aliv1alpha1.ProviderConfigSpec{
+								ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
+									Credentials: runtimev1alpha1.ProviderCredentials{
+										Source: runtimev1alpha1.CredentialsSourceSecret,
+									},
+								},
+							},
+						}
+						return nil
+					}),
 				},
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
@@ -136,9 +179,12 @@ func TestConnector(t *testing.T) {
 							*t = aliv1alpha1.ProviderConfig{
 								Spec: aliv1alpha1.ProviderConfigSpec{
 									ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
-										CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
-											SecretReference: runtimev1alpha1.SecretReference{
-												Name: "coolsecret",
+										Credentials: runtimev1alpha1.ProviderCredentials{
+											Source: runtimev1alpha1.CredentialsSourceSecret,
+											SecretRef: &runtimev1alpha1.SecretKeySelector{
+												SecretReference: runtimev1alpha1.SecretReference{
+													Name: "coolsecret",
+												},
 											},
 										},
 									},
@@ -170,9 +216,12 @@ func TestConnector(t *testing.T) {
 							*t = aliv1alpha1.ProviderConfig{
 								Spec: aliv1alpha1.ProviderConfigSpec{
 									ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
-										CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
-											SecretReference: runtimev1alpha1.SecretReference{
-												Name: "coolsecret",
+										Credentials: runtimev1alpha1.ProviderCredentials{
+											Source: runtimev1alpha1.CredentialsSourceSecret,
+											SecretRef: &runtimev1alpha1.SecretKeySelector{
+												SecretReference: runtimev1alpha1.SecretReference{
+													Name: "coolsecret",
+												},
 											},
 										},
 									},
