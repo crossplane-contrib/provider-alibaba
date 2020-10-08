@@ -54,6 +54,8 @@ const (
 	errCreateAccountFailed = "cannot create RDS database account"
 	errDeleteFailed        = "cannot delete RDS instance"
 	errDescribeFailed      = "cannot describe RDS instance"
+
+	errFmtUnsupportedCredSource = "credentials source %q is not currently supported"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
@@ -81,7 +83,9 @@ type connector struct {
 	newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
 }
 
-func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
+	// TODO(negz): This connect method will be simpler once we no longer have to
+	// account for the deprecated Provider type.
 	cr, ok := mg.(*v1alpha1.RDSInstance)
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
@@ -103,7 +107,10 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
 			return nil, errors.Wrap(err, errGetProviderConfig)
 		}
-		sel = pc.Spec.CredentialsSecretRef
+		if s := pc.Spec.Credentials.Source; s != runtimev1alpha1.CredentialsSourceSecret {
+			return nil, errors.Errorf(errFmtUnsupportedCredSource, s)
+		}
+		sel = pc.Spec.Credentials.SecretRef
 		region = pc.Spec.Region
 	case cr.GetProviderReference() != nil:
 		p := &aliv1alpha1.Provider{}
