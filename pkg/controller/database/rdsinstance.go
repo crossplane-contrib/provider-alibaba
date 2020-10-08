@@ -72,7 +72,6 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 				usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1alpha1.ProviderConfigUsage{}),
 				newRDSClient: rds.NewClient,
 			}),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
