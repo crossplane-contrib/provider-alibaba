@@ -19,8 +19,9 @@ package rds
 import (
 	"context"
 	"errors"
-	sdkErrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 	"time"
+
+	sdkErrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	alirds "github.com/aliyun/alibaba-cloud-sdk-go/services/rds"
