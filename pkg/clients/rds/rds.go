@@ -31,6 +31,7 @@ import (
 var (
 	// ErrDBInstanceNotFound indicates DBInstance not found
 	ErrDBInstanceNotFound = errors.New("DBInstanceNotFound")
+	// ErrCodeInstanceNotFound error code of ServerError when DBInstance not found
 	ErrCodeInstanceNotFound = "InvalidDBInstanceId.NotFound"
 )
 
