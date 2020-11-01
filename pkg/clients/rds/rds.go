@@ -91,7 +91,7 @@ func (c *client) DescribeDBInstance(id string) (*DBInstance, error) {
 
 	response, err := c.rdsCli.DescribeDBInstances(request)
 	if err != nil {
-		return nil, errorConvert(err)
+		return nil, err
 	}
 	if len(response.Items.DBInstance) == 0 {
 		return nil, ErrDBInstanceNotFound
@@ -189,13 +189,8 @@ func IsErrorNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	return errors.Is(err, ErrDBInstanceNotFound)
-}
-
-// errorConvert handle Server Error and covert error type
-func errorConvert(err error) error {
 	if e, ok := err.(*sdkErrors.ServerError); ok && e.ErrorCode() == ErrCodeInstanceNotFound {
-		return ErrDBInstanceNotFound
+		return true
 	}
-	return err
+	return errors.Is(err, ErrDBInstanceNotFound)
 }
