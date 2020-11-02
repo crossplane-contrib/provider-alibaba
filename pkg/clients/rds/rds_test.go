@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
+
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 )
 
