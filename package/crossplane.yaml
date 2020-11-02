@@ -2,6 +2,13 @@ apiVersion: meta.pkg.crossplane.io/v1alpha1
 kind: Provider
 metadata:
   name: provider-alibaba
+  annotations:
+    company: Crossplane
+    maintainer: Crossplane Maintainers <info@crossplane.io>
+    source: github.com/crossplane/provider-alibaba
+    license: Apache-2.0
+    description: |
+      provider-alibaba is the Crossplane infrastructure provider for Alibaba Cloud.
 spec:
   controller:
     image: crossplane/provider-alibaba-controller:VERSION
