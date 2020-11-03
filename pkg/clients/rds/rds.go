@@ -21,6 +21,8 @@ import (
 	"errors"
 	"time"
 
+	sdkerrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
+
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	alirds "github.com/aliyun/alibaba-cloud-sdk-go/services/rds"
 
@@ -30,6 +32,8 @@ import (
 var (
 	// ErrDBInstanceNotFound indicates DBInstance not found
 	ErrDBInstanceNotFound = errors.New("DBInstanceNotFound")
+	// ErrCodeInstanceNotFound error code of ServerError when DBInstance not found
+	ErrCodeInstanceNotFound = "InvalidDBInstanceId.NotFound"
 )
 
 // Client defines RDS client operations
@@ -184,6 +188,10 @@ func MakeCreateDBInstanceRequest(name string, p *v1alpha1.RDSInstanceParameters)
 func IsErrorNotFound(err error) bool {
 	if err == nil {
 		return false
+	}
+	// If instance already remove from console.  should ignore when delete instance
+	if e, ok := err.(*sdkerrors.ServerError); ok && e.ErrorCode() == ErrCodeInstanceNotFound {
+		return true
 	}
 	return errors.Is(err, ErrDBInstanceNotFound)
 }
