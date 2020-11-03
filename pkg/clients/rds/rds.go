@@ -21,7 +21,7 @@ import (
 	"errors"
 	"time"
 
-	sdkErrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
+	sdkerrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	alirds "github.com/aliyun/alibaba-cloud-sdk-go/services/rds"
@@ -189,7 +189,8 @@ func IsErrorNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := err.(*sdkErrors.ServerError); ok && e.ErrorCode() == ErrCodeInstanceNotFound {
+	// If instance already remove from console.  should ignore when delete instance
+	if e, ok := err.(*sdkerrors.ServerError); ok && e.ErrorCode() == ErrCodeInstanceNotFound {
 		return true
 	}
 	return errors.Is(err, ErrDBInstanceNotFound)
