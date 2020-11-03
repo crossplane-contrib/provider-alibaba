@@ -139,11 +139,11 @@ help-special: crossplane.help
 demo:
 	docker build . -t ${IMG} -f ./hack/demo/Dockerfile
 	kind load docker-image $(IMG) || { echo >&2 "kind not installed or error loading image: $(IMG)"; exit 1; }
-	kubectl apply -f ./config/crd
+	kubectl apply -f ./package/crds
 	cat ./cluster/examples/provider.yaml | sed \
 		-e "s|((ACCESS_KEY_ID))|"${ACCESS_KEY_ID}"|g" \
 		-e "s|((ACCESS_KEY_SECRET))|"${ACCESS_KEY_SECRET}"|g" \
 		| kubectl apply -f -
 	./hack/demo/helm_install_crossplane_master.sh
-	kubectl apply -f ./cluster/examples/database/resource_class.yaml
+	kubectl apply -f ./cluster/examples/database/rds.yaml
 	kubectl apply -f ./hack/demo/deploy/
