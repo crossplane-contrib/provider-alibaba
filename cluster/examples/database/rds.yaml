@@ -18,5 +18,5 @@ spec:
     namespace: crossplane-system
     name: example-rds
   providerConfigRef:
-    name: example
+    name: default
   deletionPolicy: Delete
