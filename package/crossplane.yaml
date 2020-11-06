@@ -7,8 +7,26 @@ metadata:
     maintainer: Crossplane Maintainers <info@crossplane.io>
     source: github.com/crossplane/provider-alibaba
     license: Apache-2.0
+    descriptionShort: |
+      The Alibaba Cloud Crossplane provider enables infrastructure management
+      for the Alibaba Cloud.
+
     description: |
-      provider-alibaba is the Crossplane infrastructure provider for Alibaba Cloud.
+      The Alibaba Cloud Crossplane provider adds support for managing Alibaba
+      Cloud resources in Kubernetes.
+
+    readme: |
+      `provider-alibaba` is the Crossplane infrastructure provider for [Alibaba
+      Cloud](https://alibabacloud.com/).
+
+      Available resources and their fields can be found in the [CRD
+      Docs](https://doc.crds.dev/github.com/crossplane/provider-alibaba).
+
+      If you encounter an issue please reach out on
+      [slack.crossplane.io](https://slack.crossplane.io) and create an issue in
+      the [crossplane/provider-alibaba](https://github.com/crossplane/provider-alibaba)
+      repo.
+
 spec:
   controller:
     image: crossplane/provider-alibaba-controller:VERSION
