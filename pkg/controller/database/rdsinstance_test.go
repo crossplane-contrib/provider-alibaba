@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	crossplanemeta "github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -59,8 +59,8 @@ func TestConnector(t *testing.T) {
 			args: args{
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
-						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						ResourceSpec: xpv1.ResourceSpec{
+							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
@@ -78,8 +78,8 @@ func TestConnector(t *testing.T) {
 			args: args{
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
-						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						ResourceSpec: xpv1.ResourceSpec{
+							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
@@ -94,9 +94,9 @@ func TestConnector(t *testing.T) {
 						t := obj.(*aliv1alpha1.ProviderConfig)
 						*t = aliv1alpha1.ProviderConfig{
 							Spec: aliv1alpha1.ProviderConfigSpec{
-								ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
-									Credentials: runtimev1alpha1.ProviderCredentials{
-										Source: runtimev1alpha1.CredentialsSource("wat"),
+								ProviderConfigSpec: xpv1.ProviderConfigSpec{
+									Credentials: xpv1.ProviderCredentials{
+										Source: xpv1.CredentialsSource("wat"),
 									},
 								},
 							},
@@ -109,8 +109,8 @@ func TestConnector(t *testing.T) {
 			args: args{
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
-						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						ResourceSpec: xpv1.ResourceSpec{
+							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
@@ -128,8 +128,8 @@ func TestConnector(t *testing.T) {
 			args: args{
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
-						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ProviderReference: &runtimev1alpha1.Reference{},
+						ResourceSpec: xpv1.ResourceSpec{
+							ProviderReference: &xpv1.Reference{},
 						},
 					},
 				},
@@ -144,9 +144,9 @@ func TestConnector(t *testing.T) {
 						t := obj.(*aliv1alpha1.ProviderConfig)
 						*t = aliv1alpha1.ProviderConfig{
 							Spec: aliv1alpha1.ProviderConfigSpec{
-								ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
-									Credentials: runtimev1alpha1.ProviderCredentials{
-										Source: runtimev1alpha1.CredentialsSourceSecret,
+								ProviderConfigSpec: xpv1.ProviderConfigSpec{
+									Credentials: xpv1.ProviderCredentials{
+										Source: xpv1.CredentialsSourceSecret,
 									},
 								},
 							},
@@ -159,8 +159,8 @@ func TestConnector(t *testing.T) {
 			args: args{
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
-						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						ResourceSpec: xpv1.ResourceSpec{
+							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
@@ -178,11 +178,11 @@ func TestConnector(t *testing.T) {
 						case *aliv1alpha1.ProviderConfig:
 							*t = aliv1alpha1.ProviderConfig{
 								Spec: aliv1alpha1.ProviderConfigSpec{
-									ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
-										Credentials: runtimev1alpha1.ProviderCredentials{
-											Source: runtimev1alpha1.CredentialsSourceSecret,
-											SecretRef: &runtimev1alpha1.SecretKeySelector{
-												SecretReference: runtimev1alpha1.SecretReference{
+									ProviderConfigSpec: xpv1.ProviderConfigSpec{
+										Credentials: xpv1.ProviderCredentials{
+											Source: xpv1.CredentialsSourceSecret,
+											SecretRef: &xpv1.SecretKeySelector{
+												SecretReference: xpv1.SecretReference{
 													Name: "coolsecret",
 												},
 											},
@@ -199,8 +199,8 @@ func TestConnector(t *testing.T) {
 			args: args{
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
-						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						ResourceSpec: xpv1.ResourceSpec{
+							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
@@ -215,11 +215,11 @@ func TestConnector(t *testing.T) {
 						if t, ok := obj.(*aliv1alpha1.ProviderConfig); ok {
 							*t = aliv1alpha1.ProviderConfig{
 								Spec: aliv1alpha1.ProviderConfigSpec{
-									ProviderConfigSpec: runtimev1alpha1.ProviderConfigSpec{
-										Credentials: runtimev1alpha1.ProviderCredentials{
-											Source: runtimev1alpha1.CredentialsSourceSecret,
-											SecretRef: &runtimev1alpha1.SecretKeySelector{
-												SecretReference: runtimev1alpha1.SecretReference{
+									ProviderConfigSpec: xpv1.ProviderConfigSpec{
+										Credentials: xpv1.ProviderCredentials{
+											Source: xpv1.CredentialsSourceSecret,
+											SecretRef: &xpv1.SecretKeySelector{
+												SecretReference: xpv1.SecretReference{
 													Name: "coolsecret",
 												},
 											},
@@ -239,8 +239,8 @@ func TestConnector(t *testing.T) {
 			args: args{
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
-						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ProviderConfigReference: &runtimev1alpha1.Reference{},
+						ResourceSpec: xpv1.ResourceSpec{
+							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
@@ -284,7 +284,7 @@ func TestExternalClientObserve(t *testing.T) {
 	if obj.Status.AtProvider.AccountReady != true {
 		t.Error("AccountReady should be true")
 	}
-	if string(ob.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretUserKey]) != testName {
+	if string(ob.ConnectionDetails[xpv1.ResourceCredentialsSecretUserKey]) != testName {
 		t.Error("ConnectionDetails should include username=test")
 	}
 }
@@ -315,8 +315,8 @@ func TestExternalClientCreate(t *testing.T) {
 	if obj.Status.AtProvider.DBInstanceID != testName {
 		t.Error("DBInstanceID should be set to 'test'")
 	}
-	if string(ob.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretEndpointKey]) != "172.0.0.1" ||
-		string(ob.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPortKey]) != "8888" {
+	if string(ob.ConnectionDetails[xpv1.ResourceCredentialsSecretEndpointKey]) != "172.0.0.1" ||
+		string(ob.ConnectionDetails[xpv1.ResourceCredentialsSecretPortKey]) != "8888" {
 		t.Error("ConnectionDetails should include endpoint=172.0.0.1 and port=8888")
 	}
 }
@@ -378,9 +378,9 @@ func TestGetConnectionDetails(t *testing.T) {
 			},
 			want: want{
 				conn: managed.ConnectionDetails{
-					runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(testName),
-					runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(address),
-					runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(port),
+					xpv1.ResourceCredentialsSecretUserKey:     []byte(testName),
+					xpv1.ResourceCredentialsSecretEndpointKey: []byte(address),
+					xpv1.ResourceCredentialsSecretPortKey:     []byte(port),
 				},
 			},
 		},
@@ -403,8 +403,8 @@ func TestGetConnectionDetails(t *testing.T) {
 			},
 			want: want{
 				conn: managed.ConnectionDetails{
-					runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(testName),
-					runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
+					xpv1.ResourceCredentialsSecretUserKey:     []byte(testName),
+					xpv1.ResourceCredentialsSecretPasswordKey: []byte(password),
 				},
 			},
 		},
@@ -432,10 +432,10 @@ func TestGetConnectionDetails(t *testing.T) {
 			},
 			want: want{
 				conn: managed.ConnectionDetails{
-					runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(testName),
-					runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
-					runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(address),
-					runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(port),
+					xpv1.ResourceCredentialsSecretUserKey:     []byte(testName),
+					xpv1.ResourceCredentialsSecretPasswordKey: []byte(password),
+					xpv1.ResourceCredentialsSecretEndpointKey: []byte(address),
+					xpv1.ResourceCredentialsSecretPortKey:     []byte(port),
 				},
 			},
 		},
