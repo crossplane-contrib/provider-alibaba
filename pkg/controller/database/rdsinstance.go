@@ -26,7 +26,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -93,7 +93,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	// TODO(negz): This connection logic should be generalised once this
 	// provider has more than one kind of managed resource.
 	var (
-		sel    *runtimev1alpha1.SecretKeySelector
+		sel    *xpv1.SecretKeySelector
 		region string
 	)
 	switch {
@@ -106,7 +106,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
 			return nil, errors.Wrap(err, errGetProviderConfig)
 		}
-		if s := pc.Spec.Credentials.Source; s != runtimev1alpha1.CredentialsSourceSecret {
+		if s := pc.Spec.Credentials.Source; s != xpv1.CredentialsSourceSecret {
 			return nil, errors.Errorf(errFmtUnsupportedCredSource, s)
 		}
 		sel = pc.Spec.Credentials.SecretRef
@@ -160,17 +160,17 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	var pw string
 	switch cr.Status.AtProvider.DBInstanceStatus {
 	case v1alpha1.RDSInstanceStateRunning:
-		cr.Status.SetConditions(runtimev1alpha1.Available())
+		cr.Status.SetConditions(xpv1.Available())
 		pw, err = e.createAccountIfNeeded(cr)
 		if err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errCreateAccountFailed)
 		}
 	case v1alpha1.RDSInstanceStateCreating:
-		cr.Status.SetConditions(runtimev1alpha1.Creating())
+		cr.Status.SetConditions(xpv1.Creating())
 	case v1alpha1.RDSInstanceStateDeleting:
-		cr.Status.SetConditions(runtimev1alpha1.Deleting())
+		cr.Status.SetConditions(xpv1.Deleting())
 	default:
-		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
+		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 
 	return managed.ExternalObservation{
@@ -209,7 +209,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotRDSInstance)
 	}
 
-	cr.SetConditions(runtimev1alpha1.Creating())
+	cr.SetConditions(xpv1.Creating())
 	if cr.Status.AtProvider.DBInstanceStatus == v1alpha1.RDSInstanceStateCreating {
 		return managed.ExternalCreation{}, nil
 	}
@@ -236,7 +236,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if !ok {
 		return errors.New(errNotRDSInstance)
 	}
-	cr.SetConditions(runtimev1alpha1.Deleting())
+	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.DBInstanceStatus == v1alpha1.RDSInstanceStateDeleting {
 		return nil
 	}
@@ -247,16 +247,16 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 func getConnectionDetails(password string, cr *v1alpha1.RDSInstance, instance *rds.DBInstance) managed.ConnectionDetails {
 	cd := managed.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretUserKey: []byte(cr.Spec.ForProvider.MasterUsername),
+		xpv1.ResourceCredentialsSecretUserKey: []byte(cr.Spec.ForProvider.MasterUsername),
 	}
 
 	if password != "" {
-		cd[runtimev1alpha1.ResourceCredentialsSecretPasswordKey] = []byte(password)
+		cd[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(password)
 	}
 
 	if instance.Endpoint != nil {
-		cd[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(instance.Endpoint.Address)
-		cd[runtimev1alpha1.ResourceCredentialsSecretPortKey] = []byte(instance.Endpoint.Port)
+		cd[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(instance.Endpoint.Address)
+		cd[xpv1.ResourceCredentialsSecretPortKey] = []byte(instance.Endpoint.Port)
 	}
 
 	return cd

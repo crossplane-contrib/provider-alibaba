@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // SQL database engines.
@@ -58,14 +58,14 @@ type RDSInstance struct {
 
 // An RDSInstanceSpec defines the desired state of an RDSInstance.
 type RDSInstanceSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  RDSInstanceParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       RDSInstanceParameters `json:"forProvider"`
 }
 
 // An RDSInstanceStatus represents the observed state of an RDSInstance.
 type RDSInstanceStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     RDSInstanceObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          RDSInstanceObservation `json:"atProvider,omitempty"`
 }
 
 // RDSInstanceParameters define the desired state of an RDS instance.

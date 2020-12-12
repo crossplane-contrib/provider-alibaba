@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.109
-	github.com/crossplane/crossplane-runtime v0.11.0
+	github.com/crossplane/crossplane-runtime v0.12.0
 	github.com/crossplane/crossplane-tools v0.0.0-20201007233256-88b291e145bb
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
