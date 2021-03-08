@@ -20,11 +20,11 @@ package v1alpha1
 
 import resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-// GetItems of this ProviderConfigUsageList.
-func (p *ProviderConfigUsageList) GetItems() []resource.ProviderConfigUsage {
-	items := make([]resource.ProviderConfigUsage, len(p.Items))
-	for i := range p.Items {
-		items[i] = &p.Items[i]
+// GetItems of this SLSProjectList.
+func (l *SLSProjectList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
 	}
 	return items
 }

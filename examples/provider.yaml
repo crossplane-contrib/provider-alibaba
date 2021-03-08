@@ -16,7 +16,7 @@ spec:
       namespace: crossplane-system
       name: alibaba-account-creds
       key: credentials
-  region: cn-hangzhou
+  region: cn-beijing
 
 ---
 apiVersion: v1

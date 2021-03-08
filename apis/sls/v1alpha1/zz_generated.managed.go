@@ -20,58 +20,58 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-// GetCondition of this RDSInstance.
-func (mg *RDSInstance) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+// GetCondition of this SLSProject.
+func (mg *SLSProject) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this RDSInstance.
-func (mg *RDSInstance) GetDeletionPolicy() xpv1.DeletionPolicy {
+// GetDeletionPolicy of this SLSProject.
+func (mg *SLSProject) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetProviderConfigReference of this RDSInstance.
-func (mg *RDSInstance) GetProviderConfigReference() *xpv1.Reference {
+// GetProviderConfigReference of this SLSProject.
+func (mg *SLSProject) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-GetProviderReference of this RDSInstance.
+GetProviderReference of this SLSProject.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *RDSInstance) GetProviderReference() *xpv1.Reference {
+func (mg *SLSProject) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetWriteConnectionSecretToReference of this RDSInstance.
-func (mg *RDSInstance) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+// GetWriteConnectionSecretToReference of this SLSProject.
+func (mg *SLSProject) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetConditions of this RDSInstance.
-func (mg *RDSInstance) SetConditions(c ...xpv1.Condition) {
+// SetConditions of this SLSProject.
+func (mg *SLSProject) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this RDSInstance.
-func (mg *RDSInstance) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+// SetDeletionPolicy of this SLSProject.
+func (mg *SLSProject) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetProviderConfigReference of this RDSInstance.
-func (mg *RDSInstance) SetProviderConfigReference(r *xpv1.Reference) {
+// SetProviderConfigReference of this SLSProject.
+func (mg *SLSProject) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-SetProviderReference of this RDSInstance.
+SetProviderReference of this SLSProject.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *RDSInstance) SetProviderReference(r *xpv1.Reference) {
+func (mg *SLSProject) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetWriteConnectionSecretToReference of this RDSInstance.
-func (mg *RDSInstance) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+// SetWriteConnectionSecretToReference of this SLSProject.
+func (mg *SLSProject) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
