@@ -72,6 +72,12 @@ spec:
                 required:
                 - source
                 type: object
+              profile:
+                additionalProperties:
+                  type: string
+                description: Profile is used to extend fields of ProviderConfigSpec.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               region:
                 description: Region for managed resources created using this Alibaba Cloud provider, e.g. "cn-hangzhou".
                 type: string

@@ -1,0 +1,14 @@
+apiVersion: oss.alibaba.crossplane.io/v1alpha1
+kind: Bucket
+metadata:
+  name: example-oss
+spec:
+  forProvider:
+    bucket:
+      name: example-oss-bucket
+      acl: private
+      storageClass: Standard
+      dataRedundancyType: LRS
+  writeConnectionSecretToRef:
+    name: example-oss
+    namespace: default
