@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   forProvider:
-    name: project-test-1
+    name: project-test
     description: provisioned by Crossplane
   writeConnectionSecretToRef:
     name: sls-endpoint

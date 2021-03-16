@@ -1,17 +1,19 @@
 /*
 
+ Copyright 2021 The Crossplane Authors.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+     http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
 */
 
 package v1alpha1
@@ -20,7 +22,6 @@ import (
 	"reflect"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -36,27 +37,21 @@ var (
 	SLSProjectGroupVersionKind = GroupVersion.WithKind(SLSProjectKind)
 )
 
-// SLS Project states.
-const (
-	// The instance is healthy and available
-	SLSProjectStateRunning = "Running"
-	// The instance is being created. The instance is inaccessible while it is being created.
-	SLSProjectStateCreating = "Creating"
-	// The instance is being deleted.
-	SLSProjectStateDeleting = "Deleting"
-)
-
 // SLSProjectSpec defines the desired state of SLS Project
 type SLSProjectSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       SLSProjectParameters `json:"forProvider"`
+	// ForProvider field is where use set parameters for SLS project
+	ForProvider SLSProjectParameters `json:"forProvider"`
 }
 
 // SLSProjectObservation is the representation of the current state that is observed.
 type SLSProjectObservation struct {
 	// Name specifies the DB instance ID.
-	Name   string `json:"name"`
-	Status string `json:"status"`
+	Name string `json:"name,omitempty"`
+	// Description describes the SLS project
+	Description string `json:"description,omitempty"`
+	// Status of the SLS project
+	Status string `json:"status,omitempty"`
 }
 
 // SLSProjectStatus defines the observed state of SLS Project

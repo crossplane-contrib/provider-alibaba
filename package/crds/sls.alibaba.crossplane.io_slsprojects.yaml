@@ -51,7 +51,7 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: SLSProjectParameters define the desired state of an SLS project.
+                description: ForProvider field is where use set parameters for SLS project
                 properties:
                   description:
                     type: string
@@ -101,14 +101,15 @@ spec:
               atProvider:
                 description: SLSProjectObservation is the representation of the current state that is observed.
                 properties:
+                  description:
+                    description: Description describes the SLS project
+                    type: string
                   name:
                     description: Name specifies the DB instance ID.
                     type: string
                   status:
+                    description: Status of the SLS project
                     type: string
-                required:
-                - name
-                - status
                 type: object
               conditions:
                 description: Conditions of the resource.

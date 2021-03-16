@@ -1,26 +1,26 @@
 /*
-Copyright 2019 The Crossplane Authors.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Copyright 2021 The Crossplane Authors.
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
 */
 
 package sls
 
 import (
-	"errors"
 	"fmt"
 
-	sdkerrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
 	"k8s.io/klog/v2"
 
@@ -28,16 +28,16 @@ import (
 )
 
 var (
-	// ErrSLSProjectNotFound indicates SLSProject not found
-	ErrSLSProjectNotFound = errors.New("SLSProjectNotFound")
-	// ErrCodeInstanceNotFound error code of ServerError when SLSProject not found
-	ErrCodeInstanceNotFound = "InvalidSLSProjectId.NotFound"
+	// ErrCodeProjectNotExist error code of ServerError when SLSProject not found
+	ErrCodeProjectNotExist = "ProjectNotExist"
 )
 
-// CreateSLSProjectRequest defines the request info to create DB Instance
-type CreateSLSProjectRequest struct {
-	Name        string
-	Description string
+// LogClientInterface will help fakeOSSClient in unit tests
+type LogClientInterface interface {
+	Describe(name string) (*sdk.LogProject, error)
+	Create(name, description string) (*sdk.LogProject, error)
+	Update(name, description string) (*sdk.LogProject, error)
+	Delete(name string) error
 }
 
 // LogClient is the SDK client of SLS
@@ -45,12 +45,11 @@ type LogClient struct {
 	Client sdk.ClientInterface
 }
 
-// NewClient creates new RDS RDSClient
-func NewClient(accessKeyID, accessKeySecret, region string) LogClient {
+// NewClient creates new SLS client
+func NewClient(accessKeyID, accessKeySecret, region string) *LogClient {
 	endpoint := fmt.Sprintf("%s.log.aliyuncs.com", region)
 	logClient := sdk.CreateNormalInterface(endpoint, accessKeyID, accessKeySecret, "")
-	c := LogClient{Client: logClient}
-	return c
+	return &LogClient{Client: logClient}
 }
 
 // Describe describes SLS project
@@ -64,10 +63,22 @@ func (c *LogClient) Describe(name string) (*sdk.LogProject, error) {
 }
 
 // Create creates SLS project
-func (c *LogClient) Create(req CreateSLSProjectRequest) (*sdk.LogProject, error) {
-	project, err := c.Client.CreateProject(req.Name, req.Description)
+func (c *LogClient) Create(name, description string) (*sdk.LogProject, error) {
+	klog.InfoS("Creating SLS project", "Name", name, "Description", description)
+	project, err := c.Client.CreateProject(name, description)
 	if err != nil {
-		klog.ErrorS(err, "create SLS project")
+		klog.ErrorS(err, "Name", name, "Description", description)
+		return nil, err
+	}
+	return project, err
+}
+
+// Update updates SLS project's description
+func (c *LogClient) Update(name, description string) (*sdk.LogProject, error) {
+	klog.InfoS("Updating SLS project", "Name", name, "Description", description)
+	project, err := c.Client.UpdateProject(name, description)
+	if err != nil {
+		klog.ErrorS(err, "Name", name, "Description", description)
 		return nil, err
 	}
 	return project, err
@@ -78,23 +89,23 @@ func (c *LogClient) Delete(name string) error {
 	return c.Client.DeleteProject(name)
 }
 
-// GenerateObservation is used to produce v1alpha1.SLSProjectObservation from
-// rds.SLSProject.
+// GenerateObservation is used to produce v1alpha1.SLSProjectObservation
 func GenerateObservation(project *sdk.LogProject) v1alpha1.SLSProjectObservation {
 	return v1alpha1.SLSProjectObservation{
-		Name:   project.Name,
-		Status: project.Status,
+		Name:        project.Name,
+		Description: project.Description,
+		Status:      project.Status,
 	}
 }
 
-// IsErrorNotFound helper function to test for ErrCodeSLSProjectNotFoundFault error
-func IsErrorNotFound(err error) bool {
+// IsNotFoundError helper function to test for SLS project not found error
+func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	// If instance already remove from console.  should ignore when delete instance
-	if e, ok := err.(*sdkerrors.ServerError); ok && e.ErrorCode() == ErrCodeInstanceNotFound {
+	e, ok := err.(sdk.Error)
+	if ok && (e.Code == ErrCodeProjectNotExist) {
 		return true
 	}
-	return errors.Is(err, ErrSLSProjectNotFound)
+	return false
 }
