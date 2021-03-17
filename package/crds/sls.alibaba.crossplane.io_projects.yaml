@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: slsprojects.sls.alibaba.crossplane.io
+  name: projects.sls.alibaba.crossplane.io
 spec:
   group: sls.alibaba.crossplane.io
   names:
@@ -12,10 +12,10 @@ spec:
     - crossplane
     - managed
     - alibaba
-    kind: SLSProject
-    listKind: SLSProjectList
-    plural: slsprojects
-    singular: slsproject
+    kind: Project
+    listKind: ProjectList
+    plural: projects
+    singular: project
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -31,7 +31,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: SLSProject is the Schema for the SLS Projects API
+        description: Project is the Schema for the SLS Projects API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -42,7 +42,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: SLSProjectSpec defines the desired state of SLS Project
+            description: ProjectSpec defines the desired state of SLS Project
             properties:
               deletionPolicy:
                 description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
@@ -96,20 +96,32 @@ spec:
             - forProvider
             type: object
           status:
-            description: SLSProjectStatus defines the observed state of SLS Project
+            description: ProjectStatus defines the observed state of SLS Project
             properties:
               atProvider:
-                description: SLSProjectObservation is the representation of the current state that is observed.
+                description: ProjectObservation is the representation of the current state that is observed.
                 properties:
-                  description:
-                    description: Description describes the SLS project
+                  createTime:
+                    description: CreateTime is the time when the project was created
                     type: string
-                  name:
-                    description: Name specifies the DB instance ID.
+                  lastModifyTime:
+                    description: LastModifyTime is the time when the project was last modified
+                    type: string
+                  owner:
+                    description: Owner is the ID of the Alibaba Cloud account that was used to create the project
+                    type: string
+                  region:
+                    description: Region is the region to which the project belongs
                     type: string
                   status:
-                    description: Status of the SLS project
+                    description: Status is the the status of the project
                     type: string
+                required:
+                - createTime
+                - lastModifyTime
+                - owner
+                - region
+                - status
                 type: object
               conditions:
                 description: Conditions of the resource.

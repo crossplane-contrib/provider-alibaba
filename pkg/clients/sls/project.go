@@ -22,13 +22,13 @@ import (
 	"fmt"
 
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
-	"k8s.io/klog/v2"
+	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 )
 
 var (
-	// ErrCodeProjectNotExist error code of ServerError when SLSProject not found
+	// ErrCodeProjectNotExist error code of ServerError when Project not found
 	ErrCodeProjectNotExist = "ProjectNotExist"
 )
 
@@ -55,46 +55,35 @@ func NewClient(accessKeyID, accessKeySecret, region string) *LogClient {
 // Describe describes SLS project
 func (c *LogClient) Describe(name string) (*sdk.LogProject, error) {
 	project, err := c.Client.GetProject(name)
-	if err != nil {
-		klog.ErrorS(err, "create SLS project")
-		return nil, err
-	}
-	return project, err
+	return project, errors.Wrap(err, "cloud not describe project")
 }
 
 // Create creates SLS project
 func (c *LogClient) Create(name, description string) (*sdk.LogProject, error) {
-	klog.InfoS("Creating SLS project", "Name", name, "Description", description)
 	project, err := c.Client.CreateProject(name, description)
-	if err != nil {
-		klog.ErrorS(err, "Name", name, "Description", description)
-		return nil, err
-	}
-	return project, err
+	return project, errors.Wrap(err, "cloud not create project")
 }
 
 // Update updates SLS project's description
 func (c *LogClient) Update(name, description string) (*sdk.LogProject, error) {
-	klog.InfoS("Updating SLS project", "Name", name, "Description", description)
 	project, err := c.Client.UpdateProject(name, description)
-	if err != nil {
-		klog.ErrorS(err, "Name", name, "Description", description)
-		return nil, err
-	}
-	return project, err
+	return project, errors.Wrap(err, "cloud not update project")
 }
 
 // Delete deletes SLS project
 func (c *LogClient) Delete(name string) error {
-	return c.Client.DeleteProject(name)
+	err := c.Client.DeleteProject(name)
+	return errors.Wrap(err, "cloud not delete project")
 }
 
-// GenerateObservation is used to produce v1alpha1.SLSProjectObservation
-func GenerateObservation(project *sdk.LogProject) v1alpha1.SLSProjectObservation {
-	return v1alpha1.SLSProjectObservation{
-		Name:        project.Name,
-		Description: project.Description,
-		Status:      project.Status,
+// GenerateObservation is used to produce v1alpha1.ProjectObservation
+func GenerateObservation(project *sdk.LogProject) v1alpha1.ProjectObservation {
+	return v1alpha1.ProjectObservation{
+		CreateTime:     project.CreateTime,
+		LastModifyTime: project.LastModifyTime,
+		Owner:          project.Owner,
+		Status:         project.Status,
+		Region:         project.Status,
 	}
 }
 
@@ -103,8 +92,10 @@ func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	e, ok := err.(sdk.Error)
-	if ok && (e.Code == ErrCodeProjectNotExist) {
+	if e, ok := err.(sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
+		return true
+	}
+	if e, ok := err.(*sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
 		return true
 	}
 	return false

@@ -20,7 +20,6 @@ package sls
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
@@ -28,6 +27,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
@@ -36,7 +36,7 @@ import (
 var (
 	slsProjectDescription = "test project"
 	slsProjectEndpoint    = "xxx.com"
-	validCR               = &slsv1alpha1.SLSProject{Spec: slsv1alpha1.SLSProjectSpec{ForProvider: slsv1alpha1.SLSProjectParameters{
+	validCR               = &slsv1alpha1.Project{Spec: slsv1alpha1.ProjectSpec{ForProvider: slsv1alpha1.SLSProjectParameters{
 		Name:        "def",
 		Description: slsProjectDescription,
 	}}}
@@ -47,7 +47,7 @@ var (
 type fakeSDKClient struct {
 }
 
-// Describe describes SLSProject bucket
+// Describe describes Project bucket
 func (c *fakeSDKClient) Describe(name string) (*sdk.LogProject, error) {
 	switch name {
 	case "":
@@ -64,7 +64,7 @@ func (c *fakeSDKClient) Describe(name string) (*sdk.LogProject, error) {
 	}
 }
 
-// Create creates SLSProject bucket
+// Create creates Project bucket
 func (c *fakeSDKClient) Create(name, description string) (*sdk.LogProject, error) {
 	return validProject, nil
 }
@@ -95,16 +95,16 @@ func TestObserve(t *testing.T) {
 		want   want
 	}{
 		"NotAnSLSProject": {
-			reason: "We should return an error if the supplied managed resource is not an SLSProject bucket",
+			reason: "We should return an error if the supplied managed resource is not an Project bucket",
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalObservation{},
-				err: errors.New(errNotSLSProject),
+				err: errors.New(errNotProject),
 			},
 		},
 		"SLSProjectNotFound": {
 			reason: "SLS Project name could not be found",
-			mg:     &slsv1alpha1.SLSProject{},
+			mg:     &slsv1alpha1.Project{},
 			want: want{
 				o: managed.ExternalObservation{
 					ResourceExists: false,
@@ -114,7 +114,7 @@ func TestObserve(t *testing.T) {
 		},
 		"SLSProjectOtherError": {
 			reason: "We should report an unknown error",
-			mg: &slsv1alpha1.SLSProject{Spec: slsv1alpha1.SLSProjectSpec{ForProvider: slsv1alpha1.SLSProjectParameters{
+			mg: &slsv1alpha1.Project{Spec: slsv1alpha1.ProjectSpec{ForProvider: slsv1alpha1.SLSProjectParameters{
 				Name:        "abc",
 				Description: "test project",
 			}}},
@@ -124,7 +124,7 @@ func TestObserve(t *testing.T) {
 			},
 		},
 		"Success": {
-			reason: "Observing an SLSProject bucket successfully should return an ExternalObservation and nil error",
+			reason: "Observing an Project bucket successfully should return an ExternalObservation and nil error",
 			mg:     validCR,
 			want: want{
 				o: managed.ExternalObservation{
@@ -166,15 +166,15 @@ func TestCreate(t *testing.T) {
 		want   want
 	}{
 		"NotAnSLSProject": {
-			reason: "Not an SLSProject object",
+			reason: "Not an Project object",
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalCreation{},
-				err: errors.New(errNotSLSProject),
+				err: errors.New(errNotProject),
 			},
 		},
 		"Success": {
-			reason: "Creating an SLSProject bucket successfully",
+			reason: "Creating an Project bucket successfully",
 			mg:     validCR,
 			want: want{
 				o: managed.ExternalCreation{
@@ -214,15 +214,15 @@ func TestUpdate(t *testing.T) {
 		want   want
 	}{
 		"NotAnSLSProject": {
-			reason: "Not an SLSProject object",
+			reason: "Not an Project object",
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalUpdate{},
-				err: errors.New(errNotSLSProject),
+				err: errors.New(errNotProject),
 			},
 		},
 		"Success": {
-			reason: "Creating an SLSProject bucket successfully",
+			reason: "Creating an Project bucket successfully",
 			mg:     validCR,
 			want: want{
 				o:   managed.ExternalUpdate{},
@@ -260,14 +260,14 @@ func TestDelete(t *testing.T) {
 		want   want
 	}{
 		"NotAnSLSProject": {
-			reason: "Not an SLSProject object",
+			reason: "Not an Project object",
 			mg:     nil,
 			want: want{
-				err: errors.New(errNotSLSProject),
+				err: errors.New(errNotProject),
 			},
 		},
 		"Success": {
-			reason: "Creating an SLSProject bucket successfully",
+			reason: "Creating an Project bucket successfully",
 			mg:     validCR,
 			want: want{
 				err: nil,

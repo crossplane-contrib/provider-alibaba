@@ -20,58 +20,58 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-// GetCondition of this SLSProject.
-func (mg *SLSProject) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+// GetCondition of this Project.
+func (mg *Project) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this SLSProject.
-func (mg *SLSProject) GetDeletionPolicy() xpv1.DeletionPolicy {
+// GetDeletionPolicy of this Project.
+func (mg *Project) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetProviderConfigReference of this SLSProject.
-func (mg *SLSProject) GetProviderConfigReference() *xpv1.Reference {
+// GetProviderConfigReference of this Project.
+func (mg *Project) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-GetProviderReference of this SLSProject.
+GetProviderReference of this Project.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *SLSProject) GetProviderReference() *xpv1.Reference {
+func (mg *Project) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetWriteConnectionSecretToReference of this SLSProject.
-func (mg *SLSProject) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+// GetWriteConnectionSecretToReference of this Project.
+func (mg *Project) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetConditions of this SLSProject.
-func (mg *SLSProject) SetConditions(c ...xpv1.Condition) {
+// SetConditions of this Project.
+func (mg *Project) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this SLSProject.
-func (mg *SLSProject) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+// SetDeletionPolicy of this Project.
+func (mg *Project) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetProviderConfigReference of this SLSProject.
-func (mg *SLSProject) SetProviderConfigReference(r *xpv1.Reference) {
+// SetProviderConfigReference of this Project.
+func (mg *Project) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-SetProviderReference of this SLSProject.
+SetProviderReference of this Project.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *SLSProject) SetProviderReference(r *xpv1.Reference) {
+func (mg *Project) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetWriteConnectionSecretToReference of this SLSProject.
-func (mg *SLSProject) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+// SetWriteConnectionSecretToReference of this Project.
+func (mg *Project) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

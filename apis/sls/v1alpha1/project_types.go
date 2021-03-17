@@ -23,60 +23,64 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// SLSProjectSpec defines the desired state of SLS Project
-type SLSProjectSpec struct {
+// ProjectSpec defines the desired state of SLS Project
+type ProjectSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
+
 	// ForProvider field is where use set parameters for SLS project
 	ForProvider SLSProjectParameters `json:"forProvider"`
 }
 
-// SLSProjectObservation is the representation of the current state that is observed.
-type SLSProjectObservation struct {
-	// Name specifies the DB instance ID.
-	Name string `json:"name,omitempty"`
-	// Description describes the SLS project
-	Description string `json:"description,omitempty"`
-	// Status of the SLS project
-	Status string `json:"status,omitempty"`
+// ProjectObservation is the representation of the current state that is observed.
+type ProjectObservation struct {
+	// CreateTime is the time when the project was created
+	CreateTime string `json:"createTime"`
+
+	// LastModifyTime is the time when the project was last modified
+	LastModifyTime string `json:"lastModifyTime"`
+
+	// Owner is the ID of the Alibaba Cloud account that was used to create the project
+	Owner string `json:"owner"`
+
+	// Status is the the status of the project
+	Status string `json:"status"`
+
+	// Region is the region to which the project belongs
+	Region string `json:"region"`
 }
 
-// SLSProjectStatus defines the observed state of SLS Project
-type SLSProjectStatus struct {
+// ProjectStatus defines the observed state of SLS Project
+type ProjectStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SLSProjectObservation `json:"atProvider,omitempty"`
+	AtProvider          ProjectObservation `json:"atProvider,omitempty"`
 }
 
 // SLSProjectParameters define the desired state of an SLS project.
 type SLSProjectParameters struct {
-	Name        string `json:"name"`
+	ProjectName string `json:"name"`
 	Description string `json:"description"`
 }
 
 // +kubebuilder:object:root=true
 
-// SLSProject is the Schema for the SLS Projects API
+// Project is the Schema for the SLS Projects API
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,alibaba}
-type SLSProject struct {
+type Project struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   SLSProjectSpec   `json:"spec"`
-	Status SLSProjectStatus `json:"status,omitempty"`
+	Spec              ProjectSpec   `json:"spec"`
+	Status            ProjectStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// SLSProjectList contains a list of SLSProject
-type SLSProjectList struct {
+// ProjectList contains a list of Project
+type ProjectList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []SLSProject `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&SLSProject{}, &SLSProjectList{})
+	Items           []Project `json:"items"`
 }

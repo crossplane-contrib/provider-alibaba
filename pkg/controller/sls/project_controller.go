@@ -37,13 +37,14 @@ import (
 )
 
 const (
-	errNotSLSProject            = "managed resource is not an SLS project custom resource"
+	errNotProject               = "managed resource is not an SLS project custom resource"
 	errNoProvider               = "no provider config or provider specified"
 	errGetProviderConfig        = "cannot get provider config"
 	errTrackUsage               = "cannot track provider config usage"
 	errNoConnectionSecret       = "no connection secret specified"
 	errGetConnectionSecret      = "cannot get connection secret"
 	errFmtUnsupportedCredSource = "credentials source %q is not currently supported"
+	errTrackPCUsage             = "cannot track ProviderConfig usage"
 )
 
 // SetupSLSProject adds a controller that reconciles SLSProjects.
@@ -65,12 +66,11 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
-	cr, ok := mg.(*slsv1alpha1.SLSProject)
+	cr, ok := mg.(*slsv1alpha1.Project)
 	if !ok {
-		return nil, errors.New(errNotSLSProject)
+		return nil, errors.New(errNotProject)
 	}
 
-	// provider has more than one kind of managed resource.
 	var (
 		sel    *xpv1.SecretKeySelector
 		region string

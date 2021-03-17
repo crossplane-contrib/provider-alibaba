@@ -19,15 +19,12 @@
 package sls
 
 import (
-	"errors"
-
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"k8s.io/klog/v2"
+	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
@@ -36,14 +33,11 @@ import (
 
 // BaseObserve is the common logic for controller Observe reconciling
 func BaseObserve(mg resource.Managed, c slsclient.LogClientInterface) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha1.SLSProject)
+	cr, ok := mg.(*v1alpha1.Project)
 	if !ok {
-		return managed.ExternalObservation{}, errors.New(errNotSLSProject)
+		return managed.ExternalObservation{}, errors.New(errNotProject)
 	}
-	projectName := cr.Spec.ForProvider.Name
-	klog.InfoS("observing SLSProject resource", "Name", projectName,
-		"Description", cr.Spec.ForProvider.Description)
-
+	projectName := cr.Spec.ForProvider.ProjectName
 	project, err := c.Describe(projectName)
 	if slsclient.IsNotFoundError(err) {
 		return managed.ExternalObservation{
@@ -57,9 +51,8 @@ func BaseObserve(mg resource.Managed, c slsclient.LogClientInterface) (managed.E
 
 	cr.Status.AtProvider = slsclient.GenerateObservation(project)
 	var upToDate bool
-	if (cr.Spec.ForProvider.Name == project.Name) && (cr.Spec.ForProvider.Description == project.Description) {
+	if (projectName == project.Name) && (cr.Spec.ForProvider.Description == project.Description) {
 		upToDate = true
-		cr.SetConditions(xpv1.Available())
 	}
 
 	return managed.ExternalObservation{
@@ -71,56 +64,48 @@ func BaseObserve(mg resource.Managed, c slsclient.LogClientInterface) (managed.E
 
 // BaseCreate is the logic for Create reconciling
 func BaseCreate(mg resource.Managed, c slsclient.LogClientInterface) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.SLSProject)
+	cr, ok := mg.(*v1alpha1.Project)
 	if !ok {
-		return managed.ExternalCreation{}, errors.New(errNotSLSProject)
+		return managed.ExternalCreation{}, errors.New(errNotProject)
 	}
-	name := cr.Spec.ForProvider.Name
+	name := cr.Spec.ForProvider.ProjectName
 	description := cr.Spec.ForProvider.Description
-	klog.InfoS("creating SLSProject resource", "Name", name, "Description", description)
-	cr.SetConditions(xpv1.Creating())
 	project, err := c.Create(name, description)
-	klog.InfoS("created SLS project", "Name", name, "Status", project.Status)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
+
 	return managed.ExternalCreation{ConnectionDetails: getConnectionDetails(project)}, nil
 }
 
 // BaseUpdate is the base logic for controller Update reconciling
 func BaseUpdate(mg resource.Managed, client slsclient.LogClientInterface) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.SLSProject)
+	cr, ok := mg.(*v1alpha1.Project)
 	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errNotSLSProject)
+		return managed.ExternalUpdate{}, errors.New(errNotProject)
 	}
-	name := cr.Spec.ForProvider.Name
+	name := cr.Spec.ForProvider.ProjectName
 	description := cr.Spec.ForProvider.Description
-	klog.InfoS("updating SLS Project resource", "Name", name)
-	cr.Status.SetConditions(xpv1.Creating())
 	got, err := client.Describe(name)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
 
 	if got.Description != description {
-		project, err := client.Update(name, description)
 		if err != nil {
 			return managed.ExternalUpdate{}, err
 		}
-		klog.InfoS("created SLS project", "Name", name, "Status", project.Status)
 	}
 	return managed.ExternalUpdate{}, nil
 }
 
 // BaseDelete is the common logic for controller Delete reconciling
 func BaseDelete(mg resource.Managed, client slsclient.LogClientInterface) error {
-	cr, ok := mg.(*v1alpha1.SLSProject)
+	cr, ok := mg.(*v1alpha1.Project)
 	if !ok {
-		return errors.New(errNotSLSProject)
+		return errors.New(errNotProject)
 	}
-	name := cr.Spec.ForProvider.Name
-	klog.InfoS("deleting SLS Project resource", "Name", name)
-	cr.SetConditions(xpv1.Deleting())
+	name := cr.Spec.ForProvider.ProjectName
 	if err := client.Delete(name); err != nil && !slsclient.IsNotFoundError(err) {
 		return err
 	}
@@ -137,7 +122,7 @@ func BaseSetupSLSProject(mgr ctrl.Manager, l logging.Logger, o ...managed.Reconc
 	)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.SLSProject{}).
+		For(&v1alpha1.Project{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.SLSProjectGroupVersionKind), o...))
 }

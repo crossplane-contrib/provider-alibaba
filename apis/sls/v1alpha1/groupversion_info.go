@@ -40,12 +40,16 @@ var (
 )
 
 var (
-	// SLSProjectKind is the kind of SLSProject
-	SLSProjectKind = reflect.TypeOf(SLSProject{}).Name()
+	// SLSProjectKind is the kind of Project
+	SLSProjectKind = reflect.TypeOf(Project{}).Name()
 
-	// SLSProjectGroupKind is the group and kind of SLSProject
+	// SLSProjectGroupKind is the group and kind of Project
 	SLSProjectGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: SLSProjectKind}.String()
 
-	// SLSProjectGroupVersionKind is the group, version and kind of SLSProject
+	// SLSProjectGroupVersionKind is the group, version and kind of Project
 	SLSProjectGroupVersionKind = GroupVersion.WithKind(SLSProjectKind)
 )
+
+func init() {
+	SchemeBuilder.Register(&Project{}, &ProjectList{})
+}

@@ -22,38 +22,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// A ProviderSpec defines the desired state of a Provider.
-type ProviderSpec struct {
-	xpv1.ProviderSpec `json:",inline"`
-
-	// Region for managed resources created using this Alibaba Cloud provider,
-	// e.g. "cn-hangzhou".
-	Region string `json:"region"`
-}
-
-// +kubebuilder:object:root=true
-
-// A Provider configures an Alibaba Cloud 'provider', i.e. a connection to a
-// particular cloud account.
-// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1
-// +kubebuilder:resource:scope=Cluster,categories={crossplane,provider,alibaba}
-type Provider struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec ProviderSpec `json:"spec"`
-}
-
-// +kubebuilder:object:root=true
-
-// ProviderList contains a list of Provider
-type ProviderList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Provider `json:"items"`
-}
-
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
 	xpv1.ProviderConfigSpec `json:",inline"`
