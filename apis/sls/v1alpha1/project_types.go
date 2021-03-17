@@ -28,7 +28,7 @@ type ProjectSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 
 	// ForProvider field is where use set parameters for SLS project
-	ForProvider SLSProjectParameters `json:"forProvider"`
+	ForProvider ProjectParameters `json:"forProvider"`
 }
 
 // ProjectObservation is the representation of the current state that is observed.
@@ -55,8 +55,8 @@ type ProjectStatus struct {
 	AtProvider          ProjectObservation `json:"atProvider,omitempty"`
 }
 
-// SLSProjectParameters define the desired state of an SLS project.
-type SLSProjectParameters struct {
+// ProjectParameters define the desired state of an SLS project.
+type ProjectParameters struct {
 	ProjectName string `json:"name"`
 	Description string `json:"description"`
 }

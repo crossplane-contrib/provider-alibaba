@@ -44,11 +44,10 @@ const (
 	errNoConnectionSecret       = "no connection secret specified"
 	errGetConnectionSecret      = "cannot get connection secret"
 	errFmtUnsupportedCredSource = "credentials source %q is not currently supported"
-	errTrackPCUsage             = "cannot track ProviderConfig usage"
 )
 
-// SetupSLSProject adds a controller that reconciles SLSProjects.
-func SetupSLSProject(mgr ctrl.Manager, l logging.Logger) error {
+// SetupProject adds a controller that reconciles SLSProjects.
+func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
 	options := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{
 			client:      mgr.GetClient(),
@@ -56,7 +55,7 @@ func SetupSLSProject(mgr ctrl.Manager, l logging.Logger) error {
 			NewClientFn: slsclient.NewClient,
 		})}
 
-	return BaseSetupSLSProject(mgr, l, options...)
+	return BaseSetupProject(mgr, l, options...)
 }
 
 type connector struct {

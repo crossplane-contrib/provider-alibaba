@@ -10,8 +10,9 @@ require (
 	github.com/google/go-cmp v0.5.2
 	github.com/pkg/errors v0.9.1
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	k8s.io/api v0.20.1
-	k8s.io/apimachinery v0.20.1
-	sigs.k8s.io/controller-runtime v0.8.0
+	gopkg.in/ini.v1 v1.47.0 // indirect
+	k8s.io/api v0.18.6
+	k8s.io/apimachinery v0.18.6
+	sigs.k8s.io/controller-runtime v0.6.2
 	sigs.k8s.io/controller-tools v0.3.0
 )

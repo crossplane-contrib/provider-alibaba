@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 )
@@ -54,26 +53,22 @@ func NewClient(accessKeyID, accessKeySecret, region string) *LogClient {
 
 // Describe describes SLS project
 func (c *LogClient) Describe(name string) (*sdk.LogProject, error) {
-	project, err := c.Client.GetProject(name)
-	return project, errors.Wrap(err, "cloud not describe project")
+	return c.Client.GetProject(name)
 }
 
 // Create creates SLS project
 func (c *LogClient) Create(name, description string) (*sdk.LogProject, error) {
-	project, err := c.Client.CreateProject(name, description)
-	return project, errors.Wrap(err, "cloud not create project")
+	return c.Client.CreateProject(name, description)
 }
 
 // Update updates SLS project's description
 func (c *LogClient) Update(name, description string) (*sdk.LogProject, error) {
-	project, err := c.Client.UpdateProject(name, description)
-	return project, errors.Wrap(err, "cloud not update project")
+	return c.Client.UpdateProject(name, description)
 }
 
 // Delete deletes SLS project
 func (c *LogClient) Delete(name string) error {
-	err := c.Client.DeleteProject(name)
-	return errors.Wrap(err, "cloud not delete project")
+	return c.Client.DeleteProject(name)
 }
 
 // GenerateObservation is used to produce v1alpha1.ProjectObservation

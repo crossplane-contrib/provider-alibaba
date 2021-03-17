@@ -36,8 +36,8 @@ import (
 var (
 	slsProjectDescription = "test project"
 	slsProjectEndpoint    = "xxx.com"
-	validCR               = &slsv1alpha1.Project{Spec: slsv1alpha1.ProjectSpec{ForProvider: slsv1alpha1.SLSProjectParameters{
-		Name:        "def",
+	validCR               = &slsv1alpha1.Project{Spec: slsv1alpha1.ProjectSpec{ForProvider: slsv1alpha1.ProjectParameters{
+		ProjectName: "def",
 		Description: slsProjectDescription,
 	}}}
 
@@ -114,8 +114,8 @@ func TestObserve(t *testing.T) {
 		},
 		"SLSProjectOtherError": {
 			reason: "We should report an unknown error",
-			mg: &slsv1alpha1.Project{Spec: slsv1alpha1.ProjectSpec{ForProvider: slsv1alpha1.SLSProjectParameters{
-				Name:        "abc",
+			mg: &slsv1alpha1.Project{Spec: slsv1alpha1.ProjectSpec{ForProvider: slsv1alpha1.ProjectParameters{
+				ProjectName: "abc",
 				Description: "test project",
 			}}},
 			want: want{

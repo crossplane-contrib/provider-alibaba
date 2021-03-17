@@ -40,14 +40,14 @@ var (
 )
 
 var (
-	// SLSProjectKind is the kind of Project
-	SLSProjectKind = reflect.TypeOf(Project{}).Name()
+	// ProjectKind is the kind of Project
+	ProjectKind = reflect.TypeOf(Project{}).Name()
 
-	// SLSProjectGroupKind is the group and kind of Project
-	SLSProjectGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: SLSProjectKind}.String()
+	// ProjectGroupKind is the group and kind of Project
+	ProjectGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: ProjectKind}.String()
 
-	// SLSProjectGroupVersionKind is the group, version and kind of Project
-	SLSProjectGroupVersionKind = GroupVersion.WithKind(SLSProjectKind)
+	// ProjectGroupVersionKind is the group, version and kind of Project
+	ProjectGroupVersionKind = GroupVersion.WithKind(ProjectKind)
 )
 
 func init() {

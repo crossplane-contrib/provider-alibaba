@@ -32,7 +32,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
 		config.Setup,
 		database.SetupRDSInstance,
-		sls.SetupSLSProject,
+		sls.SetupProject,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
