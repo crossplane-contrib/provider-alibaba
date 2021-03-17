@@ -22,6 +22,8 @@
 package v1alpha1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
@@ -35,4 +37,15 @@ var (
 
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
+)
+
+var (
+	// SLSProjectKind is the kind of SLSProject
+	SLSProjectKind = reflect.TypeOf(SLSProject{}).Name()
+
+	// SLSProjectGroupKind is the group and kind of SLSProject
+	SLSProjectGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: SLSProjectKind}.String()
+
+	// SLSProjectGroupVersionKind is the group, version and kind of SLSProject
+	SLSProjectGroupVersionKind = GroupVersion.WithKind(SLSProjectKind)
 )

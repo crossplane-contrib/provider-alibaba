@@ -19,22 +19,8 @@
 package v1alpha1
 
 import (
-	"reflect"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-)
-
-var (
-	// SLSProjectKind is the kind of SLSProject
-	SLSProjectKind = reflect.TypeOf(SLSProject{}).Name()
-	// SLSProjectGroupKind is the group and kind of SLSProject
-	SLSProjectGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: SLSProjectKind}.String()
-	// SLSProjectKindAPIVersion is the kind, APIVersion of SLSProject
-	SLSProjectKindAPIVersion = SLSProjectKind + "." + GroupVersion.Version
-	// SLSProjectGroupVersionKind is the group, version and kind of SLSProject
-	SLSProjectGroupVersionKind = GroupVersion.WithKind(SLSProjectKind)
 )
 
 // SLSProjectSpec defines the desired state of SLS Project
