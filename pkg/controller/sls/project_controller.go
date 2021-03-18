@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
-	"github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	"github.com/crossplane/provider-alibaba/apis/v1alpha2"
 	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
 	"github.com/crossplane/provider-alibaba/pkg/util"
 )
@@ -56,7 +56,7 @@ func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
 	options := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{
 			client:      mgr.GetClient(),
-			usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &v1alpha1.ProviderConfigUsage{}),
+			usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &v1alpha2.ProviderConfigUsage{}),
 			NewClientFn: slsclient.NewClient,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
@@ -92,7 +92,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 			return nil, errors.Wrap(err, errTrackUsage)
 		}
 
-		pc := &v1alpha1.ProviderConfig{}
+		pc := &v1alpha2.ProviderConfig{}
 		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
 			return nil, errors.Wrap(err, errGetProviderConfig)
 		}

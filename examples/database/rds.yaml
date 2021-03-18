@@ -5,12 +5,12 @@ metadata:
   name: example
   labels:
     example: "true"
-    engine: postgresql
+    engine: mysql
 spec:
   forProvider:
-    engine: postgresql
-    engineVersion: "10.0"
-    dbInstanceClass: rds.pg.s1.small
+    engine: mysql
+    engineVersion: "8.0"
+    dbInstanceClass: "rds.mysql.c1.large"
     dbInstanceStorageInGB: 20
     securityIPList: "0.0.0.0/0"
     masterUsername: "test123"

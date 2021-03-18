@@ -20,10 +20,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	crossplanev1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	aliv1alpha2 "github.com/crossplane/provider-alibaba/apis/v1alpha2"
 )
 
 const (
@@ -35,11 +38,55 @@ const (
 	SecurityToken = "securityToken"
 )
 
+var (
+	// ErrGetProviderConfig is the error of getting provider config
+	ErrGetProviderConfig = "cannot get provider config"
+	// ErrGetCredentials is the error of getting credentials
+	ErrGetCredentials = "cannot get credentials"
+)
+
+// AlibabaCredentials represents accesskeyID and accesskeySecret
+type AlibabaCredentials struct {
+	AccessKeyID     string `yaml:"accessKeyId"`
+	AccessKeySecret string `yaml:"accessKeySecret"`
+	SecurityToken   string `yaml:"securityToken"`
+}
+
 // GetProviderConfig gets ProviderConfig
-func GetProviderConfig(ctx context.Context, k8sClient client.Client, providerConfigName string) (*crossplanev1alpha1.ProviderConfig, error) {
-	providerConfig := &crossplanev1alpha1.ProviderConfig{}
+func GetProviderConfig(ctx context.Context, k8sClient client.Client, providerConfigName string) (*aliv1alpha2.ProviderConfig, error) {
+	providerConfig := &aliv1alpha2.ProviderConfig{}
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: providerConfigName}, providerConfig); err != nil {
 		return nil, fmt.Errorf("failed to get ProviderConfig: %v", err)
 	}
 	return providerConfig, nil
+}
+
+// GetCredentials gets Alibaba credentials from ProviderConfig
+func GetCredentials(ctx context.Context, client client.Client, providerConfigName string) (*AlibabaCredentials, error) {
+	pc, err := GetProviderConfig(ctx, client, providerConfigName)
+	if err != nil {
+		return nil, err
+	}
+
+	cd := pc.Spec.Credentials
+	data, err := resource.CommonCredentialExtractor(ctx, cd.Source, client, cd.CommonCredentialSelectors)
+	if err != nil {
+		return nil, errors.Wrap(err, ErrGetCredentials)
+	}
+
+	var cred AlibabaCredentials
+	if err := yaml.Unmarshal(data, &cred); err != nil {
+		return nil, errors.Wrap(err, "failed to extract Alibaba credentials")
+	}
+
+	return &cred, nil
+}
+
+// GetRegion gets regions from ProviderConfig
+func GetRegion(ctx context.Context, client client.Client, providerConfigName string) (string, error) {
+	pc, err := GetProviderConfig(ctx, client, providerConfigName)
+	if err != nil {
+		return "", err
+	}
+	return pc.Spec.Region, nil
 }

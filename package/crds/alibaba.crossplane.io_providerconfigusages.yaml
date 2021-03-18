@@ -8,10 +8,6 @@ metadata:
 spec:
   group: alibaba.crossplane.io
   names:
-    categories:
-    - crossplane
-    - provider
-    - alibaba
     kind: ProviderConfigUsage
     listKind: ProviderConfigUsageList
     plural: providerconfigusages
