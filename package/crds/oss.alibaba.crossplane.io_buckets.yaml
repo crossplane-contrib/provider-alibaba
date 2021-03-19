@@ -51,7 +51,7 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: OSSParameters define the desired state of an Bucket
+                description: BucketParameters define the desired state of an Bucket
                 properties:
                   bucket:
                     description: BucketParameter is the isolated place to store files
@@ -106,7 +106,7 @@ spec:
             description: BucketStatus defines the observed state of Bucket
             properties:
               atProvider:
-                description: OSSObservation is the representation of the current state that is observed.
+                description: BucketObservation is the representation of the current state that is observed.
                 properties:
                   acl:
                     type: string

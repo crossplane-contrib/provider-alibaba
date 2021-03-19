@@ -82,7 +82,7 @@ func TestObserve(t *testing.T) {
 		ctx = context.Background()
 	)
 
-	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.OSSParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
+	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
 
 	type want struct {
 		o   managed.ExternalObservation
@@ -115,7 +115,7 @@ func TestObserve(t *testing.T) {
 		"OSSOtherError": {
 			reason: "We should report an unknown error",
 			mg: &ossv1alpha1.Bucket{
-				Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.OSSParameters{Bucket: ossv1alpha1.BucketParameter{Name: "abc"}}}},
+				Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "abc"}}}},
 			want: want{
 				o:   managed.ExternalObservation{},
 				err: errors.New("unknown error"),
@@ -153,7 +153,7 @@ func TestCreate(t *testing.T) {
 		ctx = context.Background()
 	)
 
-	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.OSSParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
+	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
 
 	type want struct {
 		o   managed.ExternalCreation
@@ -203,7 +203,7 @@ func TestUpdate(t *testing.T) {
 		ctx = context.Background()
 	)
 
-	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.OSSParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
+	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
 
 	type want struct {
 		o   managed.ExternalUpdate
@@ -252,7 +252,7 @@ func TestDelete(t *testing.T) {
 		ctx = context.Background()
 	)
 
-	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.OSSParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
+	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
 
 	type want struct {
 		err error

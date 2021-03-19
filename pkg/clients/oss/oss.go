@@ -135,9 +135,9 @@ func IsNotFoundError(err error) bool {
 	return ok && e.Code == "NoSuchBucket"
 }
 
-// GenerateObservation generates OSSObservation from bucket information
-func GenerateObservation(r sdk.GetBucketInfoResult) v1alpha1.OSSObservation {
-	return v1alpha1.OSSObservation{
+// GenerateObservation generates BucketObservation from bucket information
+func GenerateObservation(r sdk.GetBucketInfoResult) v1alpha1.BucketObservation {
+	return v1alpha1.BucketObservation{
 		BucketName:       r.BucketInfo.Name,
 		StorageClass:     r.BucketInfo.StorageClass,
 		ACL:              r.BucketInfo.ACL,

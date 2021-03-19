@@ -51,13 +51,13 @@ type Bucket struct {
 // BucketSpec defines the desired state of Bucket
 type BucketSpec struct {
 	runtimev1.ResourceSpec `json:",inline"`
-	ForProvider            OSSParameters `json:"forProvider"`
+	ForProvider            BucketParameters `json:"forProvider"`
 }
 
 // BucketStatus defines the observed state of Bucket
 type BucketStatus struct {
 	runtimev1.ResourceStatus `json:",inline"`
-	AtProvider               OSSObservation `json:"atProvider,omitempty"`
+	AtProvider               BucketObservation `json:"atProvider,omitempty"`
 }
 
 // BucketParameter is the isolated place to store files
@@ -68,13 +68,13 @@ type BucketParameter struct {
 	DataRedundancyType string `json:"dataRedundancyType,omitempty"`
 }
 
-// OSSParameters define the desired state of an Bucket
-type OSSParameters struct {
+// BucketParameters define the desired state of an Bucket
+type BucketParameters struct {
 	Bucket BucketParameter `json:"bucket,omitempty"`
 }
 
-// OSSObservation is the representation of the current state that is observed.
-type OSSObservation struct {
+// BucketObservation is the representation of the current state that is observed.
+type BucketObservation struct {
 	BucketName       string `json:"bucketName,omitempty"`
 	ACL              string `json:"acl,omitempty"`
 	StorageClass     string `json:"storageClass,omitempty"`
