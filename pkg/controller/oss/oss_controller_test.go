@@ -81,8 +81,11 @@ func TestObserve(t *testing.T) {
 	var (
 		ctx = context.Background()
 	)
+	validCR := &ossv1alpha1.Bucket{}
+	validCR.Spec.Name = "def"
 
-	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
+	invalidCR := &ossv1alpha1.Bucket{}
+	invalidCR.Spec.Name = "abc"
 
 	type want struct {
 		o   managed.ExternalObservation
@@ -114,8 +117,7 @@ func TestObserve(t *testing.T) {
 		},
 		"OSSOtherError": {
 			reason: "We should report an unknown error",
-			mg: &ossv1alpha1.Bucket{
-				Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "abc"}}}},
+			mg:     invalidCR,
 			want: want{
 				o:   managed.ExternalObservation{},
 				err: errors.New("unknown error"),
@@ -153,7 +155,9 @@ func TestCreate(t *testing.T) {
 		ctx = context.Background()
 	)
 
-	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
+	spec := ossv1alpha1.BucketSpec{}
+	spec.Name = "def"
+	validCR := &ossv1alpha1.Bucket{Spec: spec}
 
 	type want struct {
 		o   managed.ExternalCreation
@@ -203,7 +207,9 @@ func TestUpdate(t *testing.T) {
 		ctx = context.Background()
 	)
 
-	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
+	spec := ossv1alpha1.BucketSpec{}
+	spec.Name = "def"
+	validCR := &ossv1alpha1.Bucket{Spec: spec}
 
 	type want struct {
 		o   managed.ExternalUpdate
@@ -252,7 +258,9 @@ func TestDelete(t *testing.T) {
 		ctx = context.Background()
 	)
 
-	validCR := &ossv1alpha1.Bucket{Spec: ossv1alpha1.BucketSpec{ForProvider: ossv1alpha1.BucketParameters{Bucket: ossv1alpha1.BucketParameter{Name: "def"}}}}
+	spec := ossv1alpha1.BucketSpec{}
+	spec.Name = "def"
+	validCR := &ossv1alpha1.Bucket{Spec: spec}
 
 	type want struct {
 		err error

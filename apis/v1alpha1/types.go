@@ -60,10 +60,6 @@ type ProviderConfigSpec struct {
 	// Region for managed resources created using this Alibaba Cloud provider,
 	// e.g. "cn-hangzhou".
 	Region string `json:"region"`
-
-	// Profile is used to extend fields of ProviderConfigSpec.
-	// +kubebuilder:pruning:PreserveUnknownFields
-	Profile map[string]string `json:"profile,omitempty"`
 }
 
 // A ProviderConfigStatus represents the status of a ProviderConfig.

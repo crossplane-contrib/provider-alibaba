@@ -39,10 +39,9 @@ func BaseObserve(mg resource.Managed, c ossclient.ClientInterface) (managed.Exte
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotOSS)
 	}
-	bucketSpec := cr.Spec.ForProvider.Bucket
-	klog.InfoS("observing Bucket resource", "Name", bucketSpec.Name)
+	klog.InfoS("observing Bucket resource", "Name", cr.Spec.Name)
 
-	bucket, err := c.Describe(bucketSpec.Name)
+	bucket, err := c.Describe(cr.Spec.Name)
 	if ossclient.IsNotFoundError(err) {
 		return managed.ExternalObservation{
 			ResourceExists: false,
@@ -54,10 +53,10 @@ func BaseObserve(mg resource.Managed, c ossclient.ClientInterface) (managed.Exte
 	}
 
 	cr.Status.AtProvider = ossclient.GenerateObservation(*bucket)
-	if bucketSpec.StorageClass != "" && bucketSpec.StorageClass != bucket.BucketInfo.StorageClass {
+	if cr.Spec.StorageClass != "" && cr.Spec.StorageClass != bucket.BucketInfo.StorageClass {
 		cr.Status.AtProvider.Message += "[Warning] StorageClass is not allowed to update after creation; "
 	}
-	if bucketSpec.DataRedundancyType != "" && bucketSpec.DataRedundancyType != bucket.BucketInfo.RedundancyType {
+	if cr.Spec.DataRedundancyType != "" && cr.Spec.DataRedundancyType != bucket.BucketInfo.RedundancyType {
 		cr.Status.AtProvider.Message += "[Warning] DataRedundancyType is not allowed to update after creation; "
 	}
 	var upToDate = ossclient.IsUpdateToDate(cr, bucket)
@@ -78,9 +77,15 @@ func BaseCreate(mg resource.Managed, c ossclient.ClientInterface) (managed.Exter
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotOSS)
 	}
-	klog.InfoS("creating Bucket resource", "Name", cr.Spec.ForProvider.Bucket.Name)
+	klog.InfoS("creating Bucket resource", "Name", cr.Spec.Name)
 	cr.SetConditions(xpv1.Creating())
-	if err := c.Create(cr.Spec.ForProvider.Bucket); err != nil {
+	bucketParameter := v1alpha1.BucketParameter{
+		Name:               cr.Spec.Name,
+		ACL:                cr.Spec.ACL,
+		StorageClass:       cr.Spec.StorageClass,
+		DataRedundancyType: cr.Spec.DataRedundancyType,
+	}
+	if err := c.Create(bucketParameter); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 	return managed.ExternalCreation{ConnectionDetails: GetConnectionDetails(cr)}, nil
@@ -92,17 +97,14 @@ func BaseUpdate(mg resource.Managed, client ossclient.ClientInterface) (managed.
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotOSS)
 	}
-	klog.InfoS("updating Bucket resource", "Name", cr.Spec.ForProvider.Bucket.Name)
 	cr.Status.SetConditions(xpv1.Creating())
-	got, err := client.Describe(cr.Spec.ForProvider.Bucket.Name)
+	got, err := client.Describe(cr.Spec.Name)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
 
-	target := cr.Spec.ForProvider.Bucket
-
-	if target.ACL != "" && target.ACL != got.BucketInfo.ACL {
-		if err := client.Update(target.Name, target.ACL); err != nil {
+	if cr.Spec.ACL != "" && cr.Spec.ACL != got.BucketInfo.ACL {
+		if err := client.Update(cr.Spec.Name, cr.Spec.ACL); err != nil {
 			return managed.ExternalUpdate{}, err
 		}
 	}
@@ -116,9 +118,9 @@ func BaseDelete(mg resource.Managed, client ossclient.ClientInterface) error {
 	if !ok {
 		return errors.New(errNotOSS)
 	}
-	klog.InfoS("deleting Bucket resource", "Name", cr.Spec.ForProvider.Bucket.Name)
+	klog.InfoS("deleting Bucket resource", "Name", cr.Spec.Name)
 	cr.SetConditions(xpv1.Deleting())
-	if err := client.Delete(cr.Spec.ForProvider.Bucket.Name); err != nil && !ossclient.IsNotFoundError(err) {
+	if err := client.Delete(cr.Spec.Name); err != nil && !ossclient.IsNotFoundError(err) {
 		return err
 	}
 	return nil
@@ -142,7 +144,7 @@ func BaseSetupOSS(mgr ctrl.Manager, l logging.Logger, o ...managed.ReconcilerOpt
 // GetConnectionDetails generates connection details
 func GetConnectionDetails(cr *v1alpha1.Bucket) managed.ConnectionDetails {
 	cd := managed.ConnectionDetails{
-		"Bucket": []byte(cr.Spec.ForProvider.Bucket.Name),
+		"Bucket": []byte(cr.Spec.Name),
 	}
 	if cr.Status.AtProvider.ExtranetEndpoint != "" {
 		cd["ExtranetEndpoint"] = []byte(cr.Status.AtProvider.ExtranetEndpoint)

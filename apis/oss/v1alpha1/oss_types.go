@@ -51,7 +51,11 @@ type Bucket struct {
 // BucketSpec defines the desired state of Bucket
 type BucketSpec struct {
 	runtimev1.ResourceSpec `json:",inline"`
-	ForProvider            BucketParameters `json:"forProvider"`
+	BucketParameter        `json:",inline"`
+
+	// Profile is used to extend store business information
+	// +kubebuilder:pruning:PreserveUnknownFields
+	Profile map[string]string `json:"profile,omitempty"`
 }
 
 // BucketStatus defines the observed state of Bucket
@@ -66,11 +70,6 @@ type BucketParameter struct {
 	ACL                string `json:"acl,omitempty"`
 	StorageClass       string `json:"storageClass,omitempty"`
 	DataRedundancyType string `json:"dataRedundancyType,omitempty"`
-}
-
-// BucketParameters define the desired state of an Bucket
-type BucketParameters struct {
-	Bucket BucketParameter `json:"bucket,omitempty"`
 }
 
 // BucketObservation is the representation of the current state that is observed.
