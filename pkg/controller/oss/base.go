@@ -26,7 +26,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
@@ -39,7 +38,6 @@ func BaseObserve(mg resource.Managed, c ossclient.ClientInterface) (managed.Exte
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotOSS)
 	}
-	klog.InfoS("observing Bucket resource", "Name", cr.Spec.Name)
 
 	bucket, err := c.Describe(cr.Spec.Name)
 	if ossclient.IsNotFoundError(err) {
@@ -77,7 +75,6 @@ func BaseCreate(mg resource.Managed, c ossclient.ClientInterface) (managed.Exter
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotOSS)
 	}
-	klog.InfoS("creating Bucket resource", "Name", cr.Spec.Name)
 	cr.SetConditions(xpv1.Creating())
 	bucketParameter := v1alpha1.BucketParameter{
 		Name:               cr.Spec.Name,
@@ -118,7 +115,6 @@ func BaseDelete(mg resource.Managed, client ossclient.ClientInterface) error {
 	if !ok {
 		return errors.New(errNotOSS)
 	}
-	klog.InfoS("deleting Bucket resource", "Name", cr.Spec.Name)
 	cr.SetConditions(xpv1.Deleting())
 	if err := client.Delete(cr.Spec.Name); err != nil && !ossclient.IsNotFoundError(err) {
 		return err
