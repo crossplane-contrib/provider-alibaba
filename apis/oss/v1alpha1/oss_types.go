@@ -21,6 +21,7 @@ package v1alpha1
 import (
 	runtimev1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // +kubebuilder:object:root=true
@@ -55,7 +56,7 @@ type BucketSpec struct {
 
 	// Profile is used to extend store business information
 	// +kubebuilder:pruning:PreserveUnknownFields
-	Profile map[string]string `json:"profile,omitempty"`
+	Profile runtime.RawExtension `json:"profile,omitempty"`
 }
 
 // BucketStatus defines the observed state of Bucket

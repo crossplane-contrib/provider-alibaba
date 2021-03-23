@@ -57,8 +57,6 @@ spec:
               name:
                 type: string
               profile:
-                additionalProperties:
-                  type: string
                 description: Profile is used to extend store business information
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
