@@ -57,7 +57,6 @@ type ProjectStatus struct {
 
 // ProjectParameters define the desired state of an SLS project.
 type ProjectParameters struct {
-	ProjectName string `json:"name"`
 	Description string `json:"description"`
 }
 
