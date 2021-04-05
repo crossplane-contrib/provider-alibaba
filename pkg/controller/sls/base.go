@@ -23,6 +23,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -38,7 +39,7 @@ func BaseObserve(mg resource.Managed, c slsclient.LogClientInterface) (managed.E
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotProject)
 	}
-	projectName := cr.Spec.ForProvider.ProjectName
+	projectName := meta.GetExternalName(cr)
 	project, err := c.Describe(projectName)
 	if slsclient.IsNotFoundError(err) {
 		return managed.ExternalObservation{
@@ -70,7 +71,7 @@ func BaseCreate(mg resource.Managed, c slsclient.LogClientInterface) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotProject)
 	}
-	name := cr.Spec.ForProvider.ProjectName
+	name := meta.GetExternalName(cr)
 	description := cr.Spec.ForProvider.Description
 	cr.SetConditions(xpv1.Creating())
 	project, err := c.Create(name, description)
@@ -86,7 +87,7 @@ func BaseUpdate(mg resource.Managed, client slsclient.LogClientInterface) (manag
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotProject)
 	}
-	name := cr.Spec.ForProvider.ProjectName
+	name := meta.GetExternalName(cr)
 	description := cr.Spec.ForProvider.Description
 	cr.Status.SetConditions(xpv1.Creating())
 	got, err := client.Update(name, description)
@@ -106,7 +107,7 @@ func BaseDelete(mg resource.Managed, client slsclient.LogClientInterface) error 
 	if !ok {
 		return errors.New(errNotProject)
 	}
-	name := cr.Spec.ForProvider.ProjectName
+	name := meta.GetExternalName(cr)
 	cr.SetConditions(xpv1.Deleting())
 	if err := client.Delete(name); err != nil && !slsclient.IsNotFoundError(err) {
 		return err

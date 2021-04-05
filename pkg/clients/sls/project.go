@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
+	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 )
@@ -29,6 +30,14 @@ import (
 var (
 	// ErrCodeProjectNotExist error code of ServerError when Project not found
 	ErrCodeProjectNotExist = "ProjectNotExist"
+	// ErrFailedToGetSLSProject is the error of failing to get an SLS project
+	ErrFailedToGetSLSProject = "FailedToGetSLSProject"
+	// ErrFailedToCreateSLSProject is the error of failing to create an SLS project
+	ErrFailedToCreateSLSProject = "FailedToCreateSLSProject"
+	// ErrFailedToUpdateSLSProject is the error of failing to update an SLS project
+	ErrFailedToUpdateSLSProject = "FailedToUpdateSLSProject"
+	// ErrFailedToDeleteSLSProject is the error of failing to delete an SLS project
+	ErrFailedToDeleteSLSProject = "FailedToDeleteSLSProject"
 )
 
 // LogClientInterface will help fakeOSSClient in unit tests
@@ -53,22 +62,27 @@ func NewClient(accessKeyID, accessKeySecret, region string) *LogClient {
 
 // Describe describes SLS project
 func (c *LogClient) Describe(name string) (*sdk.LogProject, error) {
-	return c.Client.GetProject(name)
+	logProject, err := c.Client.GetProject(name)
+	return logProject, errors.Wrap(err, ErrFailedToGetSLSProject)
 }
 
 // Create creates SLS project
 func (c *LogClient) Create(name, description string) (*sdk.LogProject, error) {
-	return c.Client.CreateProject(name, description)
+	logProject, err := c.Client.CreateProject(name, description)
+	return logProject, errors.Wrap(err, ErrFailedToCreateSLSProject)
 }
 
 // Update updates SLS project's description
 func (c *LogClient) Update(name, description string) (*sdk.LogProject, error) {
-	return c.Client.UpdateProject(name, description)
+	logProject, err := c.Client.UpdateProject(name, description)
+	return logProject, errors.Wrap(err, ErrFailedToUpdateSLSProject)
+
 }
 
 // Delete deletes SLS project
 func (c *LogClient) Delete(name string) error {
-	return c.Client.DeleteProject(name)
+	err := c.Client.DeleteProject(name)
+	return errors.Wrap(err, ErrFailedToDeleteSLSProject)
 }
 
 // GenerateObservation is used to produce v1alpha1.ProjectObservation
@@ -87,10 +101,10 @@ func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := err.(sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
+	if e, ok := errors.Cause(err).(sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
 		return true
 	}
-	if e, ok := err.(*sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
+	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
 		return true
 	}
 	return false
