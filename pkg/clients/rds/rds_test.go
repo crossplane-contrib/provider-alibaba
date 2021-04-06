@@ -1,10 +1,12 @@
 package rds
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 )
@@ -26,4 +28,32 @@ func TestIsErrorNotFound(t *testing.T) {
 	if !isErrorNotFound {
 		t.Errorf("IsErrorNotFound: want=%v, get=%v", true, isErrorNotFound)
 	}
+}
+
+func TestDBInstanceOperations(t *testing.T) {
+	ctx := context.TODO()
+	c, err := NewClient(ctx, "abc", "def", "cn-beijing")
+	assert.Nil(t, err)
+
+	db, err := c.DescribeDBInstance("1")
+	assert.Nil(t, db)
+	assert.Error(t, err)
+
+	req := CreateDBInstanceRequest{
+		Name:                  "abc",
+		Engine:                "mysql",
+		EngineVersion:         "8.0",
+		DBInstanceClass:       "big",
+		DBInstanceStorageInGB: 20,
+		SecurityIPList:        "1.2.3.0/24",
+	}
+	db, err = c.CreateDBInstance(&req)
+	assert.Nil(t, db)
+	assert.Error(t, err)
+
+	err = c.DeleteDBInstance("1")
+	assert.Error(t, err)
+
+	err = c.CreateAccount("1", "operator", "ABC123")
+	assert.Error(t, err)
 }

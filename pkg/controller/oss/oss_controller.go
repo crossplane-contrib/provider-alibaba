@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
-	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	aliv1alpha2 "github.com/crossplane/provider-alibaba/apis/v1alpha2"
 	ossclient "github.com/crossplane/provider-alibaba/pkg/clients/oss"
 	"github.com/crossplane/provider-alibaba/pkg/util"
 )
@@ -65,7 +65,7 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger) error {
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 			managed.WithExternalConnecter(&Connector{
 				Client:      mgr.GetClient(),
-				Usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1alpha1.ProviderConfigUsage{}),
+				Usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1alpha2.ProviderConfigUsage{}),
 				NewClientFn: ossclient.NewClient,
 			})))
 }
