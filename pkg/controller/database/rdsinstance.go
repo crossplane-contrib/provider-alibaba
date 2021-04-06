@@ -83,10 +83,6 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errTrackUsage)
 	}
 
-	if cr.Spec.ProviderConfigReference == nil {
-		return nil, errors.New(errProviderConfigRefNotReady)
-	}
-
 	pcName := cr.Spec.ProviderConfigReference.Name
 	cred, err := util.GetCredentials(ctx, c.client, pcName)
 	if err != nil {

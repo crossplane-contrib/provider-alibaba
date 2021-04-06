@@ -8,6 +8,10 @@ metadata:
 spec:
   group: alibaba.crossplane.io
   names:
+    categories:
+    - crossplane
+    - provider
+    - alibaba
     kind: ProviderConfig
     listKind: ProviderConfigList
     plural: providerconfigs
@@ -25,7 +29,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: A ProviderConfig configures a Template provider.
+        description: A ProviderConfig configures an Alibaba provider.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
