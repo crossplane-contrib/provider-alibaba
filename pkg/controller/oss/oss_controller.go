@@ -1,19 +1,17 @@
 /*
+Copyright 2021 The Crossplane Authors.
 
- Copyright 2021 The Crossplane Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
 
-     http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 package oss
@@ -38,13 +36,18 @@ import (
 )
 
 const (
-	errNotOSS                   = "managed resource is not an Bucket custom resource"
-	errCreateBucket             = "cannot create Bucket bucket"
-	errNoProvider               = "no provider config or provider specified"
+	errCreateClient             = "cannot create OSS client"
 	errTrackUsage               = "cannot track provider config usage"
 	errNoConnectionSecret       = "no connection secret specified"
 	errGetConnectionSecret      = "cannot get connection secret"
 	errFmtUnsupportedCredSource = "credentials source %q is not currently supported"
+)
+
+const (
+	// AccessKeyID is Alibaba Cloud Access key ID
+	AccessKeyID = "accessKeyId"
+	// AccessKeySecret is Alibaba Cloud Access Secret Key
+	AccessKeySecret = "accessKeySecret"
 )
 
 // SetupBucket adds a controller that reconciles Bucket.
@@ -69,7 +72,7 @@ type Connector struct {
 func (c *Connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mg.(*v1alpha1.Bucket)
 	if !ok {
-		return nil, errors.New(errNotOSS)
+		return nil, errors.New(errNotBucket)
 	}
 
 	var (
@@ -77,25 +80,20 @@ func (c *Connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		region            string
 	)
 
-	switch {
-	case cr.GetProviderConfigReference() != nil:
-		if err := c.Usage.Track(ctx, mg); err != nil {
-			return nil, errors.Wrap(err, errTrackUsage)
-		}
-
-		providerConfig, err := util.GetProviderConfig(ctx, c.Client, cr.Spec.ProviderConfigReference.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		if s := providerConfig.Spec.Credentials.Source; s != xpv1.CredentialsSourceSecret {
-			return nil, errors.Errorf(errFmtUnsupportedCredSource, s)
-		}
-		secretKeySelector = providerConfig.Spec.Credentials.SecretRef
-		region = providerConfig.Spec.Region
-	default:
-		return nil, errors.New(errNoProvider)
+	if err := c.Usage.Track(ctx, mg); err != nil {
+		return nil, errors.Wrap(err, errTrackUsage)
 	}
+
+	providerConfig, err := util.GetProviderConfig(ctx, c.Client, cr.Spec.ProviderConfigReference.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if s := providerConfig.Spec.Credentials.Source; s != xpv1.CredentialsSourceSecret {
+		return nil, errors.Errorf(errFmtUnsupportedCredSource, s)
+	}
+	secretKeySelector = providerConfig.Spec.Credentials.SecretRef
+	region = providerConfig.Spec.Region
 
 	if secretKeySelector == nil {
 		return nil, errors.New(errNoConnectionSecret)
@@ -111,8 +109,8 @@ func (c *Connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, err
 	}
 
-	ossClient, err := c.NewClientFn(ctx, endpoint, string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), "")
-	return &external{client: ossClient}, errors.Wrap(err, errCreateBucket)
+	ossClient, err := c.NewClientFn(ctx, endpoint, string(s.Data[AccessKeyID]), string(s.Data[AccessKeySecret]), "")
+	return &external{client: ossClient}, errors.Wrap(err, errCreateClient)
 }
 
 type external struct {

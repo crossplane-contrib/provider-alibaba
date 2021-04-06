@@ -1,34 +1,32 @@
 /*
+Copyright 2021 The Crossplane Authors.
 
- Copyright 2021 The Crossplane Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
 
-     http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 
 package oss
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	sdk "github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"k8s.io/klog/v2"
+	"github.com/pkg/errors"
 
 	ossv1alpha1 "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
 	ossclient "github.com/crossplane/provider-alibaba/pkg/clients/oss"
@@ -37,11 +35,10 @@ import (
 type fakeSDKClient struct {
 }
 
-// Describe describes Bucket bucket
 func (c *fakeSDKClient) Describe(name string) (*sdk.GetBucketInfoResult, error) {
 	switch name {
 	case "":
-		return nil, sdk.ServiceError{Code: "NoSuchBucket"}
+		return nil, sdk.ServiceError{Code: ossclient.ErrCodeNoSuchBucket}
 	case "abc":
 		return nil, errors.New("unknown error")
 	default:
@@ -53,39 +50,33 @@ func (c *fakeSDKClient) Describe(name string) (*sdk.GetBucketInfoResult, error) 
 			},
 		}
 		return &bucketInfoResult, nil
-
 	}
 }
 
-// Create creates Bucket bucket
-func (c *fakeSDKClient) Create(bucket ossv1alpha1.BucketParameter) error {
+func (c *fakeSDKClient) Create(name string, bucket ossv1alpha1.BucketParameter) error {
 	return nil
 }
 
-// Update sets bucket acl
 func (c *fakeSDKClient) Update(name string, aclStr string) error {
 	_, err := ossclient.ValidateOSSAcl(aclStr)
 	if err != nil {
-		klog.ErrorS(err, "Name", name, "ACL", aclStr)
 		return err
 	}
 	return nil
 }
 
-// Delete deletes SLS project
 func (c *fakeSDKClient) Delete(name string) error {
 	return nil
 }
 
 func TestObserve(t *testing.T) {
-	var (
-		ctx = context.Background()
-	)
+	var ctx = context.Background()
+
 	validCR := &ossv1alpha1.Bucket{}
-	validCR.Spec.Name = "def"
+	validCR.ObjectMeta.Annotations = map[string]string{meta.AnnotationKeyExternalName: "def"}
 
 	invalidCR := &ossv1alpha1.Bucket{}
-	invalidCR.Spec.Name = "abc"
+	invalidCR.ObjectMeta.Annotations = map[string]string{meta.AnnotationKeyExternalName: "abc"}
 
 	type want struct {
 		o   managed.ExternalObservation
@@ -102,7 +93,7 @@ func TestObserve(t *testing.T) {
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalObservation{},
-				err: errors.New(errNotOSS),
+				err: errors.New(errNotBucket),
 			},
 		},
 		"OSSNotFound": {
@@ -120,7 +111,7 @@ func TestObserve(t *testing.T) {
 			mg:     invalidCR,
 			want: want{
 				o:   managed.ExternalObservation{},
-				err: errors.New("unknown error"),
+				err: errors.Wrap(errors.New("unknown error"), errFailedToDescribeBucket),
 			},
 		},
 		"Success": {
@@ -151,13 +142,11 @@ func TestObserve(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	var (
-		ctx = context.Background()
-	)
+	var ctx = context.Background()
 
 	spec := ossv1alpha1.BucketSpec{}
-	spec.Name = "def"
 	validCR := &ossv1alpha1.Bucket{Spec: spec}
+	validCR.ObjectMeta.Annotations = map[string]string{meta.AnnotationKeyExternalName: "def"}
 
 	type want struct {
 		o   managed.ExternalCreation
@@ -174,7 +163,7 @@ func TestCreate(t *testing.T) {
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalCreation{},
-				err: errors.New(errNotOSS),
+				err: errors.New(errNotBucket),
 			},
 		},
 		"Success": {
@@ -203,13 +192,11 @@ func TestCreate(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	var (
-		ctx = context.Background()
-	)
+	var ctx = context.Background()
 
 	spec := ossv1alpha1.BucketSpec{}
-	spec.Name = "def"
 	validCR := &ossv1alpha1.Bucket{Spec: spec}
+	validCR.ObjectMeta.Annotations = map[string]string{meta.AnnotationKeyExternalName: "def"}
 
 	type want struct {
 		o   managed.ExternalUpdate
@@ -226,7 +213,7 @@ func TestUpdate(t *testing.T) {
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalUpdate{},
-				err: errors.New(errNotOSS),
+				err: errors.New(errNotBucket),
 			},
 		},
 		"Success": {
@@ -254,13 +241,11 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	var (
-		ctx = context.Background()
-	)
+	var ctx = context.Background()
 
 	spec := ossv1alpha1.BucketSpec{}
-	spec.Name = "def"
 	validCR := &ossv1alpha1.Bucket{Spec: spec}
+	validCR.ObjectMeta.Annotations = map[string]string{meta.AnnotationKeyExternalName: "def"}
 
 	type want struct {
 		err error
@@ -275,7 +260,7 @@ func TestDelete(t *testing.T) {
 			reason: "Not an Bucket object",
 			mg:     nil,
 			want: want{
-				err: errors.New(errNotOSS),
+				err: errors.New(errNotBucket),
 			},
 		},
 		"Success": {

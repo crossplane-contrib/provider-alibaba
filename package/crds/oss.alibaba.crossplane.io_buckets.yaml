@@ -102,19 +102,11 @@ spec:
               atProvider:
                 description: BucketObservation is the representation of the current state that is observed.
                 properties:
-                  acl:
-                    type: string
-                  bucketName:
-                    type: string
                   extranetEndpoint:
                     type: string
                   intranetEndpoint:
                     type: string
                   message:
-                    type: string
-                  redundancyType:
-                    type: string
-                  storageClass:
                     type: string
                 type: object
               conditions:
