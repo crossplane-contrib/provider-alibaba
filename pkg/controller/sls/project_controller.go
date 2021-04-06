@@ -21,8 +21,11 @@ package sls
 import (
 	"context"
 
+	sdk "github.com/aliyun/aliyun-log-go-sdk"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -48,14 +51,21 @@ const (
 
 // SetupProject adds a controller that reconciles SLSProjects.
 func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(slsv1alpha1.ProjectGroupKind)
 	options := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{
 			client:      mgr.GetClient(),
 			usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &v1alpha1.ProviderConfigUsage{}),
 			NewClientFn: slsclient.NewClient,
-		})}
-
-	return BaseSetupProject(mgr, l, options...)
+		}),
+		managed.WithLogger(l.WithValues("controller", name)),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+	}
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&slsv1alpha1.Project{}).
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(slsv1alpha1.ProjectGroupVersionKind), options...))
 }
 
 type connector struct {
@@ -113,17 +123,87 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	return BaseObserve(mg, e.client)
+	cr, ok := mg.(*slsv1alpha1.Project)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errNotProject)
+	}
+	projectName := meta.GetExternalName(cr)
+	project, err := e.client.Describe(projectName)
+	if slsclient.IsNotFoundError(err) {
+		return managed.ExternalObservation{
+			ResourceExists: false,
+		}, nil
+	}
+
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+
+	cr.Status.AtProvider = slsclient.GenerateObservation(project)
+	var upToDate bool
+	if (projectName == project.Name) && (cr.Spec.ForProvider.Description == project.Description) {
+		upToDate = true
+		cr.SetConditions(xpv1.Available())
+	}
+
+	return managed.ExternalObservation{
+		ResourceExists:    true,
+		ResourceUpToDate:  upToDate,
+		ConnectionDetails: getConnectionDetails(project),
+	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	return BaseCreate(mg, e.client)
+	cr, ok := mg.(*slsv1alpha1.Project)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errNotProject)
+	}
+	name := meta.GetExternalName(cr)
+	description := cr.Spec.ForProvider.Description
+	cr.SetConditions(xpv1.Creating())
+	project, err := e.client.Create(name, description)
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	return managed.ExternalCreation{ConnectionDetails: getConnectionDetails(project)}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	return BaseUpdate(mg, e.client)
+	cr, ok := mg.(*slsv1alpha1.Project)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errNotProject)
+	}
+	name := meta.GetExternalName(cr)
+	description := cr.Spec.ForProvider.Description
+	cr.Status.SetConditions(xpv1.Creating())
+	got, err := e.client.Update(name, description)
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+
+	if got.Description != description {
+		return managed.ExternalUpdate{}, err
+	}
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	return BaseDelete(mg, e.client)
+	cr, ok := mg.(*slsv1alpha1.Project)
+	if !ok {
+		return errors.New(errNotProject)
+	}
+	name := meta.GetExternalName(cr)
+	cr.SetConditions(xpv1.Deleting())
+	if err := e.client.Delete(name); err != nil && !slsclient.IsNotFoundError(err) {
+		return err
+	}
+	return nil
+}
+
+func getConnectionDetails(project *sdk.LogProject) managed.ConnectionDetails {
+	cd := managed.ConnectionDetails{
+		"Name":     []byte(project.Name),
+		"Endpoint": []byte(project.Endpoint),
+	}
+	return cd
 }
