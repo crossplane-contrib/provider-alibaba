@@ -1,0 +1,11 @@
+apiVersion: sls.alibaba.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  name: sls-project-test
+  namespace: default
+spec:
+  forProvider:
+    description: provisioned by Crossplane
+  writeConnectionSecretToRef:
+    name: sls-endpoint
+    namespace: default

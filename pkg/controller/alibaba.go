@@ -21,6 +21,7 @@ import (
 
 	"github.com/crossplane/provider-alibaba/pkg/controller/config"
 	"github.com/crossplane/provider-alibaba/pkg/controller/database"
+	"github.com/crossplane/provider-alibaba/pkg/controller/sls"
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 )
@@ -31,6 +32,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
 		config.Setup,
 		database.SetupRDSInstance,
+		sls.SetupProject,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
