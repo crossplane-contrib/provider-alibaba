@@ -17,12 +17,12 @@ limitations under the License.
 package util
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
