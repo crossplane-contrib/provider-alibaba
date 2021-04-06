@@ -124,9 +124,8 @@ func TestObserve(t *testing.T) {
 			reason: "We should report an unknown error",
 			mg: &slsv1alpha1.Project{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "abc",
-					Annotations: map[string]string{meta.AnnotationKeyExternalName: "abc",
-					},
+					Name:        "abc",
+					Annotations: map[string]string{meta.AnnotationKeyExternalName: "abc"},
 				},
 				Spec: slsv1alpha1.ProjectSpec{ForProvider: slsv1alpha1.ProjectParameters{
 					Description: "test project",
