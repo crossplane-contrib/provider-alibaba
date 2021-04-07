@@ -74,11 +74,15 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
+	// TODO(negz): This connect method will be simpler once we no longer have to
+	// account for the deprecated Provider type.
 	cr, ok := mg.(*v1alpha1.RDSInstance)
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
 	}
 
+	// TODO(negz): This connection logic should be generalised once this
+	// provider has more than one kind of managed resource.
 	if err := c.usage.Track(ctx, mg); err != nil {
 		return nil, errors.Wrap(err, errTrackUsage)
 	}
