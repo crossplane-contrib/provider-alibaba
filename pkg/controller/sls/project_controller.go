@@ -161,7 +161,6 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	name := meta.GetExternalName(cr)
 	description := cr.Spec.ForProvider.Description
-	cr.SetConditions(xpv1.Creating())
 	project, err := e.client.Create(name, description)
 	if err != nil {
 		return managed.ExternalCreation{}, err
@@ -176,7 +175,6 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	name := meta.GetExternalName(cr)
 	description := cr.Spec.ForProvider.Description
-	cr.Status.SetConditions(xpv1.Creating())
 	got, err := e.client.Update(name, description)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
@@ -194,7 +192,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotProject)
 	}
 	name := meta.GetExternalName(cr)
-	cr.SetConditions(xpv1.Deleting())
 	if err := e.client.Delete(name); err != nil && !slsclient.IsNotFoundError(err) {
 		return err
 	}
