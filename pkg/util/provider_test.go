@@ -72,10 +72,10 @@ func TestGetAlibabaCredentials(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			cred, err := GetCredentials(ctx, tc.args.client, tc.args.name)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("\nc.GetCredentials(...) -want error, +got error:\n%s\n", diff)
+				t.Errorf("\nGetCredentials(...) -want error, +got error:\n%s\n", diff)
 			}
 			if diff := cmp.Diff(tc.want.cred, cred, test.EquateConditions()); diff != "" {
-				t.Errorf("\nc.GetEndpoint(...) %s\n", diff)
+				t.Errorf("\nGetEndpoint(...) %s\n", diff)
 			}
 		})
 	}
