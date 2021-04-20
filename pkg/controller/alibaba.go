@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"github.com/crossplane/provider-alibaba/pkg/controller/database/redis"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/provider-alibaba/pkg/controller/config"
@@ -32,6 +33,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
 		config.Setup,
 		database.SetupRDSInstance,
+		redis.SetupRedisInstance,
 		sls.SetupProject,
 	} {
 		if err := setup(mgr, l); err != nil {

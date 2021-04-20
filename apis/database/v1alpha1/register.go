@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	redisv1alpha1 "github.com/crossplane/provider-alibaba/apis/database/v1alpha1/redis"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -37,14 +38,21 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// RDSInstance type metadata.
 var (
+	// RDSInstance type metadata.
 	RDSInstanceKind             = reflect.TypeOf(RDSInstance{}).Name()
 	RDSInstanceGroupKind        = schema.GroupKind{Group: Group, Kind: RDSInstanceKind}.String()
 	RDSInstanceKindAPIVersion   = RDSInstanceKind + "." + SchemeGroupVersion.String()
 	RDSInstanceGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceKind)
+
+	// RedisInstance type metadata.
+	RedisInstanceKind             = reflect.TypeOf(redisv1alpha1.RedisInstance{}).Name()
+	RedisInstanceGroupKind        = schema.GroupKind{Group: Group, Kind: RedisInstanceKind}.String()
+	RedisInstanceKindAPIVersion   = RedisInstanceKind + "." + SchemeGroupVersion.String()
+	RedisInstanceGroupVersionKind = SchemeGroupVersion.WithKind(RedisInstanceKind)
 )
 
 func init() {
 	SchemeBuilder.Register(&RDSInstance{}, &RDSInstanceList{})
+	SchemeBuilder.Register(&redisv1alpha1.RedisInstance{}, &redisv1alpha1.RedisInstanceList{})
 }
