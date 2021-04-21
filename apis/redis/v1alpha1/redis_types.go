@@ -21,9 +21,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // +kubebuilder:object:root=true
 
 // RedisInstance is the Schema for the redisinstances API
@@ -31,7 +28,7 @@ import (
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.dbInstanceStatus"
-// +kubebuilder:printcolumn:name="ENGINE",type="string",JSONPath=".spec.forProvider.engine"
+// +kubebuilder:printcolumn:name="INSTANCE_TYPE",type="string",JSONPath=".spec.forProvider.instanceType"
 // +kubebuilder:printcolumn:name="VERSION",type="string",JSONPath=".spec.forProvider.engineVersion"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
@@ -75,29 +72,33 @@ type RedisInstanceStatus struct {
 	AtProvider          RedisInstanceObservation `json:"atProvider,omitempty"`
 }
 
+// RedisInstanceParameters define the desired state of an Redis instance.
 type RedisInstanceParameters struct {
 	// Engine is the name of the database engine to be used for this instance.
 	// Engine is a required field.
 	// +immutable
-	Engine string `json:"engine"`
+	// +kubebuilder:validation:Enum=Redis
+	InstanceType string `json:"instanceType"`
 	// EngineVersion indicates the database engine version.
 	// Redis：4.0/5.0
+	// +kubebuilder:validation:Enum="4.0";"5.0"
 	EngineVersion string `json:"engineVersion"`
 
-	// DBInstanceClass is the machine class of the instance, e.g. "redis.logic.sharding.2g.8db.0rodb.8proxy.default"
-	DBInstanceClass string `json:"dbInstanceClass"`
+	// InstanceClass is the machine class of the instance, e.g. "redis.logic.sharding.2g.8db.0rodb.8proxy.default"
+	InstanceClass string `json:"instanceClass"`
 
-	// DBInstanceConfig is redis parameter configuration
-	DBInstanceConfig string `json:"dbInstanceConfig"`
-
-	// SecurityIPList is the IP whitelist for Redis instances
-	SecurityIPList string `json:"securityIPList"`
-
-	// DBInstancePort is indicates the database service port
-	DBInstancePort int `json:"port"`
+	// InstancePort is indicates the database service port
+	// +optional
+	InstancePort int `json:"port"`
 
 	// PubliclyAccessible is Public network of service exposure
 	PubliclyAccessible bool `json:"publiclyAccessible"`
+
+	// ChargeType is indicates payment type
+	// ChargeType：PrePaid/PostPaid
+	// +optional
+	// +kubebuilder:default="PostPaid"
+	ChargeType string `json:"chargeType"`
 
 	// MasterUsername is the name for the master user.
 	// Constraints:
@@ -108,13 +109,28 @@ type RedisInstanceParameters struct {
 	// +immutable
 	// +optional
 	MasterUsername string `json:"masterUsername"`
+
+	// NetworkType is indicates service network type
+	// NetworkType：CLASSIC/VPC
+	// +optional
+	// +kubebuilder:default="CLASSIC"
+	NetworkType string `json:"networkType"`
+
+	// VpcId is indicates VPC ID
+	// +optional
+	VpcID string `json:"vpcId"`
+
+	// VSwitchId is indicates VSwitch ID
+	// +optional
+	VSwitchID string `json:"vSwitchId"`
 }
 
+// RedisInstanceObservation is the representation of the current state that is observed.
 type RedisInstanceObservation struct {
 	// DBInstanceStatus specifies the current state of this database.
 	DBInstanceStatus string `json:"dbInstanceStatus,omitempty"`
 
-	// DBInstanceID specifies the DB instance ID.
+	// DBInstanceID specifies the Redis instance ID.
 	DBInstanceID string `json:"dbInstanceID"`
 
 	// AccountReady specifies whether the initial user account (username + password) is ready
@@ -122,4 +138,13 @@ type RedisInstanceObservation struct {
 
 	// ConnectionReady specifies whether the network connect is ready
 	ConnectionReady bool `json:"connectionReady"`
+}
+
+// Endpoint is the redis endpoint
+type Endpoint struct {
+	// Address specifies the DNS address of the Redis instance.
+	Address string `json:"address,omitempty"`
+
+	// Port specifies the port that the database engine is listening on.
+	Port string `json:"port,omitempty"`
 }

@@ -2,8 +2,6 @@ package redis
 
 import (
 	"context"
-	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
-	"github.com/crossplane/provider-alibaba/pkg/controller/database"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -19,7 +17,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	redisv1alpha1 "github.com/crossplane/provider-alibaba/apis/database/v1alpha1/redis"
+	"github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
 	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/redis"
 )
@@ -51,7 +49,7 @@ func TestConnector(t *testing.T) {
 			args: args{
 				mg: nil,
 			},
-			want: errors.New(database.ErrNotInstance),
+			want: errors.New(errNotInstance),
 		},
 		"TrackProviderConfigUsageError": {
 			reason: "Errors tracking a ProviderConfigUsage should be returned",
@@ -59,15 +57,15 @@ func TestConnector(t *testing.T) {
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return errBoom }),
 			},
 			args: args{
-				mg: &redisv1alpha1.RedisInstance{
-					Spec: redisv1alpha1.RedisInstanceSpec{
+				mg: &v1alpha1.RedisInstance{
+					Spec: v1alpha1.RedisInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, database.ErrTrackUsage),
+			want: errors.Wrap(errBoom, errTrackUsage),
 		},
 		"GetProviderConfigError": {
 			reason: "Errors getting a ProviderConfig should be returned",
@@ -78,15 +76,15 @@ func TestConnector(t *testing.T) {
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
-				mg: &redisv1alpha1.RedisInstance{
-					Spec: redisv1alpha1.RedisInstanceSpec{
+				mg: &v1alpha1.RedisInstance{
+					Spec: v1alpha1.RedisInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, database.ErrGetProviderConfig),
+			want: errors.Wrap(errBoom, errGetProviderConfig),
 		},
 		"UnsupportedCredentialsError": {
 			reason: "An error should be returned if the selected credentials source is unsupported",
@@ -109,15 +107,15 @@ func TestConnector(t *testing.T) {
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
-				mg: &redisv1alpha1.RedisInstance{
-					Spec: redisv1alpha1.RedisInstanceSpec{
+				mg: &v1alpha1.RedisInstance{
+					Spec: v1alpha1.RedisInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
 			},
-			want: errors.Errorf(database.ErrFmtUnsupportedCredSource, "wat"),
+			want: errors.Errorf(errFmtUnsupportedCredSource, "wat"),
 		},
 		"GetProviderError": {
 			reason: "Errors getting a Provider should be returned",
@@ -128,15 +126,15 @@ func TestConnector(t *testing.T) {
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
-				mg: &redisv1alpha1.RedisInstance{
-					Spec: redisv1alpha1.RedisInstanceSpec{
+				mg: &v1alpha1.RedisInstance{
+					Spec: v1alpha1.RedisInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
 							ProviderReference: &xpv1.Reference{},
 						},
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, database.ErrGetProvider),
+			want: errors.Wrap(errBoom, errGetProvider),
 		},
 		"NoConnectionSecretError": {
 			reason: "An error should be returned if no connection secret was specified",
@@ -159,15 +157,15 @@ func TestConnector(t *testing.T) {
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
-				mg: &redisv1alpha1.RedisInstance{
-					Spec: redisv1alpha1.RedisInstanceSpec{
+				mg: &v1alpha1.RedisInstance{
+					Spec: v1alpha1.RedisInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
 			},
-			want: errors.New(database.ErrNoConnectionSecret),
+			want: errors.New(errNoConnectionSecret),
 		},
 		"GetConnectionSecretError": {
 			reason: "Errors getting a secret should be returned",
@@ -199,15 +197,15 @@ func TestConnector(t *testing.T) {
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
-				mg: &redisv1alpha1.RedisInstance{
-					Spec: redisv1alpha1.RedisInstanceSpec{
+				mg: &v1alpha1.RedisInstance{
+					Spec: v1alpha1.RedisInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, database.ErrGetConnectionSecret),
+			want: errors.Wrap(errBoom, errGetConnectionSecret),
 		},
 		"NewRedisClientError": {
 			reason: "Errors getting a secret should be returned",
@@ -239,15 +237,15 @@ func TestConnector(t *testing.T) {
 				},
 			},
 			args: args{
-				mg: &redisv1alpha1.RedisInstance{
-					Spec: redisv1alpha1.RedisInstanceSpec{
+				mg: &v1alpha1.RedisInstance{
+					Spec: v1alpha1.RedisInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
 							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, database.ErrCreateClient),
+			want: errors.Wrap(errBoom, errCreateClient),
 		},
 	}
 
@@ -264,14 +262,14 @@ func TestConnector(t *testing.T) {
 
 func TestExternalClientObserve(t *testing.T) {
 	e := &external{client: &fakeRedisClient{}}
-	obj := &redisv1alpha1.RedisInstance{
-		Spec: redisv1alpha1.RedisInstanceSpec{
-			ForProvider: redisv1alpha1.RedisInstanceParameters{
+	obj := &v1alpha1.RedisInstance{
+		Spec: v1alpha1.RedisInstanceSpec{
+			ForProvider: v1alpha1.RedisInstanceParameters{
 				MasterUsername: testName,
 			},
 		},
-		Status: redisv1alpha1.RedisInstanceStatus{
-			AtProvider: redisv1alpha1.RedisInstanceObservation{
+		Status: v1alpha1.RedisInstanceStatus{
+			AtProvider: v1alpha1.RedisInstanceObservation{
 				DBInstanceID: testName,
 			},
 		},
@@ -280,8 +278,8 @@ func TestExternalClientObserve(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if obj.Status.AtProvider.DBInstanceStatus != redisv1alpha1.RedisInstanceStateRunning {
-		t.Errorf("DBInstanceStatus (%v) should be %v", obj.Status.AtProvider.DBInstanceStatus, redisv1alpha1.RedisInstanceStateRunning)
+	if obj.Status.AtProvider.DBInstanceStatus != v1alpha1.RedisInstanceStateRunning {
+		t.Errorf("DBInstanceStatus (%v) should be %v", obj.Status.AtProvider.DBInstanceStatus, v1alpha1.RedisInstanceStateRunning)
 	}
 	if obj.Status.AtProvider.AccountReady != true {
 		t.Error("AccountReady should be true")
@@ -293,19 +291,18 @@ func TestExternalClientObserve(t *testing.T) {
 
 func TestExternalClientCreate(t *testing.T) {
 	e := &external{client: &fakeRedisClient{}}
-	obj := &redisv1alpha1.RedisInstance{
+	obj := &v1alpha1.RedisInstance{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
 				crossplanemeta.AnnotationKeyExternalName: testName,
 			},
 		},
-		Spec: redisv1alpha1.RedisInstanceSpec{
-			ForProvider: redisv1alpha1.RedisInstanceParameters{
+		Spec: v1alpha1.RedisInstanceSpec{
+			ForProvider: v1alpha1.RedisInstanceParameters{
 				MasterUsername:     testName,
 				EngineVersion:      "5.0",
-				SecurityIPList:     "0.0.0.0/0",
-				DBInstanceClass:    "redis.logic.sharding.2g.8db.0rodb.8proxy.default",
-				DBInstancePort:     8080,
+				InstanceClass:      "redis.logic.sharding.2g.8db.0rodb.8proxy.default",
+				InstancePort:       8080,
 				PubliclyAccessible: true,
 			},
 		},
@@ -325,9 +322,9 @@ func TestExternalClientCreate(t *testing.T) {
 
 func TestExternalClientDelete(t *testing.T) {
 	e := &external{client: &fakeRedisClient{}}
-	obj := &redisv1alpha1.RedisInstance{
-		Status: redisv1alpha1.RedisInstanceStatus{
-			AtProvider: redisv1alpha1.RedisInstanceObservation{
+	obj := &v1alpha1.RedisInstance{
+		Status: v1alpha1.RedisInstanceStatus{
+			AtProvider: v1alpha1.RedisInstanceObservation{
 				DBInstanceID: testName,
 			},
 		},
@@ -345,7 +342,7 @@ func TestGetConnectionDetails(t *testing.T) {
 
 	type args struct {
 		pw string
-		cr *redisv1alpha1.RedisInstance
+		cr *v1alpha1.RedisInstance
 		i  *redis.DBInstance
 	}
 	type want struct {
@@ -359,14 +356,14 @@ func TestGetConnectionDetails(t *testing.T) {
 		"SuccessfulNoPassword": {
 			args: args{
 				pw: "",
-				cr: &redisv1alpha1.RedisInstance{
+				cr: &v1alpha1.RedisInstance{
 					ObjectMeta: metav1.ObjectMeta{
 						Annotations: map[string]string{
 							crossplanemeta.AnnotationKeyExternalName: testName,
 						},
 					},
-					Spec: redisv1alpha1.RedisInstanceSpec{
-						ForProvider: redisv1alpha1.RedisInstanceParameters{
+					Spec: v1alpha1.RedisInstanceSpec{
+						ForProvider: v1alpha1.RedisInstanceParameters{
 							MasterUsername: testName,
 						},
 					},
@@ -389,14 +386,14 @@ func TestGetConnectionDetails(t *testing.T) {
 		"SuccessfulNoEndpoint": {
 			args: args{
 				pw: password,
-				cr: &redisv1alpha1.RedisInstance{
+				cr: &v1alpha1.RedisInstance{
 					ObjectMeta: metav1.ObjectMeta{
 						Annotations: map[string]string{
 							crossplanemeta.AnnotationKeyExternalName: testName,
 						},
 					},
-					Spec: redisv1alpha1.RedisInstanceSpec{
-						ForProvider: redisv1alpha1.RedisInstanceParameters{
+					Spec: v1alpha1.RedisInstanceSpec{
+						ForProvider: v1alpha1.RedisInstanceParameters{
 							MasterUsername: testName,
 						},
 					},
@@ -413,14 +410,14 @@ func TestGetConnectionDetails(t *testing.T) {
 		"Successful": {
 			args: args{
 				pw: password,
-				cr: &redisv1alpha1.RedisInstance{
+				cr: &v1alpha1.RedisInstance{
 					ObjectMeta: metav1.ObjectMeta{
 						Annotations: map[string]string{
 							crossplanemeta.AnnotationKeyExternalName: testName,
 						},
 					},
-					Spec: redisv1alpha1.RedisInstanceSpec{
-						ForProvider: redisv1alpha1.RedisInstanceParameters{
+					Spec: v1alpha1.RedisInstanceSpec{
+						ForProvider: v1alpha1.RedisInstanceParameters{
 							MasterUsername: testName,
 						},
 					},
@@ -461,7 +458,7 @@ func (c *fakeRedisClient) DescribeDBInstance(id string) (*redis.DBInstance, erro
 	}
 	return &redis.DBInstance{
 		ID:     id,
-		Status: redisv1alpha1.RedisInstanceStateRunning,
+		Status: v1alpha1.RedisInstanceStateRunning,
 	}, nil
 }
 
@@ -504,4 +501,11 @@ func (c *fakeRedisClient) ModifyDBInstanceConnectionString(id string, port int) 
 		return "nil", errors.New("ModifyDBInstanceConnectionString: client doesn't work")
 	}
 	return "", nil
+}
+
+func (c *fakeRedisClient) Update(id string, req *redis.ModifyRedisInstanceRequest) error {
+	if id != testName {
+		return errors.New("Update: client doesn't work")
+	}
+	return nil
 }

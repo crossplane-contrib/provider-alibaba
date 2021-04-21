@@ -25,6 +25,7 @@ import (
 	"github.com/crossplane/provider-alibaba/pkg/controller/database/redis"
 	"github.com/crossplane/provider-alibaba/pkg/controller/nas"
 	"github.com/crossplane/provider-alibaba/pkg/controller/oss"
+	"github.com/crossplane/provider-alibaba/pkg/controller/redis"
 	"github.com/crossplane/provider-alibaba/pkg/controller/slb"
 	"github.com/crossplane/provider-alibaba/pkg/controller/sls"
 )

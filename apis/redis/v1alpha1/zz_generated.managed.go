@@ -18,9 +18,7 @@ limitations under the License.
 
 package v1alpha1
 
-import (
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-)
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this RedisInstance.
 func (mg *RedisInstance) GetCondition(ct xpv1.ConditionType) xpv1.Condition {

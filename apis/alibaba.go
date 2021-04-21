@@ -23,6 +23,7 @@ import (
 	databasev1alpha1 "github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 	nasv1alpha1 "github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
 	ossv1alpha1 "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
+	redisv1alpha1 "github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
 	slbv1alpha1 "github.com/crossplane/provider-alibaba/apis/slb/v1alpha1"
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 	"github.com/crossplane/provider-alibaba/apis/v1alpha1"
@@ -36,7 +37,9 @@ func init() {
 		slsv1alpha1.AddToScheme,
 		ossv1alpha1.SchemeBuilder.AddToScheme,
 		nasv1alpha1.AddToScheme,
-		slbv1alpha1.AddToScheme)
+		slbv1alpha1.AddToScheme,
+		redisv1alpha1.SchemeBuilder.AddToScheme,
+	)
 }
 
 // AddToSchemes may be used to add all resources defined in the project to a Scheme
