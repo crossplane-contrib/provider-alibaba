@@ -1,14 +1,12 @@
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: redisinstances.database.alibaba.crossplane.io
+  name: redisinstances.redis.alibaba.crossplane.io
 spec:
-  group: database.alibaba.crossplane.io
+  group: redis.alibaba.crossplane.io
   names:
     categories:
     - crossplane
@@ -30,8 +28,8 @@ spec:
     - jsonPath: .status.atProvider.dbInstanceStatus
       name: STATE
       type: string
-    - jsonPath: .spec.forProvider.engine
-      name: ENGINE
+    - jsonPath: .spec.forProvider.instanceType
+      name: INSTANCE_TYPE
       type: string
     - jsonPath: .spec.forProvider.engineVersion
       name: VERSION
@@ -42,7 +40,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: An RedisInstance is a managed resource that represents an Redis instance.
+        description: RedisInstance is the Schema for the redisinstances API An RedisInstance is a managed resource that represents an Redis instance.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -53,7 +51,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: An RedisInstanceSpec defines the desired state of an RedisInstance.
+            description: RedisInstanceSpec defines the desired state of RedisInstance
             properties:
               deletionPolicy:
                 description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
@@ -64,31 +62,48 @@ spec:
               forProvider:
                 description: RedisInstanceParameters define the desired state of an Redis instance.
                 properties:
-                  dbInstanceClass:
-                    description: DBInstanceClass is the machine class of the instance, e.g. "redis.basic.small.default"
-                    type: string
-                  engine:
-                    description: Engine is the name of the database engine to be used for this instance. Engine is a required field.
+                  chargeType:
+                    default: PostPaid
+                    description: ChargeType is indicates payment type ChargeType：PrePaid/PostPaid
                     type: string
                   engineVersion:
                     description: EngineVersion indicates the database engine version. Redis：4.0/5.0
+                    enum:
+                    - "4.0"
+                    - "5.0"
+                    type: string
+                  instanceClass:
+                    description: InstanceClass is the machine class of the instance, e.g. "redis.logic.sharding.2g.8db.0rodb.8proxy.default"
+                    type: string
+                  instanceType:
+                    description: Engine is the name of the database engine to be used for this instance. Engine is a required field.
+                    enum:
+                    - Redis
                     type: string
                   masterUsername:
-                    description: 'MasterUsername is the name for the master user.'
+                    description: 'MasterUsername is the name for the master user. Constraints:    * Required for Redis.    * Must be 1 to 16 letters or numbers.    * First character must be a letter.    * Cannot be a reserved word for the chosen database engine.'
+                    type: string
+                  networkType:
+                    default: CLASSIC
+                    description: NetworkType is indicates service network type NetworkType：CLASSIC/VPC
                     type: string
                   port:
-                    description: 'Port is exposure port of the Redis instance.'
+                    description: InstancePort is indicates the database service port
                     type: integer
                   publiclyAccessible:
-                    description: 'PubliclyAccessible specifies the accessibility options for the DB instance. A value of true specifies an Internet-facing instance with a publicly resolvable DNS name, which resolves to a public IP address. A value of false specifies an internal instance with a DNS name that resolves to a private IP address. Default: The default behavior varies depending on whether instancesName is specified.'
+                    description: PubliclyAccessible is Public network of service exposure
                     type: boolean
-                  securityIPList:
-                    description: SecurityIPList is the IP whitelist for Redis instances
+                  vSwitchId:
+                    description: VSwitchId is indicates VSwitch ID
+                    type: string
+                  vpcId:
+                    description: VpcId is indicates VPC ID
                     type: string
                 required:
-                - dbInstanceClass
                 - engineVersion
-                - securityIPList
+                - instanceClass
+                - instanceType
+                - publiclyAccessible
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
@@ -125,7 +140,7 @@ spec:
             - forProvider
             type: object
           status:
-            description: An RedisInstanceStatus represents the observed state of an RedisInstance.
+            description: RedisInstanceStatus defines the observed state of RedisInstance
             properties:
               atProvider:
                 description: RedisInstanceObservation is the representation of the current state that is observed.
@@ -133,17 +148,18 @@ spec:
                   accountReady:
                     description: AccountReady specifies whether the initial user account (username + password) is ready
                     type: boolean
+                  connectionReady:
+                    description: ConnectionReady specifies whether the network connect is ready
+                    type: boolean
                   dbInstanceID:
-                    description: DBInstanceID specifies the DB instance ID.
+                    description: DBInstanceID specifies the Redis instance ID.
                     type: string
                   dbInstanceStatus:
                     description: DBInstanceStatus specifies the current state of this database.
                     type: string
-                  connectionReady:
-                    description: ConnectionReady specifies whether the initial domain and port is ready
-                    type: boolean
                 required:
                 - accountReady
+                - connectionReady
                 - dbInstanceID
                 type: object
               conditions:
@@ -175,8 +191,6 @@ spec:
                   type: object
                 type: array
             type: object
-        required:
-        - spec
         type: object
     served: true
     storage: true

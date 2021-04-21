@@ -1,5 +1,5 @@
 ---
-apiVersion: database.alibaba.crossplane.io/v1alpha1
+apiVersion: redis.alibaba.crossplane.io/v1alpha1
 kind: RedisInstance
 metadata:
   name: example
@@ -8,10 +8,9 @@ metadata:
     engine: redis
 spec:
   forProvider:
-    engine: Redis
+    instanceType: Redis
     engineVersion: "5.0"
-    dbInstanceClass: redis.basic.small.default
-    securityIPList: "0.0.0.0/0"
+    instanceClass: redis.basic.small.default
     port: 8080
     publiclyAccessible: true
   writeConnectionSecretToRef:

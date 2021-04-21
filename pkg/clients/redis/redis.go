@@ -18,27 +18,31 @@ package redis
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"time"
 
-	"github.com/crossplane/crossplane-runtime/pkg/password"
+	"github.com/pkg/errors"
 
 	sdkerrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
-
 	aliredis "github.com/aliyun/alibaba-cloud-sdk-go/services/r-kvstore"
 
-	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
-	redisv1alpha1 "github.com/crossplane/provider-alibaba/apis/database/v1alpha1/redis"
+	"github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
 )
 
 var (
 	// ErrDBInstanceNotFound indicates DBInstance not found
 	ErrDBInstanceNotFound = errors.New("DBInstanceNotFound")
-	// ErrCodeInstanceNotFound error code of ServerError when DBInstance not found
-	ErrCodeInstanceNotFound = "InvalidDBInstanceId.NotFound"
+)
 
-	httpsScheme = "https"
+const (
+	// DefaultReadTime indicates default connect timeout number
+	DefaultReadTime = 60 * time.Second
+	// PubilConnectionDomain indicates instances connect domain
+	PubilConnectionDomain = "-pb.redis.rds.aliyuncs.com"
+	// HTTPSScheme indicates request scheme
+	HTTPSScheme = "https"
+	// VPCNetworkType indicates network type by vpc
+	VPCNetworkType = "VPC"
 )
 
 // Client defines Redis client operations
@@ -49,6 +53,7 @@ type Client interface {
 	DeleteDBInstance(id string) error
 	AllocateInstancePublicConnection(id string, port int) (string, error)
 	ModifyDBInstanceConnectionString(id string, port int) (string, error)
+	Update(id string, req *ModifyRedisInstanceRequest) error
 }
 
 // DBInstance defines the DB instance information
@@ -63,16 +68,24 @@ type DBInstance struct {
 	Endpoint *v1alpha1.Endpoint
 }
 
-// CreateDBInstanceRequest defines the request info to create DB Instance
+// CreateRedisInstanceRequest defines the request info to create DB Instance
 type CreateRedisInstanceRequest struct {
 	Name           string
-	Engine         string
+	InstanceType   string
 	EngineVersion  string
 	SecurityIPList string
 	InstanceClass  string
 	Password       string
+	ChargeType     string
 	Port           int
-	Config         string
+	NetworkType    string
+	VpcID          string
+	VSwitchID      string
+}
+
+// ModifyRedisInstanceRequest defines the request info to modify DB Instance
+type ModifyRedisInstanceRequest struct {
+	InstanceClass string
 }
 
 type client struct {
@@ -91,13 +104,13 @@ func NewClient(ctx context.Context, accessKeyID, accessKeySecret, region string)
 
 func (c *client) DescribeDBInstance(id string) (*DBInstance, error) {
 	request := aliredis.CreateDescribeInstancesRequest()
-	request.Scheme = httpsScheme
+	request.Scheme = HTTPSScheme
 
 	request.InstanceIds = id
 
 	response, err := c.redisCli.DescribeInstances(request)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "cannot describe redis instance")
 	}
 	if len(response.Instances.KVStoreInstance) == 0 {
 		return nil, ErrDBInstanceNotFound
@@ -112,21 +125,21 @@ func (c *client) DescribeDBInstance(id string) (*DBInstance, error) {
 }
 
 func (c *client) CreateDBInstance(req *CreateRedisInstanceRequest) (*DBInstance, error) {
-	pw, err := password.Generate()
-	if err != nil {
-		return nil, err
-	}
 	request := aliredis.CreateCreateInstanceRequest()
-	request.Scheme = "https"
+	request.Scheme = HTTPSScheme
 
 	request.InstanceName = req.Name
 	request.EngineVersion = req.EngineVersion
 	request.InstanceClass = req.InstanceClass
-	request.InstanceType = req.Engine
-	request.ReadTimeout = 60 * time.Second
-	request.Password = pw
-	request.ChargeType = "PostPaid"
+	request.InstanceType = req.InstanceType
+	request.ReadTimeout = DefaultReadTime
+	request.ChargeType = req.ChargeType
+	request.NetworkType = req.NetworkType
 
+	if req.NetworkType == VPCNetworkType {
+		request.VpcId = req.VpcID
+		request.VSwitchId = req.VSwitchID
+	}
 	resp, err := c.redisCli.CreateInstance(request)
 	if err != nil {
 		return nil, err
@@ -143,11 +156,11 @@ func (c *client) CreateDBInstance(req *CreateRedisInstanceRequest) (*DBInstance,
 
 func (c *client) CreateAccount(id, user, pw string) error {
 	request := aliredis.CreateCreateAccountRequest()
-	request.Scheme = "https"
+	request.Scheme = HTTPSScheme
 	request.InstanceId = id
 	request.AccountName = user
 	request.AccountPassword = pw
-	request.ReadTimeout = 60 * time.Second
+	request.ReadTimeout = DefaultReadTime
 
 	_, err := c.redisCli.CreateAccount(request)
 	return err
@@ -155,7 +168,7 @@ func (c *client) CreateAccount(id, user, pw string) error {
 
 func (c *client) DeleteDBInstance(id string) error {
 	request := aliredis.CreateDeleteInstanceRequest()
-	request.Scheme = "https"
+	request.Scheme = HTTPSScheme
 
 	request.InstanceId = id
 
@@ -165,26 +178,25 @@ func (c *client) DeleteDBInstance(id string) error {
 
 // GenerateObservation is used to produce v1alpha1.RedisInstanceObservation from
 // redis.DBInstance.
-func GenerateObservation(db *DBInstance) redisv1alpha1.RedisInstanceObservation {
-	return redisv1alpha1.RedisInstanceObservation{
+func GenerateObservation(db *DBInstance) v1alpha1.RedisInstanceObservation {
+	return v1alpha1.RedisInstanceObservation{
 		DBInstanceStatus: db.Status,
 		DBInstanceID:     db.ID,
 	}
 }
 
 // MakeCreateDBInstanceRequest generates CreateDBInstanceRequest
-func MakeCreateDBInstanceRequest(name string, p *redisv1alpha1.RedisInstanceParameters) *CreateRedisInstanceRequest {
-	if p.Engine == "" {
-		p.Engine = "Redis"
-	}
-
+func MakeCreateDBInstanceRequest(name string, p *v1alpha1.RedisInstanceParameters) *CreateRedisInstanceRequest {
 	return &CreateRedisInstanceRequest{
-		Name:           name,
-		Engine:         p.Engine,
-		EngineVersion:  p.EngineVersion,
-		SecurityIPList: p.SecurityIPList,
-		InstanceClass:  p.DBInstanceClass,
-		Port:           p.DBInstancePort,
+		Name:          name,
+		InstanceType:  p.InstanceType,
+		EngineVersion: p.EngineVersion,
+		InstanceClass: p.InstanceClass,
+		Port:          p.InstancePort,
+		NetworkType:   p.NetworkType,
+		VpcID:         p.VpcID,
+		VSwitchID:     p.VSwitchID,
+		ChargeType:    p.ChargeType,
 	}
 }
 
@@ -194,7 +206,7 @@ func IsErrorNotFound(err error) bool {
 		return false
 	}
 	// If the instance is already removed, errors should be ignored when deleting it.
-	if e, ok := err.(*sdkerrors.ServerError); ok && e.ErrorCode() == ErrCodeInstanceNotFound {
+	if e, ok := err.(*sdkerrors.ServerError); ok && e.ErrorCode() == "InvalidInstanceId.NotFound" {
 		return true
 	}
 	return errors.Is(err, ErrDBInstanceNotFound)
@@ -202,11 +214,11 @@ func IsErrorNotFound(err error) bool {
 
 func (c *client) AllocateInstancePublicConnection(id string, port int) (string, error) {
 	request := aliredis.CreateAllocateInstancePublicConnectionRequest()
-	request.Scheme = "https"
+	request.Scheme = HTTPSScheme
 	request.InstanceId = id
-	request.ConnectionStringPrefix = id + "-pb.redis.rds.aliyuncs.com"
+	request.ConnectionStringPrefix = id + PubilConnectionDomain
 	request.Port = strconv.Itoa(port)
-	request.ReadTimeout = 60 * time.Second
+	request.ReadTimeout = DefaultReadTime
 	_, err := c.redisCli.AllocateInstancePublicConnection(request)
 	if err != nil {
 		return "", err
@@ -216,14 +228,34 @@ func (c *client) AllocateInstancePublicConnection(id string, port int) (string, 
 
 func (c *client) ModifyDBInstanceConnectionString(id string, port int) (string, error) {
 	request := aliredis.CreateModifyDBInstanceConnectionStringRequest()
-	request.Scheme = "https"
+	request.Scheme = HTTPSScheme
 	request.DBInstanceId = id
-	request.CurrentConnectionString = id + "-pb.redis.rds.aliyuncs.com"
+	request.CurrentConnectionString = id + PubilConnectionDomain
 	request.Port = strconv.Itoa(port)
-	request.ReadTimeout = 60 * time.Second
+	request.ReadTimeout = DefaultReadTime
 	_, err := c.redisCli.ModifyDBInstanceConnectionString(request)
 	if err != nil {
 		return "", err
 	}
 	return request.CurrentConnectionString, err
+}
+
+func (c *client) Update(id string, req *ModifyRedisInstanceRequest) error {
+	if req.InstanceClass == "" {
+		return errors.New("modify instances spec is require")
+	}
+	if req.InstanceClass != "" {
+		return c.modifyInstanceSpec(id, req)
+	}
+	return nil
+}
+
+func (c *client) modifyInstanceSpec(id string, req *ModifyRedisInstanceRequest) error {
+	request := aliredis.CreateModifyInstanceSpecRequest()
+	request.Scheme = HTTPSScheme
+	request.InstanceId = id
+	request.InstanceClass = req.InstanceClass
+	request.ReadTimeout = DefaultReadTime
+	_, err := c.redisCli.ModifyInstanceSpec(request)
+	return err
 }

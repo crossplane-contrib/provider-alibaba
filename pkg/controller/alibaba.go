@@ -17,11 +17,11 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/crossplane/provider-alibaba/pkg/controller/database/redis"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/provider-alibaba/pkg/controller/config"
 	"github.com/crossplane/provider-alibaba/pkg/controller/database"
+	"github.com/crossplane/provider-alibaba/pkg/controller/redis"
 	"github.com/crossplane/provider-alibaba/pkg/controller/sls"
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"

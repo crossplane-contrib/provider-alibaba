@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	databasev1alpha1 "github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
+	redisv1alpha1 "github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 	"github.com/crossplane/provider-alibaba/apis/v1alpha1"
 )
@@ -31,6 +32,7 @@ func init() {
 		v1alpha1.SchemeBuilder.AddToScheme,
 		databasev1alpha1.SchemeBuilder.AddToScheme,
 		slsv1alpha1.AddToScheme,
+		redisv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
