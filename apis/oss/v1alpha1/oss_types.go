@@ -37,6 +37,7 @@ type BucketList struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="WARNING",type="string",JSONPath=".status.atProvider.message"
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,alibaba}
 type Bucket struct {
@@ -54,7 +55,7 @@ type BucketSpec struct {
 
 	// Profile is used to extend store business information
 	// +kubebuilder:pruning:PreserveUnknownFields
-	Profile runtime.RawExtension `json:"profile,omitempty"`
+	Profile *runtime.RawExtension `json:"profile,omitempty"`
 }
 
 // BucketStatus defines the observed state of Bucket
@@ -65,7 +66,6 @@ type BucketStatus struct {
 
 // BucketParameter is the isolated place to store files
 type BucketParameter struct {
-	Name               string `json:"name"`
 	ACL                string `json:"acl,omitempty"`
 	StorageClass       string `json:"storageClass,omitempty"`
 	DataRedundancyType string `json:"dataRedundancyType,omitempty"`

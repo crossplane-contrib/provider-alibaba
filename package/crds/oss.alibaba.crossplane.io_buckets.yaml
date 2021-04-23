@@ -28,6 +28,9 @@ spec:
     - jsonPath: .status.atProvider.message
       name: WARNING
       type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -53,8 +56,6 @@ spec:
                 enum:
                 - Orphan
                 - Delete
-                type: string
-              name:
                 type: string
               profile:
                 description: Profile is used to extend store business information
@@ -93,8 +94,6 @@ spec:
                 - name
                 - namespace
                 type: object
-            required:
-            - name
             type: object
           status:
             description: BucketStatus defines the observed state of Bucket

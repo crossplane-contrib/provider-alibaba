@@ -18,7 +18,6 @@ package util
 
 import (
 	"fmt"
-	"k8s.io/klog"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
