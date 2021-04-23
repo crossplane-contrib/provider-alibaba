@@ -129,7 +129,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			external := &external{client: &fakeSDKClient{}}
+			external := &External{ExternalClient: &fakeSDKClient{}}
 			got, err := external.Observe(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
@@ -179,7 +179,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			external := &external{client: &fakeSDKClient{}}
+			external := &External{ExternalClient: &fakeSDKClient{}}
 			got, err := external.Create(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
@@ -228,7 +228,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			external := &external{client: &fakeSDKClient{}}
+			external := &External{ExternalClient: &fakeSDKClient{}}
 			got, err := external.Update(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
@@ -274,7 +274,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			external := &external{client: &fakeSDKClient{}}
+			external := &External{ExternalClient: &fakeSDKClient{}}
 			err := external.Delete(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
