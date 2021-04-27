@@ -36,6 +36,10 @@ var (
 	ErrCodeInstanceNotFound = "InvalidDBInstanceId.NotFound"
 )
 
+const (
+	httpsScheme = "https"
+)
+
 // Client defines RDS client operations
 type Client interface {
 	DescribeDBInstance(id string) (*DBInstance, error)
@@ -85,7 +89,7 @@ func NewClient(ctx context.Context, accessKeyID, accessKeySecret, region string)
 
 func (c *client) DescribeDBInstance(id string) (*DBInstance, error) {
 	request := alirds.CreateDescribeDBInstancesRequest()
-	request.Scheme = "https"
+	request.Scheme = httpsScheme
 
 	request.DBInstanceId = id
 
@@ -108,7 +112,7 @@ func (c *client) DescribeDBInstance(id string) (*DBInstance, error) {
 
 func (c *client) CreateDBInstance(req *CreateDBInstanceRequest) (*DBInstance, error) {
 	request := alirds.CreateCreateDBInstanceRequest()
-	request.Scheme = "https"
+	request.Scheme = httpsScheme
 
 	request.DBInstanceDescription = req.Name
 	request.Engine = req.Engine
@@ -137,7 +141,7 @@ func (c *client) CreateDBInstance(req *CreateDBInstanceRequest) (*DBInstance, er
 
 func (c *client) CreateAccount(id, user, pw string) error {
 	request := alirds.CreateCreateAccountRequest()
-	request.Scheme = "https"
+	request.Scheme = httpsScheme
 	request.DBInstanceId = id
 	request.AccountName = user
 	request.AccountPassword = pw
@@ -149,7 +153,7 @@ func (c *client) CreateAccount(id, user, pw string) error {
 
 func (c *client) DeleteDBInstance(id string) error {
 	request := alirds.CreateDeleteDBInstanceRequest()
-	request.Scheme = "https"
+	request.Scheme = httpsScheme
 
 	request.DBInstanceId = id
 
