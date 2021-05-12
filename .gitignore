@@ -10,3 +10,4 @@ cover.out
 
 # ignore IDE folders
 .vscode/
+.idea/
