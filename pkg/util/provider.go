@@ -56,7 +56,7 @@ type AlibabaCredentials struct {
 func GetProviderConfig(ctx context.Context, k8sClient client.Client, providerConfigName string) (*aliv1alpha2.ProviderConfig, error) {
 	providerConfig := &aliv1alpha2.ProviderConfig{}
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: providerConfigName}, providerConfig); err != nil {
-		return nil, fmt.Errorf("failed to get ProviderConfig: %v", err)
+		return nil, fmt.Errorf("failed to get ProviderConfig: %w", err)
 	}
 	return providerConfig, nil
 }
