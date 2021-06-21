@@ -18,6 +18,7 @@ package database
 
 import (
 	"context"
+	"github.com/crossplane/provider-alibaba/pkg/util"
 
 	sdkerror "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 	"github.com/pkg/errors"
@@ -79,7 +80,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	client       client.Client
 	usage        resource.Tracker
-	newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
+	newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, securityToken, region string) (rds.Client, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
@@ -132,7 +133,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetConnectionSecret)
 	}
 
-	rdsClient, err := c.newRDSClient(ctx, string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), region)
+	rdsClient, err := c.newRDSClient(ctx,  string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]), region)
 	return &external{client: rdsClient}, errors.Wrap(err, errCreateRDSClient)
 }
 

@@ -26,6 +26,15 @@ import (
 	crossplanev1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
 )
 
+const (
+	// AccessKeyID is Alibaba Cloud Access key ID
+	AccessKeyID = "accessKeyId"
+	// AccessKeySecret is Alibaba Cloud Access Secret Key
+	AccessKeySecret = "accessKeySecret"
+	// SecurityToken is Alibaba Cloud STS token
+	SecurityToken = "securityToken"
+)
+
 // GetProviderConfig gets ProviderConfig
 func GetProviderConfig(ctx context.Context, k8sClient client.Client, providerConfigName string) (*crossplanev1alpha1.ProviderConfig, error) {
 	providerConfig := &crossplanev1alpha1.ProviderConfig{}
