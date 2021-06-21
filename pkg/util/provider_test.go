@@ -31,7 +31,7 @@ import (
 	"github.com/crossplane/provider-alibaba/apis/v1alpha2"
 )
 
-func TestGetAlibabaCredentials(t *testing.T) {
+func TestGetCredentials(t *testing.T) {
 	ctx := context.TODO()
 	type args struct {
 		client client.Client

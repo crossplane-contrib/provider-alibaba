@@ -18,7 +18,6 @@ package util
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -40,7 +39,7 @@ const (
 
 var (
 	// ErrGetProviderConfig is the error of getting provider config
-	ErrGetProviderConfig = "cannot get provider config"
+	ErrGetProviderConfig = "failed to get ProviderConfig"
 	// ErrGetCredentials is the error of getting credentials
 	ErrGetCredentials = "cannot get credentials"
 )
@@ -56,7 +55,7 @@ type AlibabaCredentials struct {
 func GetProviderConfig(ctx context.Context, k8sClient client.Client, providerConfigName string) (*aliv1alpha2.ProviderConfig, error) {
 	providerConfig := &aliv1alpha2.ProviderConfig{}
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: providerConfigName}, providerConfig); err != nil {
-		return nil, fmt.Errorf("failed to get ProviderConfig: %w", err)
+		return nil, errors.Wrap(err, ErrGetProviderConfig)
 	}
 	return providerConfig, nil
 }
