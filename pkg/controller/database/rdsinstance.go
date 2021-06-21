@@ -18,15 +18,8 @@ package database
 
 import (
 	"context"
-	"github.com/crossplane/provider-alibaba/pkg/util"
 
 	sdkerror "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
-	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -34,10 +27,16 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/rds"
+	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
@@ -133,7 +132,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetConnectionSecret)
 	}
 
-	rdsClient, err := c.newRDSClient(ctx,  string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]), region)
+	rdsClient, err := c.newRDSClient(ctx, string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]), region)
 	return &external{client: rdsClient}, errors.Wrap(err, errCreateRDSClient)
 }
 
