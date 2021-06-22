@@ -201,10 +201,10 @@ func TestStoreCreate(t *testing.T) {
 			external := &storeExternal{client: &fakeSDKClient{}}
 			got, err := external.Create(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("\n%s\ne.Create(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
 			if diff := cmp.Diff(tc.want.o, got); diff != "" {
-				t.Errorf("\n%s\ne.Observe(...): -want, +got:\n%s\n", tc.reason, diff)
+				t.Errorf("\n%s\ne.Create(...): -want, +got:\n%s\n", tc.reason, diff)
 			}
 		})
 	}
@@ -248,10 +248,10 @@ func TestStoreUpdate(t *testing.T) {
 			external := &storeExternal{client: &fakeSDKClient{}}
 			got, err := external.Update(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("\n%s\ne.Update(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
 			if diff := cmp.Diff(tc.want.o, got); diff != "" {
-				t.Errorf("\n%s\ne.Observe(...): -want, +got:\n%s\n", tc.reason, diff)
+				t.Errorf("\n%s\ne.Update(...): -want, +got:\n%s\n", tc.reason, diff)
 			}
 		})
 	}
@@ -292,7 +292,7 @@ func TestStoreDelete(t *testing.T) {
 			external := &storeExternal{client: &fakeSDKClient{}}
 			err := external.Delete(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
+				t.Errorf("\n%s\ne.Delete(...): -want error, +got error:\n%s\n", tc.reason, diff)
 			}
 		})
 	}
