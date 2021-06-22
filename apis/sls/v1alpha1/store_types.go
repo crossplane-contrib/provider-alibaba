@@ -66,11 +66,11 @@ type StoreParameters struct {
 	// Specifies whether to enable automatic sharding. Default value: false.
 	// +optional
 	// +kubebuilder:default:=false
-	AutoSplit bool `json:"autoSplit"`
+	AutoSplit *bool `json:"autoSplit,omitempty"`
 
 	// The maximum number of shards for automatic sharding.
 	// +optional
-	MaxSplitShard int `json:"maxSplitShard"`
+	MaxSplitShard *int `json:"maxSplitShard,omitempty"`
 }
 
 // +kubebuilder:object:root=true
