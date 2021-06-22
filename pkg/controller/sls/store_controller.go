@@ -167,10 +167,8 @@ func (e *storeExternal) Update(ctx context.Context, mg resource.Managed) (manage
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotStore)
 	}
-	name := meta.GetExternalName(cr)
-	spec := cr.Spec.ForProvider
 	cr.Status.SetConditions(xpv1.Creating())
-	err := e.client.UpdateStore(spec.ProjectName, name, spec.TTL)
+	err := e.client.UpdateStore(cr.Spec.ForProvider.ProjectName, meta.GetExternalName(cr), cr.Spec.ForProvider.TTL)
 	return managed.ExternalUpdate{}, err
 }
 
