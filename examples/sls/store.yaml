@@ -2,7 +2,6 @@ apiVersion: sls.alibaba.crossplane.io/v1alpha1
 kind: Store
 metadata:
   name: sls-store-test
-  namespace: default
 spec:
   forProvider:
     projectName: crossplane-poc
