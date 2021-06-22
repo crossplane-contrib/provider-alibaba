@@ -87,6 +87,22 @@ func (c *fakeSDKClient) Delete(name string) error {
 	return nil
 }
 
+func (c *fakeSDKClient) DescribeStore(project string, logstore string) (*sdk.LogStore, error) {
+	return nil, nil
+}
+
+func (c *fakeSDKClient) CreateStore(project string, logstore string, ttl, shardCnt int, autoSplit bool, maxSplitShard int) error {
+	return nil
+}
+
+func (c *fakeSDKClient) UpdateStore(project string, logstore string, ttl int) error {
+	return nil
+}
+
+func (c *fakeSDKClient) DeleteStore(project string, logstore string) error {
+	return nil
+}
+
 func TestObserve(t *testing.T) {
 	var (
 		ctx = context.Background()
