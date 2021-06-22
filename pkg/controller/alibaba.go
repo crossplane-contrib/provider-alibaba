@@ -32,6 +32,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		config.Setup,
 		database.SetupRDSInstance,
 		sls.SetupProject,
+		sls.SetupStore,
 		oss.SetupBucket,
 	} {
 		if err := setup(mgr, l); err != nil {

@@ -50,6 +50,18 @@ var (
 	ProjectGroupVersionKind = GroupVersion.WithKind(ProjectKind)
 )
 
+var (
+	// StoreKind is the kind of Log Store
+	StoreKind = reflect.TypeOf(Store{}).Name()
+
+	// StoreGroupKind is the group and kind of Store
+	StoreGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: StoreKind}.String()
+
+	// StoreGroupVersionKind is the group, version and kind of Store
+	StoreGroupVersionKind = GroupVersion.WithKind(StoreKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&Project{}, &ProjectList{})
+	SchemeBuilder.Register(&Store{}, &StoreList{})
 }

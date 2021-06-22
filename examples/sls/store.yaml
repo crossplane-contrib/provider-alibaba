@@ -1,0 +1,13 @@
+apiVersion: sls.alibaba.crossplane.io/v1alpha1
+kind: Store
+metadata:
+  name: sls-store-test
+  namespace: default
+spec:
+  forProvider:
+    projectName: crossplane-poc
+    ttl: 1
+    shardCount: 2
+  writeConnectionSecretToRef:
+    name: sls-store-endpoint
+    namespace: default

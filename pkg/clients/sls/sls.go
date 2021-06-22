@@ -38,14 +38,30 @@ var (
 	ErrFailedToUpdateSLSProject = "FailedToUpdateSLSProject"
 	// ErrFailedToDeleteSLSProject is the error of failing to delete an SLS project
 	ErrFailedToDeleteSLSProject = "FailedToDeleteSLSProject"
+
+	// ErrCodeStoreNotExist error code of ServerError when Store not found
+	ErrCodeStoreNotExist = "LogStoreNotExist"
+	// ErrFailedToGetSLSStore is the error of failing to get an SLS store
+	ErrFailedToGetSLSStore = "FailedToGetSLSStore"
+	// ErrFailedToCreateSLSStore is the error of failing to create an SLS store
+	ErrFailedToCreateSLSStore = "FailedToCreateSLSStore"
+	// ErrFailedToUpdateSLSStore is the error of failing to update an SLS store
+	ErrFailedToUpdateSLSStore = "FailedToUpdateSLSStore"
+	// ErrFailedToDeleteSLSStore is the error of failing to delete an SLS store
+	ErrFailedToDeleteSLSStore = "FailedToDeleteSLSStore"
 )
 
-// LogClientInterface will help fakeOSSClient in unit tests
+// LogClientInterface is the Log client interface
 type LogClientInterface interface {
 	Describe(name string) (*sdk.LogProject, error)
 	Create(name, description string) (*sdk.LogProject, error)
 	Update(name, description string) (*sdk.LogProject, error)
 	Delete(name string) error
+
+	DescribeStore(project string, logstore string) (*sdk.LogStore, error)
+	CreateStore(project string, logstore string, ttl, shardCnt int, autoSplit bool, maxSplitShard int) error
+	UpdateStore(project string, logstore string, ttl int) error
+	DeleteStore(project string, logstore string) error
 }
 
 // LogClient is the SDK client of SLS
@@ -59,6 +75,8 @@ func NewClient(accessKeyID, accessKeySecret, securityToken, region string) *LogC
 	logClient := sdk.CreateNormalInterface(endpoint, accessKeyID, accessKeySecret, securityToken)
 	return &LogClient{Client: logClient}
 }
+
+// ----------------------SLS Project------------------------------ //
 
 // Describe describes SLS project
 func (c *LogClient) Describe(name string) (*sdk.LogProject, error) {
@@ -85,6 +103,31 @@ func (c *LogClient) Delete(name string) error {
 	return errors.Wrap(err, ErrFailedToDeleteSLSProject)
 }
 
+// DescribeStore describes SLS store
+func (c *LogClient) DescribeStore(project string, logstore string) (*sdk.LogStore, error) {
+	logStore, err := c.Client.GetLogStore(project, logstore)
+	return logStore, errors.Wrap(err, ErrFailedToGetSLSStore)
+}
+
+// CreateStore creates SLS store
+func (c *LogClient) CreateStore(project string, logstore string, ttl, shardCnt int, autoSplit bool, maxSplitShard int) error {
+	err := c.Client.CreateLogStore(project, logstore, ttl, shardCnt, autoSplit, maxSplitShard)
+	return errors.Wrap(err, ErrFailedToCreateSLSStore)
+}
+
+// UpdateStore updates SLS store's description
+func (c *LogClient) UpdateStore(project string, logstore string, ttl int) error {
+	err := c.Client.UpdateLogStore(project, logstore, ttl, 2)
+	return errors.Wrap(err, ErrFailedToUpdateSLSStore)
+
+}
+
+// DeleteStore deletes SLS store
+func (c *LogClient) DeleteStore(project string, logstore string) error {
+	err := c.Client.DeleteLogStore(project, logstore)
+	return errors.Wrap(err, ErrFailedToDeleteSLSStore)
+}
+
 // GenerateObservation is used to produce v1alpha1.ProjectObservation
 func GenerateObservation(project *sdk.LogProject) v1alpha1.ProjectObservation {
 	return v1alpha1.ProjectObservation{
@@ -105,6 +148,35 @@ func IsNotFoundError(err error) bool {
 		return true
 	}
 	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
+		return true
+	}
+	return false
+}
+
+// ----------------------SLS Store------------------------------ //
+
+// GenerateStoreObservation is used to produce v1alpha1.StoreObservation
+func GenerateStoreObservation(store *sdk.LogStore) v1alpha1.StoreObservation {
+	return v1alpha1.StoreObservation{
+		CreateTime:     store.CreateTime,
+		LastModifyTime: store.LastModifyTime,
+	}
+}
+
+// IsStoreUpdateToDate checks whether cr is up to date
+func IsStoreUpdateToDate(cr *v1alpha1.Store, store *sdk.LogStore) bool {
+	if (cr.Name == store.Name) && (cr.Spec.ForProvider.TTL == store.TTL) {
+		return true
+	}
+	return false
+}
+
+// IsStoreNotFoundError helper function to test for SLS project not found error
+func IsStoreNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeStoreNotExist) {
 		return true
 	}
 	return false
