@@ -36,58 +36,56 @@ import (
 )
 
 var (
-	slsProjectDescription = "test project"
-	slsProjectEndpoint    = "xxx.com"
-	validCR               = &slsv1alpha1.Project{
+	project         = "abc"
+	store           = "def"
+	notExistedStore = "not-found-abc"
+	someOtherError  = "Some other error"
+	validStoreCR    = &slsv1alpha1.Store{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "def",
-			Annotations: map[string]string{meta.AnnotationKeyExternalName: "def"},
+			Name:        store,
+			Annotations: map[string]string{meta.AnnotationKeyExternalName: store},
 		},
-		Spec: slsv1alpha1.ProjectSpec{
-			ForProvider: slsv1alpha1.ProjectParameters{
-				Description: slsProjectDescription,
+		Spec: slsv1alpha1.StoreSpec{
+			ForProvider: slsv1alpha1.StoreParameters{
+				ProjectName: project,
+				TTL:         1,
+				ShardCount:  2,
+			},
+		},
+		Status: slsv1alpha1.StoreStatus{
+			AtProvider: slsv1alpha1.StoreObservation{
+				CreateTime:     123,
+				LastModifyTime: 234,
 			},
 		},
 	}
-	validProject = &sdk.LogProject{Name: "def", Endpoint: slsProjectEndpoint}
+	validStore = &sdk.LogStore{Name: store, TTL: 1, ShardCount: 2}
 )
 
-type fakeSDKClient struct {
-}
-
-// Describe describes SLS project
-func (c *fakeSDKClient) Describe(name string) (*sdk.LogProject, error) {
-	switch name {
+func (c *fakeSDKClient) DescribeStore(project string, logstore string) (*sdk.LogStore, error) {
+	switch logstore {
 	case "":
-		return nil, sdk.Error{Code: slsclient.ErrCodeProjectNotExist, HTTPCode: int32(0)}
-	case "abc":
-		return nil, errors.New("unknown error")
+		return nil, errors.Wrap(&sdk.Error{Code: slsclient.ErrCodeStoreNotExist}, "xxx")
+	case notExistedStore:
+		return nil, errors.New(someOtherError)
 	default:
-		return &sdk.LogProject{
-			Name:        name,
-			Description: slsProjectDescription,
-			Endpoint:    slsProjectEndpoint,
-		}, nil
-
+		return validStore, nil
 	}
 }
 
-// Create creates SLS project
-func (c *fakeSDKClient) Create(name, description string) (*sdk.LogProject, error) {
-	return validProject, nil
-}
-
-// Update sets SLS project description
-func (c *fakeSDKClient) Update(name, description string) (*sdk.LogProject, error) {
-	return validProject, nil
-}
-
-// Delete deletes SLS project
-func (c *fakeSDKClient) Delete(name string) error {
+func (c *fakeSDKClient) CreateStore(project string, logstore string, ttl, shardCnt int, autoSplit bool, maxSplitShard int) error {
 	return nil
 }
 
-func TestObserve(t *testing.T) {
+func (c *fakeSDKClient) UpdateStore(project string, logstore string, ttl int) error {
+	return nil
+}
+
+func (c *fakeSDKClient) DeleteStore(project string, logstore string) error {
+	return nil
+}
+
+func TestStoreObserve(t *testing.T) {
 	var (
 		ctx = context.Background()
 	)
@@ -102,17 +100,17 @@ func TestObserve(t *testing.T) {
 		mg     resource.Managed
 		want   want
 	}{
-		"NotSLSProject": {
-			reason: "We should return an error if the supplied managed resource is not an SLS project",
+		"NotSLSStore": {
+			reason: "We should return an error if the supplied managed resource is not SLS store",
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalObservation{},
-				err: errors.New(errNotProject),
+				err: errors.New(errNotStore),
 			},
 		},
-		"SLSProjectNotFound": {
-			reason: "SLS Project name could not be found",
-			mg:     &slsv1alpha1.Project{},
+		"SLSStoreNotFound": {
+			reason: "SLS Store name could not be found",
+			mg:     &slsv1alpha1.Store{},
 			want: want{
 				o: managed.ExternalObservation{
 					ResourceExists: false,
@@ -120,29 +118,31 @@ func TestObserve(t *testing.T) {
 				err: nil,
 			},
 		},
-		"SLSProjectOtherError": {
+		"SLSStoreOtherError": {
 			reason: "We should report an unknown error",
-			mg: &slsv1alpha1.Project{
+			mg: &slsv1alpha1.Store{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:        "abc",
-					Annotations: map[string]string{meta.AnnotationKeyExternalName: "abc"},
+					Name:        notExistedStore,
+					Annotations: map[string]string{meta.AnnotationKeyExternalName: notExistedStore},
 				},
-				Spec: slsv1alpha1.ProjectSpec{ForProvider: slsv1alpha1.ProjectParameters{
-					Description: "test project",
+				Spec: slsv1alpha1.StoreSpec{ForProvider: slsv1alpha1.StoreParameters{
+					ProjectName: "sls-project-test",
+					TTL:         1,
+					ShardCount:  2,
 				}}},
 			want: want{
 				o:   managed.ExternalObservation{},
-				err: errors.New("unknown error"),
+				err: errors.New(someOtherError),
 			},
 		},
-		"SLSProjectSuccessfullyFound": {
-			reason: "Observing an SLS project successfully should return an ExternalObservation and nil error",
-			mg:     validCR,
+		"SLSStoreSuccessfullyFound": {
+			reason: "Observing SLS store successfully should return an ExternalObservation and nil error",
+			mg:     validStoreCR,
 			want: want{
 				o: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: getConnectionDetails(validProject)},
+					ConnectionDetails: getStoreConnectionDetails(project, store)},
 				err: nil,
 			},
 		},
@@ -150,7 +150,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			external := &external{client: &fakeSDKClient{}}
+			external := &storeExternal{client: &fakeSDKClient{}}
 			got, err := external.Observe(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
@@ -162,7 +162,7 @@ func TestObserve(t *testing.T) {
 	}
 }
 
-func TestCreate(t *testing.T) {
+func TestStoreCreate(t *testing.T) {
 	var (
 		ctx = context.Background()
 	)
@@ -177,20 +177,20 @@ func TestCreate(t *testing.T) {
 		mg     resource.Managed
 		want   want
 	}{
-		"NotSLSProject": {
-			reason: "Not an Project object",
+		"NotSLSStore": {
+			reason: "Not Store object",
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalCreation{},
-				err: errors.New(errNotProject),
+				err: errors.New(errNotStore),
 			},
 		},
 		"Success": {
-			reason: "Creating an SLS project successfully",
-			mg:     validCR,
+			reason: "Creating SLS store successfully",
+			mg:     validStoreCR,
 			want: want{
 				o: managed.ExternalCreation{
-					ConnectionDetails: getConnectionDetails(validProject)},
+					ConnectionDetails: getStoreConnectionDetails(project, store)},
 				err: nil,
 			},
 		},
@@ -198,7 +198,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			external := &external{client: &fakeSDKClient{}}
+			external := &storeExternal{client: &fakeSDKClient{}}
 			got, err := external.Create(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
@@ -210,7 +210,7 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
+func TestStoreUpdate(t *testing.T) {
 	var (
 		ctx = context.Background()
 	)
@@ -225,17 +225,17 @@ func TestUpdate(t *testing.T) {
 		mg     resource.Managed
 		want   want
 	}{
-		"NotSLSProject": {
-			reason: "Not an Project object",
+		"NotSLSStore": {
+			reason: "Not Store object",
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalUpdate{},
-				err: errors.New(errNotProject),
+				err: errors.New(errNotStore),
 			},
 		},
 		"Success": {
-			reason: "Creating an SLS project successfully",
-			mg:     validCR,
+			reason: "Creating SLS store successfully",
+			mg:     validStoreCR,
 			want: want{
 				o:   managed.ExternalUpdate{},
 				err: nil,
@@ -245,7 +245,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			external := &external{client: &fakeSDKClient{}}
+			external := &storeExternal{client: &fakeSDKClient{}}
 			got, err := external.Update(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
@@ -257,7 +257,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestStoreDelete(t *testing.T) {
 	var (
 		ctx = context.Background()
 	)
@@ -271,16 +271,16 @@ func TestDelete(t *testing.T) {
 		mg     resource.Managed
 		want   want
 	}{
-		"NotSLSProject": {
-			reason: "Not an Project object",
+		"NotSLSStore": {
+			reason: "Not Store object",
 			mg:     nil,
 			want: want{
-				err: errors.New(errNotProject),
+				err: errors.New(errNotStore),
 			},
 		},
 		"Success": {
-			reason: "Creating an SLS project successfully",
-			mg:     validCR,
+			reason: "Creating SLS store successfully",
+			mg:     validStoreCR,
 			want: want{
 				err: nil,
 			},
@@ -289,7 +289,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			external := &external{client: &fakeSDKClient{}}
+			external := &storeExternal{client: &fakeSDKClient{}}
 			err := external.Delete(ctx, tc.mg)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", tc.reason, diff)
