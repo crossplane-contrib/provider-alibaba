@@ -37,6 +37,7 @@ import (
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 	"github.com/crossplane/provider-alibaba/apis/v1alpha1"
 	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
+	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
@@ -71,7 +72,7 @@ func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	client      client.Client
 	usage       resource.Tracker
-	NewClientFn func(accessKeyID, accessKeySecret, region string) *slsclient.LogClient
+	NewClientFn func(accessKeyID, accessKeySecret, securityToken, region string) *slsclient.LogClient
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
@@ -114,7 +115,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetConnectionSecret)
 	}
 
-	slsClient := c.NewClientFn(string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), region)
+	slsClient := c.NewClientFn(string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]), region)
 	return &external{client: slsClient}, nil
 }
 

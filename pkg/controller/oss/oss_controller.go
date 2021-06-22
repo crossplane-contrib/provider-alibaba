@@ -53,13 +53,6 @@ const (
 	errNotBucket              = "managed resource is not a Bucket custom resource"
 )
 
-const (
-	// AccessKeyID is Alibaba Cloud Access key ID
-	AccessKeyID = "accessKeyId"
-	// AccessKeySecret is Alibaba Cloud Access Secret Key
-	AccessKeySecret = "accessKeySecret"
-)
-
 // SetupBucket adds a controller that reconciles Bucket.
 func SetupBucket(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(v1alpha1.BucketGroupKind)
@@ -125,7 +118,7 @@ func (c *Connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, err
 	}
 
-	ossClient, err := c.NewClientFn(ctx, endpoint, string(s.Data[AccessKeyID]), string(s.Data[AccessKeySecret]), "")
+	ossClient, err := c.NewClientFn(ctx, endpoint, string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]))
 	return &External{ExternalClient: ossClient}, errors.Wrap(err, errCreateClient)
 }
 

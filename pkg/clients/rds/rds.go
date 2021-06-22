@@ -78,8 +78,17 @@ type client struct {
 }
 
 // NewClient creates new RDS RDSClient
-func NewClient(ctx context.Context, accessKeyID, accessKeySecret, region string) (Client, error) {
-	rdsCli, err := alirds.NewClientWithAccessKey(region, accessKeyID, accessKeySecret)
+func NewClient(ctx context.Context, accessKeyID, accessKeySecret, securityToken, region string) (Client, error) {
+	var (
+		rdsCli *alirds.Client
+		err    error
+	)
+	if securityToken != "" {
+		rdsCli, err = alirds.NewClientWithStsToken(region, accessKeyID, accessKeySecret, securityToken)
+	} else {
+		rdsCli, err = alirds.NewClientWithAccessKey(region, accessKeyID, accessKeySecret)
+	}
+
 	if err != nil {
 		return nil, err
 	}

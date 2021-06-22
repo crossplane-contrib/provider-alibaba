@@ -54,9 +54,9 @@ type LogClient struct {
 }
 
 // NewClient creates new SLS client
-func NewClient(accessKeyID, accessKeySecret, region string) *LogClient {
+func NewClient(accessKeyID, accessKeySecret, securityToken, region string) *LogClient {
 	endpoint := fmt.Sprintf("%s.log.aliyuncs.com", region)
-	logClient := sdk.CreateNormalInterface(endpoint, accessKeyID, accessKeySecret, "")
+	logClient := sdk.CreateNormalInterface(endpoint, accessKeyID, accessKeySecret, securityToken)
 	return &LogClient{Client: logClient}
 }
 

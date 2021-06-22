@@ -30,7 +30,7 @@ func TestConnector(t *testing.T) {
 	type fields struct {
 		client       client.Client
 		usage        resource.Tracker
-		newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error)
+		newRDSClient func(ctx context.Context, accessKeyID, accessKeySecret, securityToken, region string) (rds.Client, error)
 	}
 
 	type args struct {
@@ -232,7 +232,7 @@ func TestConnector(t *testing.T) {
 					}),
 				},
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
-				newRDSClient: func(ctx context.Context, accessKeyID, accessKeySecret, region string) (rds.Client, error) {
+				newRDSClient: func(ctx context.Context, accessKeyID, accessKeySecret, securityToken, region string) (rds.Client, error) {
 					return nil, errBoom
 				},
 			},
