@@ -22,6 +22,7 @@ import (
 
 	"github.com/crossplane/provider-alibaba/pkg/controller/config"
 	"github.com/crossplane/provider-alibaba/pkg/controller/database"
+	"github.com/crossplane/provider-alibaba/pkg/controller/nas"
 	"github.com/crossplane/provider-alibaba/pkg/controller/oss"
 	"github.com/crossplane/provider-alibaba/pkg/controller/sls"
 )
@@ -33,6 +34,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		database.SetupRDSInstance,
 		sls.SetupProject,
 		oss.SetupBucket,
+		nas.SetupNASFileSystem,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
