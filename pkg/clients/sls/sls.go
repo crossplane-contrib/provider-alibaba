@@ -59,7 +59,7 @@ type LogClientInterface interface {
 	Delete(name string) error
 
 	DescribeStore(project string, logstore string) (*sdk.LogStore, error)
-	CreateStore(project string, logstore string, ttl, shardCnt int, autoSplit bool, maxSplitShard int) error
+	CreateStore(project string, store *sdk.LogStore) error
 	UpdateStore(project string, logstore string, ttl int) error
 	DeleteStore(project string, logstore string) error
 }
@@ -110,8 +110,8 @@ func (c *LogClient) DescribeStore(project string, logstore string) (*sdk.LogStor
 }
 
 // CreateStore creates SLS store
-func (c *LogClient) CreateStore(project string, logstore string, ttl, shardCnt int, autoSplit bool, maxSplitShard int) error {
-	err := c.Client.CreateLogStore(project, logstore, ttl, shardCnt, autoSplit, maxSplitShard)
+func (c *LogClient) CreateStore(project string, logstore *sdk.LogStore) error {
+	err := c.Client.CreateLogStoreV2(project, logstore)
 	return errors.Wrap(err, ErrFailedToCreateSLSStore)
 }
 

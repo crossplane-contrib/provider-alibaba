@@ -73,7 +73,7 @@ func (c *fakeSDKClient) DescribeStore(project string, logstore string) (*sdk.Log
 	}
 }
 
-func (c *fakeSDKClient) CreateStore(project string, logstore string, ttl, shardCnt int, autoSplit bool, maxSplitShard int) error {
+func (c *fakeSDKClient) CreateStore(project string, logstore *sdk.LogStore) error {
 	return nil
 }
 

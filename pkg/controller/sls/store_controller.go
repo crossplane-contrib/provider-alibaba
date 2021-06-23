@@ -21,6 +21,7 @@ package sls
 import (
 	"context"
 
+	sdk "github.com/aliyun/aliyun-log-go-sdk"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -40,7 +41,8 @@ import (
 )
 
 const (
-	errNotStore = "managed resource is not a SLS store custom resource"
+	errNotStore               = "managed resource is not a SLS store custom resource"
+	errMaxSplitShardMustBeSet = "maxSplitShard must be set if autoSplit is true"
 )
 
 // SetupStore adds a controller that reconciles SLSStores.
@@ -154,14 +156,26 @@ func (e *storeExternal) Create(ctx context.Context, mg resource.Managed) (manage
 		return managed.ExternalCreation{}, errors.New(errNotStore)
 	}
 	name := meta.GetExternalName(cr)
-	storeSpec := cr.Spec.ForProvider
+	store := &sdk.LogStore{
+		Name:       name,
+		TTL:        cr.Spec.ForProvider.TTL,
+		ShardCount: cr.Spec.ForProvider.ShardCount,
+	}
+	if cr.Spec.ForProvider.AutoSplit != nil {
+		store.AutoSplit = *cr.Spec.ForProvider.AutoSplit
+		if store.AutoSplit && cr.Spec.ForProvider.MaxSplitShard == nil {
+			return managed.ExternalCreation{}, errors.New(errMaxSplitShardMustBeSet)
+		}
+	}
+	if cr.Spec.ForProvider.MaxSplitShard != nil {
+		store.MaxSplitShard = *cr.Spec.ForProvider.MaxSplitShard
+	}
 	cr.SetConditions(xpv1.Creating())
-	err := e.client.CreateStore(storeSpec.ProjectName, name, storeSpec.TTL, storeSpec.ShardCount, *storeSpec.AutoSplit,
-		*storeSpec.MaxSplitShard)
+	err := e.client.CreateStore(cr.Spec.ForProvider.ProjectName, store)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	return managed.ExternalCreation{ConnectionDetails: getStoreConnectionDetails(storeSpec.ProjectName, name)}, nil
+	return managed.ExternalCreation{ConnectionDetails: getStoreConnectionDetails(cr.Spec.ForProvider.ProjectName, name)}, nil
 }
 
 func (e *storeExternal) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
