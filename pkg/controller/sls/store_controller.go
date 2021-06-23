@@ -36,6 +36,7 @@ import (
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 	"github.com/crossplane/provider-alibaba/apis/v1alpha1"
 	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
+	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
@@ -64,7 +65,7 @@ func SetupStore(mgr ctrl.Manager, l logging.Logger) error {
 type logStoreConnector struct {
 	client      client.Client
 	usage       resource.Tracker
-	NewClientFn func(accessKeyID, accessKeySecret, region string) *slsclient.LogClient
+	NewClientFn func(accessKeyID, accessKeySecret, securityToken, region string) *slsclient.LogClient
 }
 
 func (c *logStoreConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
@@ -107,7 +108,7 @@ func (c *logStoreConnector) Connect(ctx context.Context, mg resource.Managed) (m
 		return nil, errors.Wrap(err, errGetConnectionSecret)
 	}
 
-	slsClient := c.NewClientFn(string(s.Data["accessKeyId"]), string(s.Data["accessKeySecret"]), region)
+	slsClient := c.NewClientFn(string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]), region)
 	return &storeExternal{client: slsClient}, nil
 }
 
@@ -155,7 +156,8 @@ func (e *storeExternal) Create(ctx context.Context, mg resource.Managed) (manage
 	name := meta.GetExternalName(cr)
 	storeSpec := cr.Spec.ForProvider
 	cr.SetConditions(xpv1.Creating())
-	err := e.client.CreateStore(storeSpec.ProjectName, name, storeSpec.TTL, storeSpec.ShardCount, storeSpec.AutoSplit, storeSpec.MaxSplitShard)
+	err := e.client.CreateStore(storeSpec.ProjectName, name, storeSpec.TTL, storeSpec.ShardCount, *storeSpec.AutoSplit,
+		*storeSpec.MaxSplitShard)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
