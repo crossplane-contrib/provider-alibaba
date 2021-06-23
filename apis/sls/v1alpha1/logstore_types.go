@@ -23,11 +23,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// StoreSpec defines the desired state of SLS Store
-type StoreSpec struct {
+// LogStoreSpec defines the desired state of SLS LogStore
+type LogStoreSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 
-	// ForProvider field is where use set parameters for SLS Store
+	// ForProvider field is where use set parameters for SLS LogStore
 	ForProvider StoreParameters `json:"forProvider"`
 }
 
@@ -40,8 +40,8 @@ type StoreObservation struct {
 	LastModifyTime uint32 `json:"lastModifyTime"`
 }
 
-// StoreStatus defines the observed state of SLS Store
-type StoreStatus struct {
+// LogStoreStatus defines the observed state of SLS LogStore
+type LogStoreStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          StoreObservation `json:"atProvider,omitempty"`
 }
@@ -75,24 +75,24 @@ type StoreParameters struct {
 
 // +kubebuilder:object:root=true
 
-// Store is the Schema for the SLS Stores API
+// LogStore is the Schema for the SLS Stores API
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,alibaba}
-type Store struct {
+type LogStore struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              StoreSpec   `json:"spec"`
-	Status            StoreStatus `json:"status,omitempty"`
+	Spec              LogStoreSpec   `json:"spec"`
+	Status            LogStoreStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// StoreList contains a list of Store
+// StoreList contains a list of LogStore
 type StoreList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Store `json:"items"`
+	Items           []LogStore `json:"items"`
 }

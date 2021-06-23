@@ -59,7 +59,7 @@ func SetupStore(mgr ctrl.Manager, l logging.Logger) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&slsv1alpha1.Store{}).
+		For(&slsv1alpha1.LogStore{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(slsv1alpha1.StoreGroupVersionKind), options...))
 }
@@ -71,7 +71,7 @@ type logStoreConnector struct {
 }
 
 func (c *logStoreConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
-	cr, ok := mg.(*slsv1alpha1.Store)
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
 		return nil, errors.New(errNotStore)
 	}
@@ -119,7 +119,7 @@ type storeExternal struct {
 }
 
 func (e *storeExternal) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*slsv1alpha1.Store)
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotStore)
 	}
@@ -151,7 +151,7 @@ func (e *storeExternal) Observe(ctx context.Context, mg resource.Managed) (manag
 }
 
 func (e *storeExternal) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*slsv1alpha1.Store)
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotStore)
 	}
@@ -179,7 +179,7 @@ func (e *storeExternal) Create(ctx context.Context, mg resource.Managed) (manage
 }
 
 func (e *storeExternal) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*slsv1alpha1.Store)
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotStore)
 	}
@@ -189,7 +189,7 @@ func (e *storeExternal) Update(ctx context.Context, mg resource.Managed) (manage
 }
 
 func (e *storeExternal) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*slsv1alpha1.Store)
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
 		return errors.New(errNotStore)
 	}

@@ -39,7 +39,7 @@ var (
 	// ErrFailedToDeleteSLSProject is the error of failing to delete an SLS project
 	ErrFailedToDeleteSLSProject = "FailedToDeleteSLSProject"
 
-	// ErrCodeStoreNotExist error code of ServerError when Store not found
+	// ErrCodeStoreNotExist error code of ServerError when LogStore not found
 	ErrCodeStoreNotExist = "LogStoreNotExist"
 	// ErrFailedToGetSLSStore is the error of failing to get an SLS store
 	ErrFailedToGetSLSStore = "FailedToGetSLSStore"
@@ -153,7 +153,7 @@ func IsNotFoundError(err error) bool {
 	return false
 }
 
-// ----------------------SLS Store------------------------------ //
+// ----------------------SLS LogStore------------------------------ //
 
 // GenerateStoreObservation is used to produce v1alpha1.StoreObservation
 func GenerateStoreObservation(store *sdk.LogStore) v1alpha1.StoreObservation {
@@ -164,7 +164,7 @@ func GenerateStoreObservation(store *sdk.LogStore) v1alpha1.StoreObservation {
 }
 
 // IsStoreUpdateToDate checks whether cr is up to date
-func IsStoreUpdateToDate(cr *v1alpha1.Store, store *sdk.LogStore) bool {
+func IsStoreUpdateToDate(cr *v1alpha1.LogStore, store *sdk.LogStore) bool {
 	if (cr.Name == store.Name) && (cr.Spec.ForProvider.TTL == store.TTL) {
 		return true
 	}

@@ -1,5 +1,5 @@
 apiVersion: sls.alibaba.crossplane.io/v1alpha1
-kind: Store
+kind: LogStore
 metadata:
   name: sls-store-test
 spec:

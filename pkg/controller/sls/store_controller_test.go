@@ -40,19 +40,19 @@ var (
 	store           = "def"
 	notExistedStore = "not-found-abc"
 	someOtherError  = "Some other error"
-	validStoreCR    = &slsv1alpha1.Store{
+	validStoreCR    = &slsv1alpha1.LogStore{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        store,
 			Annotations: map[string]string{meta.AnnotationKeyExternalName: store},
 		},
-		Spec: slsv1alpha1.StoreSpec{
+		Spec: slsv1alpha1.LogStoreSpec{
 			ForProvider: slsv1alpha1.StoreParameters{
 				ProjectName: project,
 				TTL:         1,
 				ShardCount:  2,
 			},
 		},
-		Status: slsv1alpha1.StoreStatus{
+		Status: slsv1alpha1.LogStoreStatus{
 			AtProvider: slsv1alpha1.StoreObservation{
 				CreateTime:     123,
 				LastModifyTime: 234,
@@ -109,8 +109,8 @@ func TestStoreObserve(t *testing.T) {
 			},
 		},
 		"SLSStoreNotFound": {
-			reason: "SLS Store name could not be found",
-			mg:     &slsv1alpha1.Store{},
+			reason: "SLS LogStore name could not be found",
+			mg:     &slsv1alpha1.LogStore{},
 			want: want{
 				o: managed.ExternalObservation{
 					ResourceExists: false,
@@ -120,12 +120,12 @@ func TestStoreObserve(t *testing.T) {
 		},
 		"SLSStoreOtherError": {
 			reason: "We should report an unknown error",
-			mg: &slsv1alpha1.Store{
+			mg: &slsv1alpha1.LogStore{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        notExistedStore,
 					Annotations: map[string]string{meta.AnnotationKeyExternalName: notExistedStore},
 				},
-				Spec: slsv1alpha1.StoreSpec{ForProvider: slsv1alpha1.StoreParameters{
+				Spec: slsv1alpha1.LogStoreSpec{ForProvider: slsv1alpha1.StoreParameters{
 					ProjectName: "sls-project-test",
 					TTL:         1,
 					ShardCount:  2,
@@ -178,7 +178,7 @@ func TestStoreCreate(t *testing.T) {
 		want   want
 	}{
 		"NotSLSStore": {
-			reason: "Not Store object",
+			reason: "Not LogStore object",
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalCreation{},
@@ -226,7 +226,7 @@ func TestStoreUpdate(t *testing.T) {
 		want   want
 	}{
 		"NotSLSStore": {
-			reason: "Not Store object",
+			reason: "Not LogStore object",
 			mg:     nil,
 			want: want{
 				o:   managed.ExternalUpdate{},
@@ -272,7 +272,7 @@ func TestStoreDelete(t *testing.T) {
 		want   want
 	}{
 		"NotSLSStore": {
-			reason: "Not Store object",
+			reason: "Not LogStore object",
 			mg:     nil,
 			want: want{
 				err: errors.New(errNotStore),
