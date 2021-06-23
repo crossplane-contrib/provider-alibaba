@@ -88,7 +88,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	
+
 	slsClient := c.NewClientFn(cred.AccessKeyID, cred.AccessKeySecret, cred.SecurityToken, region)
 	return &external{client: slsClient}, nil
 }

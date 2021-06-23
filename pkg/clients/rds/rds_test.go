@@ -90,6 +90,7 @@ func TestNewClient(t *testing.T) {
 		ctx             context.Context
 		accessKeyID     string
 		accessKeySecret string
+		securityToken   string
 		region          string
 	}
 	type want struct {
@@ -114,7 +115,7 @@ func TestNewClient(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := NewClient(tc.args.ctx, tc.args.accessKeyID, tc.args.accessKeySecret, tc.args.region)
+			_, err := NewClient(tc.args.ctx, tc.args.accessKeyID, tc.args.accessKeySecret, tc.args.securityToken, tc.args.region)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("\nNewClient(...) -want error, +got error:\n%s\n", diff)
 			}
@@ -123,7 +124,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestDescribeDBInstance(t *testing.T) {
-	c, _ := NewClient(context.TODO(), "xwerwrfYfwq934tsfsFAKED", "fsdfwerfaUIIffaYYYYYFUUFHUDSDKSDFAKED", "cn-beijing")
+	c, _ := NewClient(context.TODO(), "xwerwrfYfwq934tsfsFAKED", "fsdfwerfaUIIffaYYYYYFUUFHUDSDKSDFAKED", "", "cn-beijing")
 	type args struct {
 		id string
 	}
@@ -167,7 +168,7 @@ func TestDescribeDBInstance(t *testing.T) {
 }
 
 func TestCreateDBInstance(t *testing.T) {
-	c, _ := NewClient(context.TODO(), "xwerwrfYfwq934tsfsFAKED", "fsdfwerfaUIIffaYYYYYFUUFHUDSDKSDFAKED", "cn-beijing")
+	c, _ := NewClient(context.TODO(), "xwerwrfYfwq934tsfsFAKED", "fsdfwerfaUIIffaYYYYYFUUFHUDSDKSDFAKED", "", "cn-beijing")
 	type args struct {
 		req CreateDBInstanceRequest
 	}
@@ -218,7 +219,7 @@ func TestCreateDBInstance(t *testing.T) {
 }
 
 func TestDeleteDBInstance(t *testing.T) {
-	c, _ := NewClient(context.TODO(), "xwerwrfYfwq934tsfsFAKED", "fsdfwerfaUIIffaYYYYYFUUFHUDSDKSDFAKED", "cn-beijing")
+	c, _ := NewClient(context.TODO(), "xwerwrfYfwq934tsfsFAKED", "fsdfwerfaUIIffaYYYYYFUUFHUDSDKSDFAKED", "", "cn-beijing")
 	type args struct {
 		id string
 	}
@@ -256,7 +257,7 @@ func TestDeleteDBInstance(t *testing.T) {
 }
 
 func TestCreateAccount(t *testing.T) {
-	c, _ := NewClient(context.TODO(), "xwerwrfYfwq934tsfsFAKED", "fsdfwerfaUIIffaYYYYYFUUFHUDSDKSDFAKED", "cn-beijing")
+	c, _ := NewClient(context.TODO(), "xwerwrfYfwq934tsfsFAKED", "fsdfwerfaUIIffaYYYYYFUUFHUDSDKSDFAKED", "", "cn-beijing")
 	type args struct {
 		id       string
 		username string
