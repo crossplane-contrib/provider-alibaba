@@ -18,7 +18,6 @@ package nas
 
 import (
 	"context"
-	"fmt"
 
 	openapi "github.com/alibabacloud-go/darabonba-openapi/client"
 	sdk "github.com/alibabacloud-go/nas-20170626/v2/client"
@@ -30,8 +29,8 @@ import (
 
 // ErrCodeNoSuchNASFileSystem is the error code "NoSuchNASFileSystem" returned by SDK
 const (
-	ErrCodeNoSuchNASFileSystem = "NoSuchNASFileSystem"
 	errFailedToCreateNASClient = "failed to crate NAS client"
+	errCodeFileSystemNotExist  = "InvalidFileSystem.NotFound"
 )
 
 // ClientInterface will help fakeOSSClient in unit tests
@@ -47,13 +46,13 @@ type SDKClient struct {
 }
 
 // NewClient will create OSS client
-func NewClient(ctx context.Context, region string, accessKeyID string, accessKeySecret string, securityToken string) (*SDKClient, error) {
+func NewClient(ctx context.Context, endpoint string, accessKeyID string, accessKeySecret string, securityToken string) (*SDKClient, error) {
 	config := &openapi.Config{
 		AccessKeyId:     &accessKeyID,
 		AccessKeySecret: &accessKeySecret,
 		SecurityToken:   &securityToken,
+		Endpoint:        &endpoint,
 	}
-	config.Endpoint = tea.String(fmt.Sprintf("nas.%s.aliyuncs.com", region))
 	client, err := sdk.NewClient(config)
 	if err != nil {
 		return nil, errors.Wrap(err, errFailedToCreateNASClient)
@@ -104,7 +103,7 @@ func (c *SDKClient) DeleteFileSystem(fileSystemID string) error {
 }
 
 // GenerateObservation generates NASFileSystemObservation from fileSystem information
-func GenerateObservation(r sdk.DescribeFileSystemsResponse) v1alpha1.NASFileSystemObservation {
+func GenerateObservation(r *sdk.DescribeFileSystemsResponse) v1alpha1.NASFileSystemObservation {
 	var domain string
 	if len(r.Body.FileSystems.FileSystem) == 0 {
 		return v1alpha1.NASFileSystemObservation{}
@@ -122,13 +121,23 @@ func GenerateObservation(r sdk.DescribeFileSystemsResponse) v1alpha1.NASFileSyst
 
 // IsUpdateToDate checks whether cr is up to date
 func IsUpdateToDate(cr *v1alpha1.NASFileSystem, fsResponse *sdk.DescribeFileSystemsResponse) bool {
-	if len(fsResponse.Body.FileSystems.FileSystem) == 0 {
+	if *fsResponse.Body.TotalCount == 0 {
 		return false
 	}
 	fs := fsResponse.Body.FileSystems.FileSystem[0]
 
-	if cr.Spec.StorageType == fs.StorageType && cr.Spec.ProtocolType == fs.ProtocolType &&
-		cr.Spec.ChargeType == fs.ChargeType && cr.Spec.FileSystemType == fs.FileSystemType {
+	if *cr.Spec.StorageType == *fs.StorageType && *cr.Spec.ProtocolType == *fs.ProtocolType {
+		return true
+	}
+	return false
+}
+
+// IsNotFoundError helper function to test for SLS project not found error
+func IsNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if e, ok := errors.Cause(err).(*tea.SDKError); ok && (*e.Code == errCodeFileSystemNotExist) {
 		return true
 	}
 	return false

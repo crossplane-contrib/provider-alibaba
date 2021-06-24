@@ -140,7 +140,7 @@ func TestCreate(t *testing.T) {
 
 	validCR := &v1alpha1.NASFileSystem{Spec: v1alpha1.NASFileSystemSpec{}}
 	validCR.Spec.StorageType = pointer.StringPtr("standard")
-	validCR.Spec.ProtocolType = pointer.StringPtr("standard")
+	validCR.Spec.ProtocolType = pointer.StringPtr("nfs")
 	validCR.ObjectMeta.Annotations = map[string]string{meta.AnnotationKeyExternalName: "def"}
 
 	type want struct {

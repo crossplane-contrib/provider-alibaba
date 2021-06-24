@@ -22,7 +22,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -133,19 +132,23 @@ func (e *External) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotNASFileSystem)
 	}
 
-	if cr.Status.AtProvider.FileSystemID == "" {
+	fsID := cr.Status.AtProvider.FileSystemID
+	if fsID == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
 
-	fsID := meta.GetExternalName(cr)
 	filesystem, err := e.ExternalClient.DescribeFileSystems(&fsID, cr.Spec.FileSystemType, cr.Spec.VpcID)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errFailedToDescribeNASFileSystem)
+		// Managed resource `NASFileSystem` is special, the identifier of if `name` is different to the cloud resource identifier `FileSystemID`
+		if nasclient.IsNotFoundError(err) {
+			return managed.ExternalObservation{ResourceExists: false, ResourceUpToDate: true}, nil
+		}
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	cr.Status.AtProvider = nasclient.GenerateObservation(*filesystem)
+	cr.Status.AtProvider = nasclient.GenerateObservation(filesystem)
 	var upToDate = nasclient.IsUpdateToDate(cr, filesystem)
 	if upToDate {
 		cr.SetConditions(xpv1.Available())
@@ -177,8 +180,11 @@ func (e *External) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errFailedToCreateNASFileSystem)
 	}
-	// The name of this managed resource could not be regarded as its external name, so set it as FileSystem ID
-	meta.SetExternalName(cr, *res.Body.FileSystemId)
+	fsRes, err := e.ExternalClient.DescribeFileSystems(res.Body.FileSystemId, cr.Spec.FileSystemType, cr.Spec.VpcID)
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errFailedToDescribeNASFileSystem)
+	}
+	cr.Status.AtProvider = nasclient.GenerateObservation(fsRes)
 	return managed.ExternalCreation{ConnectionDetails: GetConnectionDetails(cr)}, nil
 }
 
@@ -194,7 +200,7 @@ func (e *External) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotNASFileSystem)
 	}
 	cr.SetConditions(xpv1.Deleting())
-	if err := e.ExternalClient.DeleteFileSystem(meta.GetExternalName(cr)); err != nil {
+	if err := e.ExternalClient.DeleteFileSystem(cr.Status.AtProvider.FileSystemID); err != nil {
 		return errors.Wrap(err, errFailedToDeleteNASFileSystem)
 	}
 	return nil

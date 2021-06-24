@@ -1,0 +1,11 @@
+apiVersion: nas.alibaba.crossplane.io/v1alpha1
+kind: NASFileSystem
+metadata:
+  name: na-filesystem-test
+  namespace: default
+spec:
+  storageType: Performance
+  protocolType: NFS
+  writeConnectionSecretToRef:
+    name: nas-endpoint
+    namespace: default

@@ -22,6 +22,7 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	nasapi "github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
 	ossapi "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
 )
 
@@ -47,6 +48,8 @@ func GetEndpoint(res runtime.Object, region string) (string, error) {
 	switch res.GetObjectKind().GroupVersionKind().Kind {
 	case ossapi.BucketKind:
 		endpoint = fmt.Sprintf("http://oss-%s.%s", region, Domain)
+	case nasapi.NASFileSystemKind:
+		endpoint = fmt.Sprintf("nas.%s.aliyuncs.com", region)
 	default:
 		return "", errors.New(errCloudResourceNotSupported)
 	}

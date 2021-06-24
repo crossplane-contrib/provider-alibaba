@@ -19,14 +19,14 @@ spec:
   scope: Cluster
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .status.atProvider.fileSystemID
+      name: FILE-SYSTEM-ID
+      type: string
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY
       type: string
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
-      type: string
-    - jsonPath: .status.atProvider.message
-      name: WARNING
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
@@ -57,6 +57,8 @@ spec:
                 type: string
               fileSystemType:
                 type: string
+              protocolType:
+                type: string
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
                 properties:
@@ -75,9 +77,11 @@ spec:
                 required:
                 - name
                 type: object
+              storageType:
+                type: string
               vSwitchId:
                 type: string
-              vpcDd:
+              vpcId:
                 type: string
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
@@ -92,6 +96,9 @@ spec:
                 - name
                 - namespace
                 type: object
+            required:
+            - protocolType
+            - storageType
             type: object
           status:
             description: NASFileSystemStatus defines the observed state of NASFileSystem
@@ -99,6 +106,8 @@ spec:
               atProvider:
                 description: NASFileSystemObservation is the representation of the current state that is observed.
                 properties:
+                  fileSystemID:
+                    type: string
                   mountTargetDomain:
                     type: string
                 type: object
