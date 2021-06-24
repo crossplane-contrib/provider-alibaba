@@ -41,20 +41,15 @@ import (
 )
 
 const (
-	errNotProject               = "managed resource is not a SLS project custom resource"
-	errNoProvider               = "no provider config or provider specified"
-	errGetProviderConfig        = "cannot get provider config"
-	errTrackUsage               = "cannot track provider config usage"
-	errNoConnectionSecret       = "no connection secret specified"
-	errGetConnectionSecret      = "cannot get connection secret"
-	errFmtUnsupportedCredSource = "credentials source %q is not currently supported"
+	errNotStore               = "managed resource is not a SLS store custom resource"
+	errMaxSplitShardMustBeSet = "maxSplitShard must be set if autoSplit is true"
 )
 
-// SetupProject adds a controller that reconciles SLSProjects.
-func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(slsv1alpha1.ProjectGroupKind)
+// SetupStore adds a controller that reconciles SLSStores.
+func SetupStore(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(slsv1alpha1.StoreGroupKind)
 	options := []managed.ReconcilerOption{
-		managed.WithExternalConnecter(&connector{
+		managed.WithExternalConnecter(&logStoreConnector{
 			client:      mgr.GetClient(),
 			usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &v1alpha1.ProviderConfigUsage{}),
 			NewClientFn: slsclient.NewClient,
@@ -64,21 +59,21 @@ func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&slsv1alpha1.Project{}).
+		For(&slsv1alpha1.LogStore{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(slsv1alpha1.ProjectGroupVersionKind), options...))
+			resource.ManagedKind(slsv1alpha1.StoreGroupVersionKind), options...))
 }
 
-type connector struct {
+type logStoreConnector struct {
 	client      client.Client
 	usage       resource.Tracker
 	NewClientFn func(accessKeyID, accessKeySecret, securityToken, region string) *slsclient.LogClient
 }
 
-func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
-	cr, ok := mg.(*slsv1alpha1.Project)
+func (c *logStoreConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) { //nolint:gocyclo
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
-		return nil, errors.New(errNotProject)
+		return nil, errors.New(errNotStore)
 	}
 
 	var (
@@ -116,95 +111,96 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	slsClient := c.NewClientFn(string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]), region)
-	return &external{client: slsClient}, nil
+	return &storeExternal{client: slsClient}, nil
 }
 
-type external struct {
+type storeExternal struct {
 	client slsclient.LogClientInterface
 }
 
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*slsv1alpha1.Project)
+func (e *storeExternal) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
-		return managed.ExternalObservation{}, errors.New(errNotProject)
+		return managed.ExternalObservation{}, errors.New(errNotStore)
 	}
-	projectName := meta.GetExternalName(cr)
-	project, err := e.client.Describe(projectName)
-	if slsclient.IsNotFoundError(err) {
+
+	storeName := meta.GetExternalName(cr)
+	project := cr.Spec.ForProvider.ProjectName
+
+	store, err := e.client.DescribeStore(project, storeName)
+	if slsclient.IsStoreNotFoundError(err) {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
-
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
 
-	cr.Status.AtProvider = slsclient.GenerateObservation(project)
-	var upToDate bool
-	if (projectName == project.Name) && (cr.Spec.ForProvider.Description == project.Description) {
-		upToDate = true
+	cr.Status.AtProvider = slsclient.GenerateStoreObservation(store)
+	upToDate := slsclient.IsStoreUpdateToDate(cr, store)
+	if upToDate {
 		cr.SetConditions(xpv1.Available())
 	}
 
 	return managed.ExternalObservation{
 		ResourceExists:    true,
 		ResourceUpToDate:  upToDate,
-		ConnectionDetails: getConnectionDetails(project),
+		ConnectionDetails: getStoreConnectionDetails(project, storeName),
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*slsv1alpha1.Project)
+func (e *storeExternal) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
-		return managed.ExternalCreation{}, errors.New(errNotProject)
+		return managed.ExternalCreation{}, errors.New(errNotStore)
 	}
 	name := meta.GetExternalName(cr)
-	description := cr.Spec.ForProvider.Description
+	store := &sdk.LogStore{
+		Name:       name,
+		TTL:        cr.Spec.ForProvider.TTL,
+		ShardCount: cr.Spec.ForProvider.ShardCount,
+	}
+	if cr.Spec.ForProvider.AutoSplit != nil {
+		store.AutoSplit = *cr.Spec.ForProvider.AutoSplit
+		if store.AutoSplit && cr.Spec.ForProvider.MaxSplitShard == nil {
+			return managed.ExternalCreation{}, errors.New(errMaxSplitShardMustBeSet)
+		}
+	}
+	if cr.Spec.ForProvider.MaxSplitShard != nil {
+		store.MaxSplitShard = *cr.Spec.ForProvider.MaxSplitShard
+	}
 	cr.SetConditions(xpv1.Creating())
-	project, err := e.client.Create(name, description)
+	err := e.client.CreateStore(cr.Spec.ForProvider.ProjectName, store)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	return managed.ExternalCreation{ConnectionDetails: getConnectionDetails(project)}, nil
+	return managed.ExternalCreation{ConnectionDetails: getStoreConnectionDetails(cr.Spec.ForProvider.ProjectName, name)}, nil
 }
 
-func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*slsv1alpha1.Project)
+func (e *storeExternal) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errNotProject)
+		return managed.ExternalUpdate{}, errors.New(errNotStore)
 	}
-	name := meta.GetExternalName(cr)
-	description := cr.Spec.ForProvider.Description
 	cr.Status.SetConditions(xpv1.Creating())
-	got, err := e.client.Update(name, description)
-	if err != nil {
-		return managed.ExternalUpdate{}, err
-	}
-
-	if got.Description != description {
-		return managed.ExternalUpdate{}, err
-	}
-	return managed.ExternalUpdate{}, nil
+	err := e.client.UpdateStore(cr.Spec.ForProvider.ProjectName, meta.GetExternalName(cr), cr.Spec.ForProvider.TTL)
+	return managed.ExternalUpdate{}, err
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*slsv1alpha1.Project)
+func (e *storeExternal) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*slsv1alpha1.LogStore)
 	if !ok {
-		return errors.New(errNotProject)
+		return errors.New(errNotStore)
 	}
-	name := meta.GetExternalName(cr)
 	cr.SetConditions(xpv1.Deleting())
-	if err := e.client.Delete(name); err != nil && !slsclient.IsNotFoundError(err) {
-		return err
-	}
-	return nil
+	return e.client.DeleteStore(cr.Spec.ForProvider.ProjectName, meta.GetExternalName(cr))
 }
 
-func getConnectionDetails(project *sdk.LogProject) managed.ConnectionDetails {
+func getStoreConnectionDetails(project, store string) managed.ConnectionDetails {
 	cd := managed.ConnectionDetails{
-		"Name":     []byte(project.Name),
-		"Endpoint": []byte(project.Endpoint),
+		"LogStore": []byte(store),
+		"Project":  []byte(project),
 	}
 	return cd
 }
