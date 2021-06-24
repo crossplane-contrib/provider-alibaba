@@ -46,6 +46,18 @@ var (
 	NASFileSystemGroupVersionKind = GroupVersion.WithKind(NASFileSystemKind)
 )
 
+var (
+	// NASMountTargetKind is the kind of NASMountTarget resource type
+	NASMountTargetKind = reflect.TypeOf(NASMountTarget{}).Name()
+	// NASMountTargetGroupKind is the group and kind information of NASMountTarget resource type
+	NASMountTargetGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: NASMountTargetKind}.String()
+	// NASMountTargetKindAPIVersion is the kind and apiversion of NASMountTarget resource type
+	NASMountTargetKindAPIVersion = NASMountTargetKind + "." + GroupVersion.String()
+	// NASMountTargetGroupVersionKind is the GVK of NASMountTarget resource type
+	NASMountTargetGroupVersionKind = GroupVersion.WithKind(NASMountTargetKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&NASFileSystem{}, &NASFileSystemList{})
+	SchemeBuilder.Register(&NASMountTarget{}, &NASMountTargetList{})
 }

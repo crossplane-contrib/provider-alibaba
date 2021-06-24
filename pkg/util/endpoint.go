@@ -48,7 +48,7 @@ func GetEndpoint(res runtime.Object, region string) (string, error) {
 	switch res.GetObjectKind().GroupVersionKind().Kind {
 	case ossapi.BucketKind:
 		endpoint = fmt.Sprintf("http://oss-%s.%s", region, Domain)
-	case nasapi.NASFileSystemKind:
+	case nasapi.NASFileSystemKind, nasapi.NASMountTargetKind:
 		endpoint = fmt.Sprintf("nas.%s.aliyuncs.com", region)
 	default:
 		return "", errors.New(errCloudResourceNotSupported)

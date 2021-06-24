@@ -35,6 +35,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		sls.SetupProject,
 		oss.SetupBucket,
 		nas.SetupNASFileSystem,
+		nas.SetupNASMountTarget,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
