@@ -21,7 +21,7 @@ spec:
   scope: Cluster
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.atProvider.fileSystemID
+    - jsonPath: .spec.forProvider.fileSystemID
       name: FILE-SYSTEM-ID
       type: string
     - jsonPath: .status.conditions[?(@.type=='Ready')].status

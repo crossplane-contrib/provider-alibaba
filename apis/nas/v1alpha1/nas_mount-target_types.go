@@ -33,7 +33,7 @@ type NASMountTargetList struct {
 // +kubebuilder:object:root=true
 
 // NASMountTarget is a managed resource that represents an NASMountTarget instance
-// +kubebuilder:printcolumn:name="FILE-SYSTEM-ID",type="string",JSONPath=".spec.atProvider.fileSystemID"
+// +kubebuilder:printcolumn:name="FILE-SYSTEM-ID",type="string",JSONPath=".spec.forProvider.fileSystemID"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"

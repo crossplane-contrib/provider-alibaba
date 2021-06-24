@@ -201,6 +201,7 @@ func GenerateObservation4MountTarget(res *sdk.CreateMountTargetResponse) v1alpha
 }
 
 // IsMountTargetUpdateToDate checks whether cr is up to date
+//nolint:gocyclo
 func IsMountTargetUpdateToDate(cr *v1alpha1.NASMountTarget, mountTargetResponse *sdk.DescribeMountTargetsResponse) bool {
 	if *mountTargetResponse.Body.TotalCount == 0 {
 		return false
