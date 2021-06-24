@@ -148,7 +148,7 @@ func (e *External) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	cr.Status.AtProvider = nasclient.GenerateObservation(filesystem)
+	cr.Status.AtProvider = nasclient.GenerateObservation(&fsID, filesystem)
 	var upToDate = nasclient.IsUpdateToDate(cr, filesystem)
 	if upToDate {
 		cr.SetConditions(xpv1.Available())
@@ -184,7 +184,7 @@ func (e *External) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errFailedToDescribeNASFileSystem)
 	}
-	cr.Status.AtProvider = nasclient.GenerateObservation(fsRes)
+	cr.Status.AtProvider = nasclient.GenerateObservation(res.Body.FileSystemId, fsRes)
 	return managed.ExternalCreation{ConnectionDetails: GetConnectionDetails(cr)}, nil
 }
 

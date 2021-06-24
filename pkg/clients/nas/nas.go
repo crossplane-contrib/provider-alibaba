@@ -33,7 +33,7 @@ const (
 	errCodeFileSystemNotExist  = "InvalidFileSystem.NotFound"
 )
 
-// ClientInterface will help fakeOSSClient in unit tests
+// ClientInterface create a client inferface
 type ClientInterface interface {
 	DescribeFileSystems(fileSystemID, fileSystemType, vpcID *string) (*sdk.DescribeFileSystemsResponse, error)
 	CreateFileSystem(fs v1alpha1.NASFileSystemParameter) (*sdk.CreateFileSystemResponse, error)
@@ -45,7 +45,7 @@ type SDKClient struct {
 	Client *sdk.Client
 }
 
-// NewClient will create OSS client
+// NewClient will create NAS client
 func NewClient(ctx context.Context, endpoint string, accessKeyID string, accessKeySecret string, securityToken string) (*SDKClient, error) {
 	config := &openapi.Config{
 		AccessKeyId:     &accessKeyID,
@@ -60,7 +60,7 @@ func NewClient(ctx context.Context, endpoint string, accessKeyID string, accessK
 	return &SDKClient{Client: client}, nil
 }
 
-// DescribeFileSystems describes OSS FileSystem
+// DescribeFileSystems describes NAS FileSystem
 func (c *SDKClient) DescribeFileSystems(fileSystemID, fileSystemType, vpcID *string) (*sdk.DescribeFileSystemsResponse, error) {
 	describeFileSystemsRequest := &sdk.DescribeFileSystemsRequest{}
 	if fileSystemID != nil {
@@ -93,7 +93,7 @@ func (c *SDKClient) CreateFileSystem(fs v1alpha1.NASFileSystemParameter) (*sdk.C
 	return res, err
 }
 
-// DeleteFileSystem deletes OSS NASFileSystem
+// DeleteFileSystem deletes NASFileSystem
 func (c *SDKClient) DeleteFileSystem(fileSystemID string) error {
 	deleteFileSystemRequest := &sdk.DeleteFileSystemRequest{
 		FileSystemId: tea.String(fileSystemID),
@@ -103,20 +103,23 @@ func (c *SDKClient) DeleteFileSystem(fileSystemID string) error {
 }
 
 // GenerateObservation generates NASFileSystemObservation from fileSystem information
-func GenerateObservation(r *sdk.DescribeFileSystemsResponse) v1alpha1.NASFileSystemObservation {
-	var domain string
-	if len(r.Body.FileSystems.FileSystem) == 0 {
-		return v1alpha1.NASFileSystemObservation{}
+// When vpcID and vSwitchID are set, descriptionResponse.Body.FileSystems.FileSystem becomes 0, so we need to set fileSystemID
+// first, not from descriptionResponse
+func GenerateObservation(fileSystemID *string, descriptionResponse *sdk.DescribeFileSystemsResponse) v1alpha1.NASFileSystemObservation {
+	observation := v1alpha1.NASFileSystemObservation{
+		FileSystemID: *fileSystemID,
 	}
-	if len(r.Body.FileSystems.FileSystem[0].MountTargets.MountTarget) == 0 {
+	var domain string
+	if len(descriptionResponse.Body.FileSystems.FileSystem) == 0 {
+		return observation
+	}
+	if len(descriptionResponse.Body.FileSystems.FileSystem[0].MountTargets.MountTarget) == 0 {
 		domain = ""
 	} else {
-		domain = *r.Body.FileSystems.FileSystem[0].MountTargets.MountTarget[0].MountTargetDomain
+		domain = *descriptionResponse.Body.FileSystems.FileSystem[0].MountTargets.MountTarget[0].MountTargetDomain
 	}
-	return v1alpha1.NASFileSystemObservation{
-		FileSystemID:      *r.Body.FileSystems.FileSystem[0].FileSystemId,
-		MountTargetDomain: domain,
-	}
+	observation.MountTargetDomain = domain
+	return observation
 }
 
 // IsUpdateToDate checks whether cr is up to date
