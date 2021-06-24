@@ -38,12 +38,12 @@ type fakeSDKClient struct {
 
 func (c *fakeSDKClient) DescribeFileSystems(fileSystemID, fileSystemType, vpcID *string) (*sdk.DescribeFileSystemsResponse, error) {
 	switch *fileSystemID {
-	case "abc":
+	case "123":
 		return nil, errors.New("unknown error")
 	default:
-		body := &sdk.DescribeFileSystemsResponseBody{FileSystems: &sdk.DescribeFileSystemsResponseBodyFileSystems{
-			FileSystem: []*sdk.DescribeFileSystemsResponseBodyFileSystemsFileSystem{},
-		}}
+		body := &sdk.DescribeFileSystemsResponseBody{
+			FileSystems: &sdk.DescribeFileSystemsResponseBodyFileSystems{
+				FileSystem: []*sdk.DescribeFileSystemsResponseBodyFileSystemsFileSystem{}}, TotalCount: pointer.Int32Ptr(0)}
 		NASFileSystemInfoResult := sdk.DescribeFileSystemsResponse{
 			Body: body,
 		}
@@ -65,12 +65,12 @@ func TestObserve(t *testing.T) {
 
 	invalidCR := &v1alpha1.NASFileSystem{}
 	invalidCR.ObjectMeta.Annotations = map[string]string{meta.AnnotationKeyExternalName: "abc"}
-	invalidCR.Status.AtProvider.FileSystemID = "123456"
+	invalidCR.Status.AtProvider.FileSystemID = "123"
 
 	validCR := &v1alpha1.NASFileSystem{Spec: v1alpha1.NASFileSystemSpec{}}
 	validCR.Spec.FileSystemType = pointer.StringPtr("standard")
 	validCR.ObjectMeta.Annotations = map[string]string{meta.AnnotationKeyExternalName: "def"}
-	validCR.Status.AtProvider.FileSystemID = "123456"
+	validCR.Status.AtProvider.FileSystemID = "456"
 
 	type want struct {
 		o   managed.ExternalObservation
@@ -104,7 +104,7 @@ func TestObserve(t *testing.T) {
 			reason: "We should report an unknown error",
 			mg:     invalidCR,
 			want: want{
-				o:   managed.ExternalObservation{},
+				o:   managed.ExternalObservation{ResourceExists: false},
 				err: errors.Wrap(errors.New("unknown error"), errFailedToDescribeNASFileSystem),
 			},
 		},

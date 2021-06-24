@@ -145,7 +145,7 @@ func (e *External) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		if nasclient.IsNotFoundError(err) {
 			return managed.ExternalObservation{ResourceExists: false, ResourceUpToDate: true}, nil
 		}
-		return managed.ExternalObservation{ResourceExists: false}, nil
+		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(err, errFailedToDescribeNASFileSystem)
 	}
 
 	cr.Status.AtProvider = nasclient.GenerateObservation(&fsID, filesystem)
