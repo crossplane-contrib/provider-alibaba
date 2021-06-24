@@ -75,3 +75,59 @@ func (mg *NASFileSystem) SetProviderReference(r *xpv1.Reference) {
 func (mg *NASFileSystem) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
+
+// GetCondition of this NASMountTarget.
+func (mg *NASMountTarget) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this NASMountTarget.
+func (mg *NASMountTarget) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this NASMountTarget.
+func (mg *NASMountTarget) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this NASMountTarget.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *NASMountTarget) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this NASMountTarget.
+func (mg *NASMountTarget) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this NASMountTarget.
+func (mg *NASMountTarget) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this NASMountTarget.
+func (mg *NASMountTarget) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this NASMountTarget.
+func (mg *NASMountTarget) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this NASMountTarget.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *NASMountTarget) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this NASMountTarget.
+func (mg *NASMountTarget) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}

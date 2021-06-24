@@ -1,0 +1,15 @@
+apiVersion: nas.alibaba.crossplane.io/v1alpha1
+kind: NASMountTarget
+metadata:
+  name: na-mount-target-test
+  namespace: default
+spec:
+  forProvider:
+    fileSystemID: 130434a20d
+    accessGroupName: DEFAULT_VPC_GROUP_NAME
+    networkType: Vpc
+    vpcId: vpc-2ze75wu7vcrgpddnsri09
+    vSwitchId: vsw-2zed2c4a52pg8hmp8fafw
+  writeConnectionSecretToRef:
+    name: nas-mount-target
+    namespace: default

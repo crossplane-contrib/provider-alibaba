@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: nasfilesystems.nas.alibaba.crossplane.io
+  name: nasmounttargets.nas.alibaba.crossplane.io
 spec:
   group: nas.alibaba.crossplane.io
   names:
@@ -12,16 +12,16 @@ spec:
     - crossplane
     - managed
     - alibaba
-    kind: NASFileSystem
-    listKind: NASFileSystemList
-    plural: nasfilesystems
+    kind: NASMountTarget
+    listKind: NASMountTargetList
+    plural: nasmounttargets
     shortNames:
-    - nasfs
-    singular: nasfilesystem
+    - nasmt
+    singular: nasmounttarget
   scope: Cluster
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .status.atProvider.fileSystemID
+    - jsonPath: .spec.forProvider.fileSystemID
       name: FILE-SYSTEM-ID
       type: string
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
@@ -36,7 +36,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: NASFileSystem is a managed resource that represents an NASFileSystem instance
+        description: NASMountTarget is a managed resource that represents an NASMountTarget instance
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -47,20 +47,33 @@ spec:
           metadata:
             type: object
           spec:
-            description: NASFileSystemSpec defines the desired state of NASFileSystem
+            description: NASMountTargetSpec defines the desired state of NASMountTarget
             properties:
-              chargeType:
-                type: string
               deletionPolicy:
                 description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
                 enum:
                 - Orphan
                 - Delete
                 type: string
-              fileSystemType:
-                type: string
-              protocolType:
-                type: string
+              forProvider:
+                description: NASMountTargetParameter is the isolated place to store files
+                properties:
+                  accessGroupName:
+                    type: string
+                  fileSystemID:
+                    type: string
+                  networkType:
+                    type: string
+                  securityGroupId:
+                    type: string
+                  vSwitchId:
+                    type: string
+                  vpcId:
+                    type: string
+                required:
+                - fileSystemID
+                - networkType
+                type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
                 properties:
@@ -79,12 +92,6 @@ spec:
                 required:
                 - name
                 type: object
-              storageType:
-                type: string
-              vSwitchId:
-                type: string
-              vpcId:
-                type: string
               writeConnectionSecretToRef:
                 description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
                 properties:
@@ -99,17 +106,14 @@ spec:
                 - namespace
                 type: object
             required:
-            - protocolType
-            - storageType
+            - forProvider
             type: object
           status:
-            description: NASFileSystemStatus defines the observed state of NASFileSystem
+            description: NASMountTargetStatus defines the observed state of NASMountTarget
             properties:
               atProvider:
-                description: NASFileSystemObservation is the representation of the current state that is observed.
+                description: NASMountTargetObservation is the representation of the current state that is observed.
                 properties:
-                  fileSystemID:
-                    type: string
                   mountTargetDomain:
                     type: string
                 type: object

@@ -31,6 +31,7 @@ import (
 const (
 	errFailedToCreateNASClient = "failed to crate NAS client"
 	errCodeFileSystemNotExist  = "InvalidFileSystem.NotFound"
+	errMountTargetNotExisted   = "InvalidMountTarget.NotFound"
 )
 
 // ClientInterface create a client inferface
@@ -38,6 +39,10 @@ type ClientInterface interface {
 	DescribeFileSystems(fileSystemID, fileSystemType, vpcID *string) (*sdk.DescribeFileSystemsResponse, error)
 	CreateFileSystem(fs v1alpha1.NASFileSystemParameter) (*sdk.CreateFileSystemResponse, error)
 	DeleteFileSystem(fileSystemID string) error
+
+	DescribeMountTargets(fileSystemID, mountTargetDomain *string) (*sdk.DescribeMountTargetsResponse, error)
+	CreateMountTarget(fs v1alpha1.NASMountTargetParameter) (*sdk.CreateMountTargetResponse, error)
+	DeleteMountTarget(fileSystemID, mountTargetDomain *string) error
 }
 
 // SDKClient is the SDK client for NASFileSystem
@@ -59,6 +64,8 @@ func NewClient(ctx context.Context, endpoint string, accessKeyID string, accessK
 	}
 	return &SDKClient{Client: client}, nil
 }
+
+// -------------------------------- FileSystem ----------------------------------------------------
 
 // DescribeFileSystems describes NAS FileSystem
 func (c *SDKClient) DescribeFileSystems(fileSystemID, fileSystemType, vpcID *string) (*sdk.DescribeFileSystemsResponse, error) {
@@ -141,6 +148,92 @@ func IsNotFoundError(err error) bool {
 		return false
 	}
 	if e, ok := errors.Cause(err).(*tea.SDKError); ok && (*e.Code == errCodeFileSystemNotExist) {
+		return true
+	}
+	return false
+}
+
+// -------------------------------- MountTarget ----------------------------------------------------
+
+// DescribeMountTargets describes NAS MountTarget
+func (c *SDKClient) DescribeMountTargets(fileSystemID, mountTargetDomain *string) (*sdk.DescribeMountTargetsResponse, error) {
+	describeMountTargetsRequest := &sdk.DescribeMountTargetsRequest{}
+	if fileSystemID != nil {
+		describeMountTargetsRequest.FileSystemId = tea.String(*fileSystemID)
+	}
+	if mountTargetDomain != nil {
+		describeMountTargetsRequest.MountTargetDomain = tea.String(*mountTargetDomain)
+	}
+	fs, err := c.Client.DescribeMountTargets(describeMountTargetsRequest)
+	if err != nil {
+		return nil, err
+	}
+	return fs, nil
+}
+
+// CreateMountTarget creates NASMountTarget
+func (c *SDKClient) CreateMountTarget(fs v1alpha1.NASMountTargetParameter) (*sdk.CreateMountTargetResponse, error) {
+	createMountTargetRequest := &sdk.CreateMountTargetRequest{
+		FileSystemId:    fs.FileSystemID,
+		AccessGroupName: fs.AccessGroupName,
+		NetworkType:     fs.NetworkType,
+		VpcId:           fs.VpcID,
+		VSwitchId:       fs.VSwitchID,
+		SecurityGroupId: fs.SecurityGroupID,
+	}
+	res, err := c.Client.CreateMountTarget(createMountTargetRequest)
+	return res, err
+}
+
+// DeleteMountTarget deletes NASMountTarget
+func (c *SDKClient) DeleteMountTarget(fileSystemID, mountTargetDomain *string) error {
+	deleteMountTargetRequest := &sdk.DeleteMountTargetRequest{
+		FileSystemId:      fileSystemID,
+		MountTargetDomain: mountTargetDomain,
+	}
+	_, err := c.Client.DeleteMountTarget(deleteMountTargetRequest)
+	return err
+}
+
+// GenerateObservation4MountTarget generates observation information from fileSystem mount point
+func GenerateObservation4MountTarget(res *sdk.CreateMountTargetResponse) v1alpha1.NASMountTargetObservation {
+	return v1alpha1.NASMountTargetObservation{MountTargetDomain: res.Body.MountTargetDomain}
+}
+
+// IsMountTargetUpdateToDate checks whether cr is up to date
+//nolint:gocyclo
+func IsMountTargetUpdateToDate(cr *v1alpha1.NASMountTarget, mountTargetResponse *sdk.DescribeMountTargetsResponse) bool {
+	if *mountTargetResponse.Body.TotalCount == 0 {
+		return false
+	}
+	res := mountTargetResponse.Body.MountTargets.MountTarget[0]
+	mt := cr.Spec.ForProvider
+
+	if (mt.VpcID == nil && res.VpcId != nil) || (mt.VpcID != nil && res.VpcId == nil) || (*mt.VpcID != *res.VpcId) {
+		return false
+	}
+
+	if (mt.VSwitchID == nil && res.VswId != nil) || (mt.VSwitchID != nil && res.VswId == nil) || (*mt.VSwitchID != *res.VswId) {
+		return false
+	}
+
+	if (mt.AccessGroupName == nil && res.AccessGroup != nil) || (mt.AccessGroupName != nil && res.AccessGroup == nil) || (*mt.AccessGroupName != *res.AccessGroup) {
+		return false
+	}
+
+	if (mt.NetworkType == nil && res.NetworkType != nil) || (mt.NetworkType != nil && res.NetworkType == nil) || (*mt.NetworkType != *res.NetworkType) {
+		return false
+	}
+
+	return true
+}
+
+// IsMountTargetNotFoundError helper function to test for SLS project not found error
+func IsMountTargetNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if e, ok := errors.Cause(err).(*tea.SDKError); ok && (*e.Code == errMountTargetNotExisted) {
 		return true
 	}
 	return false
