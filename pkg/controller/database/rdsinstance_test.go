@@ -16,7 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
-	aliv1alpha2 "github.com/crossplane/provider-alibaba/apis/v1alpha2"
+	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/rds"
 	"github.com/crossplane/provider-alibaba/pkg/util"
 )
@@ -41,7 +41,7 @@ func TestConnector(t *testing.T) {
 		mg  resource.Managed
 	}
 
-	var configSpec = aliv1alpha2.ProviderCredentials{Source: xpv1.CredentialsSourceSecret}
+	var configSpec = aliv1beta1.ProviderCredentials{Source: xpv1.CredentialsSourceSecret}
 	configSpec.SecretRef = &xpv1.SecretKeySelector{
 		SecretReference: xpv1.SecretReference{
 			Name: "coolsecret",
@@ -101,10 +101,10 @@ func TestConnector(t *testing.T) {
 			fields: fields{
 				client: &test.MockClient{
 					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
-						t := obj.(*aliv1alpha2.ProviderConfig)
-						*t = aliv1alpha2.ProviderConfig{
-							Spec: aliv1alpha2.ProviderConfigSpec{
-								Credentials: aliv1alpha2.ProviderCredentials{
+						t := obj.(*aliv1beta1.ProviderConfig)
+						*t = aliv1beta1.ProviderConfig{
+							Spec: aliv1beta1.ProviderConfigSpec{
+								Credentials: aliv1beta1.ProviderCredentials{
 									Source: "wat",
 								},
 							},
@@ -150,10 +150,10 @@ func TestConnector(t *testing.T) {
 			fields: fields{
 				client: &test.MockClient{
 					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
-						t := obj.(*aliv1alpha2.ProviderConfig)
-						*t = aliv1alpha2.ProviderConfig{
-							Spec: aliv1alpha2.ProviderConfigSpec{
-								Credentials: aliv1alpha2.ProviderCredentials{
+						t := obj.(*aliv1beta1.ProviderConfig)
+						*t = aliv1beta1.ProviderConfig{
+							Spec: aliv1beta1.ProviderConfigSpec{
+								Credentials: aliv1beta1.ProviderCredentials{
 									Source: xpv1.CredentialsSourceSecret,
 								},
 							},
@@ -182,9 +182,9 @@ func TestConnector(t *testing.T) {
 						switch t := obj.(type) {
 						case *corev1.Secret:
 							return errBoom
-						case *aliv1alpha2.ProviderConfig:
-							*t = aliv1alpha2.ProviderConfig{
-								Spec: aliv1alpha2.ProviderConfigSpec{
+						case *aliv1beta1.ProviderConfig:
+							*t = aliv1beta1.ProviderConfig{
+								Spec: aliv1beta1.ProviderConfigSpec{
 									Credentials: configSpec,
 								},
 							}
@@ -210,9 +210,9 @@ func TestConnector(t *testing.T) {
 			fields: fields{
 				client: &test.MockClient{
 					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
-						if t, ok := obj.(*aliv1alpha2.ProviderConfig); ok {
-							*t = aliv1alpha2.ProviderConfig{
-								Spec: aliv1alpha2.ProviderConfigSpec{
+						if t, ok := obj.(*aliv1beta1.ProviderConfig); ok {
+							*t = aliv1beta1.ProviderConfig{
+								Spec: aliv1beta1.ProviderConfigSpec{
 									Credentials: configSpec,
 								},
 							}

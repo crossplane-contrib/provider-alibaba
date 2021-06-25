@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	aliv1alpha2 "github.com/crossplane/provider-alibaba/apis/v1alpha2"
+	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
 )
 
 const (
@@ -52,8 +52,8 @@ type AlibabaCredentials struct {
 }
 
 // GetProviderConfig gets ProviderConfig
-func GetProviderConfig(ctx context.Context, k8sClient client.Client, providerConfigName string) (*aliv1alpha2.ProviderConfig, error) {
-	providerConfig := &aliv1alpha2.ProviderConfig{}
+func GetProviderConfig(ctx context.Context, k8sClient client.Client, providerConfigName string) (*aliv1beta1.ProviderConfig, error) {
+	providerConfig := &aliv1beta1.ProviderConfig{}
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: providerConfigName}, providerConfig); err != nil {
 		return nil, errors.Wrap(err, ErrGetProviderConfig)
 	}

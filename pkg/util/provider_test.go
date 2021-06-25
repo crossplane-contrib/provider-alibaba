@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-alibaba/apis/v1alpha2"
+	"github.com/crossplane/provider-alibaba/apis/v1beta1"
 )
 
 func TestGetCredentials(t *testing.T) {
@@ -37,7 +37,7 @@ func TestGetCredentials(t *testing.T) {
 		client client.Client
 		name   string
 	}
-	var pc v1alpha2.ProviderConfig
+	var pc v1beta1.ProviderConfig
 	pc.Spec.Credentials.Source = "Secret"
 	pc.Spec.Credentials.SecretRef = &xpv1.SecretKeySelector{
 		Key: "credentials",

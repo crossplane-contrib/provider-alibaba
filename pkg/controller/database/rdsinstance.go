@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
-	aliv1alpha2 "github.com/crossplane/provider-alibaba/apis/v1alpha2"
+	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/rds"
 	"github.com/crossplane/provider-alibaba/pkg/util"
 )
@@ -60,7 +60,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{
 				client:       mgr.GetClient(),
-				usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1alpha2.ProviderConfigUsage{}),
+				usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1beta1.ProviderConfigUsage{}),
 				newRDSClient: rds.NewClient,
 			}),
 			managed.WithLogger(l.WithValues("controller", name)),
