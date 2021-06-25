@@ -16,6 +16,7 @@ require (
 	github.com/google/go-cmp v0.5.2
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0 // indirect
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.20.1

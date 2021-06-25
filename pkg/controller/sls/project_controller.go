@@ -38,15 +38,7 @@ import (
 	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
-const (
-	errNotProject               = "managed resource is not a SLS project custom resource"
-	errNoProvider               = "no provider config or provider specified"
-	errGetProviderConfig        = "cannot get provider config"
-	errTrackUsage               = "cannot track provider config usage"
-	errNoConnectionSecret       = "no connection secret specified"
-	errGetConnectionSecret      = "cannot get connection secret"
-	errFmtUnsupportedCredSource = "credentials source %q is not currently supported"
-)
+const errNotProject = "managed resource is not a SLS project custom resource"
 
 // SetupProject adds a controller that reconciles SLSProjects.
 func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
@@ -79,17 +71,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotProject)
 	}
 
-	pcName := cr.Spec.ProviderConfigReference.Name
-	cred, err := util.GetCredentials(ctx, c.client, pcName)
-	if err != nil {
-		return nil, err
-	}
-	region, err := util.GetRegion(ctx, c.client, pcName)
+	clientEstablishmentInfo, err := util.PrepareClient(ctx, mg, cr.DeepCopyObject(), c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	slsClient := c.NewClientFn(cred.AccessKeyID, cred.AccessKeySecret, cred.SecurityToken, region)
+	slsClient := c.NewClientFn(clientEstablishmentInfo.AccessKeyID, clientEstablishmentInfo.AccessKeySecret,
+		clientEstablishmentInfo.SecurityToken, clientEstablishmentInfo.Region)
 	return &external{client: slsClient}, nil
 }
 

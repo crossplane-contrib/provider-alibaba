@@ -80,22 +80,12 @@ func (c *Connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errTrackUsage)
 	}
 
-	pcName := cr.Spec.ProviderConfigReference.Name
-	cred, err := util.GetCredentials(ctx, c.Client, pcName)
-	if err != nil {
-		return nil, err
-	}
-	region, err := util.GetRegion(ctx, c.Client, pcName)
+	info, err := util.PrepareClient(ctx, mg, cr.DeepCopyObject(), c.Client, c.Usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint, err := util.GetEndpoint(cr.DeepCopyObject(), region)
-	if err != nil {
-		return nil, err
-	}
-
-	ossClient, err := c.NewClientFn(ctx, endpoint, cred.AccessKeyID, cred.AccessKeySecret, cred.SecurityToken)
+	ossClient, err := c.NewClientFn(ctx, info.Endpoint, info.AccessKeyID, info.AccessKeySecret, info.SecurityToken)
 	return &External{ExternalClient: ossClient}, errors.Wrap(err, errCreateClient)
 }
 

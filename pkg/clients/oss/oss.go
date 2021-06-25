@@ -47,6 +47,7 @@ func NewClient(ctx context.Context, endpoint string, accessKeyID string, accessK
 		client *sdk.Client
 		err    error
 	)
+
 	if stsToken == "" {
 		client, err = sdk.New(endpoint, accessKeyID, accessKeySecret)
 	} else {

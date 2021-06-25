@@ -44,7 +44,7 @@ var (
 	ErrGetCredentials = "cannot get credentials"
 )
 
-// AlibabaCredentials represents accesskeyID and accesskeySecret
+// AlibabaCredentials represents ak/sk, stsToken(maybe) information
 type AlibabaCredentials struct {
 	AccessKeyID     string `yaml:"accessKeyId"`
 	AccessKeySecret string `yaml:"accessKeySecret"`

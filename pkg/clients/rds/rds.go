@@ -169,6 +169,12 @@ func (c *client) DeleteDBInstance(id string) error {
 	return err
 }
 
+// LateInitialize fills the empty fields in *v1alpha1.RDSInstanceParameters with
+// the values seen in rds.DBInstance.
+func LateInitialize(in *v1alpha1.RDSInstanceParameters, db *DBInstance) {
+	in.Engine = db.Engine
+}
+
 // GenerateObservation is used to produce v1alpha1.RDSInstanceObservation from
 // rds.DBInstance.
 func GenerateObservation(db *DBInstance) v1alpha1.RDSInstanceObservation {

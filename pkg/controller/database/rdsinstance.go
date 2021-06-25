@@ -81,23 +81,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotRDSInstance)
 	}
 
-	// TODO(negz): This connection logic should be generalised once this
-	// provider has more than one kind of managed resource.
-	if err := c.usage.Track(ctx, mg); err != nil {
-		return nil, errors.Wrap(err, errTrackUsage)
-	}
-
-	pcName := cr.Spec.ProviderConfigReference.Name
-	cred, err := util.GetCredentials(ctx, c.client, pcName)
-	if err != nil {
-		return nil, err
-	}
-	region, err := util.GetRegion(ctx, c.client, pcName)
+	clientEstablishmentInfo, err := util.PrepareClient(ctx, mg, cr.DeepCopyObject(), c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	rdsClient, err := c.newRDSClient(ctx, cred.AccessKeyID, cred.AccessKeySecret, cred.SecurityToken, region)
+	rdsClient, err := c.newRDSClient(ctx, clientEstablishmentInfo.AccessKeyID, clientEstablishmentInfo.AccessKeySecret,
+		clientEstablishmentInfo.SecurityToken, clientEstablishmentInfo.Region)
 	return &external{client: rdsClient}, errors.Wrap(err, errCreateRDSClient)
 }
 
