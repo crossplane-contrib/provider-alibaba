@@ -63,5 +63,5 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&Project{}, &ProjectList{})
-	SchemeBuilder.Register(&LogStore{}, &StoreList{})
+	SchemeBuilder.Register(&LogStore{}, &LogStoreList{})
 }
