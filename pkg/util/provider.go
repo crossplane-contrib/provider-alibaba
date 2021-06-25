@@ -37,11 +37,13 @@ const (
 	SecurityToken = "securityToken"
 )
 
-var (
+const (
 	// ErrGetProviderConfig is the error of getting provider config
 	ErrGetProviderConfig = "failed to get ProviderConfig"
 	// ErrGetCredentials is the error of getting credentials
-	ErrGetCredentials = "cannot get credentials"
+	ErrGetCredentials             = "cannot get credentials"
+	errFailedToExtractCredentials = "failed to extract Alibaba credentials"
+	errAccessKeyNotComplete = "AccessKeyID or AccessKeySecret not existed"
 )
 
 // AlibabaCredentials represents ak/sk, stsToken(maybe) information
@@ -75,7 +77,10 @@ func GetCredentials(ctx context.Context, client client.Client, providerConfigNam
 
 	var cred AlibabaCredentials
 	if err := yaml.Unmarshal(data, &cred); err != nil {
-		return nil, errors.Wrap(err, "failed to extract Alibaba credentials")
+		return nil, errors.Wrap(err, errFailedToExtractCredentials)
+	}
+	if cred.AccessKeyID == "" || cred.AccessKeySecret == "" {
+		return nil, errors.New(errAccessKeyNotComplete)
 	}
 
 	return &cred, nil
