@@ -26,7 +26,7 @@ import (
 // Package type metadata.
 const (
 	Group   = "alibaba.crossplane.io"
-	Version = "v1alpha1"
+	Version = "v1beta1"
 )
 
 var (

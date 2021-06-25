@@ -29,21 +29,12 @@ import (
 )
 
 const (
-	// AccessKeyID is Alibaba Cloud Access key ID
-	AccessKeyID = "accessKeyId"
-	// AccessKeySecret is Alibaba Cloud Access Secret Key
-	AccessKeySecret = "accessKeySecret"
-	// SecurityToken is Alibaba Cloud STS token
-	SecurityToken = "securityToken"
-)
-
-const (
 	// ErrGetProviderConfig is the error of getting provider config
 	ErrGetProviderConfig = "failed to get ProviderConfig"
 	// ErrGetCredentials is the error of getting credentials
 	ErrGetCredentials             = "cannot get credentials"
 	errFailedToExtractCredentials = "failed to extract Alibaba credentials"
-	errAccessKeyNotComplete = "AccessKeyID or AccessKeySecret not existed"
+	errAccessKeyNotComplete       = "AccessKeyID or AccessKeySecret not existed"
 )
 
 // AlibabaCredentials represents ak/sk, stsToken(maybe) information

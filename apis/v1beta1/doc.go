@@ -17,5 +17,5 @@ limitations under the License.
 // Package v1beta1 contains the core resources of the Alibaba Cloud.
 // +kubebuilder:object:generate=true
 // +groupName=alibaba.crossplane.io
-// +versionName=v1alpha1
+// +versionName=v1beta1
 package v1beta1

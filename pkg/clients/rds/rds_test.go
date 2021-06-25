@@ -285,7 +285,7 @@ func TestCreateAccount(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := c.DeleteDBInstance(tc.args.id)
+			err := c.CreateAccount(tc.args.id, tc.args.username, tc.args.password)
 			if err != nil {
 				e, ok := err.(*errors.ServerError)
 				if ok {
