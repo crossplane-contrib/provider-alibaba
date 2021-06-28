@@ -94,7 +94,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, util.ErrGetProviderConfig),
+			want: errors.Wrap(errors.Wrap(errBoom, util.ErrGetProviderConfig), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"UnsupportedCredentialsError": {
 			reason: "An error should be returned if the selected credentials source is unsupported",
@@ -124,7 +124,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.Errorf(errFmtUnsupportedCredSource, "wat"), "cannot get credentials"),
+			want: errors.Wrap(errors.Wrap(errors.Errorf(errFmtUnsupportedCredSource, "wat"), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"GetProviderError": {
 			reason: "Errors getting a Provider should be returned",
@@ -143,7 +143,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, util.ErrGetProviderConfig),
+			want: errors.Wrap(errors.Wrap(errBoom, util.ErrGetProviderConfig), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"NoConnectionSecretError": {
 			reason: "An error should be returned if no connection secret was specified",
@@ -172,7 +172,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.New(errExtractSecretKey), errGetCredentials),
+			want: errors.Wrap(errors.Wrap(errors.New(errExtractSecretKey), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"GetConnectionSecretError": {
 			reason: "Errors getting a secret should be returned",
@@ -203,7 +203,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.Wrap(errBoom, errGetCredentialsSecret), errGetCredentials),
+			want: errors.Wrap(errors.Wrap(errors.Wrap(errBoom, errGetCredentialsSecret), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"NewRDSClientError": {
 			reason: "Errors getting a secret should be returned",
@@ -234,7 +234,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, errCreateRDSClient),
+			want: errors.Wrap(errors.New(util.ErrAccessKeyNotComplete), util.ErrPrepareClientEstablishmentInfo),
 		},
 	}
 

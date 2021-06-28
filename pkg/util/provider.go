@@ -34,7 +34,8 @@ const (
 	// ErrGetCredentials is the error of getting credentials
 	ErrGetCredentials             = "cannot get credentials"
 	errFailedToExtractCredentials = "failed to extract Alibaba credentials"
-	errAccessKeyNotComplete       = "AccessKeyID or AccessKeySecret not existed"
+	// ErrAccessKeyNotComplete is the error of not existing of AccessKeyID or AccessKeySecret
+	ErrAccessKeyNotComplete = "AccessKeyID or AccessKeySecret not existed"
 )
 
 // AlibabaCredentials represents ak/sk, stsToken(maybe) information
@@ -71,7 +72,7 @@ func GetCredentials(ctx context.Context, client client.Client, providerConfigNam
 		return nil, errors.Wrap(err, errFailedToExtractCredentials)
 	}
 	if cred.AccessKeyID == "" || cred.AccessKeySecret == "" {
-		return nil, errors.New(errAccessKeyNotComplete)
+		return nil, errors.New(ErrAccessKeyNotComplete)
 	}
 
 	return &cred, nil

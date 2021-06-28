@@ -27,8 +27,9 @@ import (
 )
 
 const (
-	errFailedToPrepareClientEstablishmentInfo = "failed to prepare all the information for establishing an SDK client"
-	errTrackUsage                             = "cannot track provider config usage"
+	// ErrPrepareClientEstablishmentInfo is the error of failing to prepare all the information for establishing an SDK client
+	ErrPrepareClientEstablishmentInfo string = "failed to prepare all the information for establishing an SDK client"
+	errTrackUsage                     string = "cannot track provider config usage"
 )
 
 // ClientEstablishmentInfo represents all the information for establishing an SDK client
@@ -48,7 +49,7 @@ func PrepareClient(ctx context.Context, mg resource.Managed, res runtime.Object,
 
 	cred, err := GetCredentials(ctx, c, providerConfigName)
 	if err != nil {
-		return nil, errors.Wrap(err, errFailedToPrepareClientEstablishmentInfo)
+		return nil, errors.Wrap(err, ErrPrepareClientEstablishmentInfo)
 	}
 	info.AccessKeyID = cred.AccessKeyID
 	info.AccessKeySecret = cred.AccessKeySecret
@@ -56,7 +57,7 @@ func PrepareClient(ctx context.Context, mg resource.Managed, res runtime.Object,
 
 	region, err := GetRegion(ctx, c, providerConfigName)
 	if err != nil {
-		return nil, errors.Wrap(err, errFailedToPrepareClientEstablishmentInfo)
+		return nil, errors.Wrap(err, ErrPrepareClientEstablishmentInfo)
 	}
 	info.Region = region
 
