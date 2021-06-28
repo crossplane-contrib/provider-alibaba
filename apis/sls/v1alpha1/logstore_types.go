@@ -90,8 +90,8 @@ type LogStore struct {
 
 // +kubebuilder:object:root=true
 
-// StoreList contains a list of LogStore
-type StoreList struct {
+// LogStoreList contains a list of LogStore
+type LogStoreList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []LogStore `json:"items"`
