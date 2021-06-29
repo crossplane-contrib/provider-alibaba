@@ -24,6 +24,7 @@ import (
 
 	nasapi "github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
 	ossapi "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
+	slbapi "github.com/crossplane/provider-alibaba/apis/slb/v1alpha1"
 )
 
 // Domain is Alibaba Cloud Domain
@@ -36,12 +37,12 @@ var (
 
 // GetEndpoint gets endpoints for all cloud resources
 func GetEndpoint(res runtime.Object, region string) (string, error) {
-	if region == "" {
-		return "", errors.New(errRegionNotValid)
-	}
-
 	if res == nil || res.GetObjectKind() == nil {
 		return "", errors.New(errCloudResourceNotSupported)
+	}
+
+	if region == "" && res.GetObjectKind().GroupVersionKind().Kind != slbapi.CLBKind {
+		return "", errors.New(errRegionNotValid)
 	}
 
 	var endpoint string
@@ -49,7 +50,9 @@ func GetEndpoint(res runtime.Object, region string) (string, error) {
 	case ossapi.BucketKind:
 		endpoint = fmt.Sprintf("http://oss-%s.%s", region, Domain)
 	case nasapi.NASFileSystemKind, nasapi.NASMountTargetKind:
-		endpoint = fmt.Sprintf("nas.%s.aliyuncs.com", region)
+		endpoint = fmt.Sprintf("nas.%s.%s", region, Domain)
+	case slbapi.CLBKind:
+		endpoint = fmt.Sprintf("slb.%s", Domain)
 	default:
 		return "", errors.New(errCloudResourceNotSupported)
 	}

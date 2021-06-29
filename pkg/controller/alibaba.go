@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane/provider-alibaba/pkg/controller/database"
 	"github.com/crossplane/provider-alibaba/pkg/controller/nas"
 	"github.com/crossplane/provider-alibaba/pkg/controller/oss"
+	"github.com/crossplane/provider-alibaba/pkg/controller/slb"
 	"github.com/crossplane/provider-alibaba/pkg/controller/sls"
 )
 
@@ -37,6 +38,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		oss.SetupBucket,
 		nas.SetupNASFileSystem,
 		nas.SetupNASMountTarget,
+		slb.SetupCLB,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err

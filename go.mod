@@ -3,8 +3,9 @@ module github.com/crossplane/provider-alibaba
 go 1.14
 
 require (
-	github.com/alibabacloud-go/darabonba-openapi v0.1.1
+	github.com/alibabacloud-go/darabonba-openapi v0.1.4
 	github.com/alibabacloud-go/nas-20170626/v2 v2.0.1
+	github.com/alibabacloud-go/slb-20140515/v2 v2.0.1
 	github.com/alibabacloud-go/tea v1.1.15
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.109
 	github.com/aliyun/aliyun-log-go-sdk v0.1.19

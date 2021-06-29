@@ -1,0 +1,15 @@
+apiVersion: slb.alibaba.crossplane.io/v1alpha1
+kind: CLB
+metadata:
+  name: clb-test
+  namespace: default
+spec:
+  forProvider:
+    region: cn-beijing
+    addressType: internet
+    vpcId: vpc-2ze75wu7vcrgpddnsri09
+    vSwitchId: vsw-2zed2c4a52pg8hmp8fafw
+    loadBalancerSpec: slb.s1.small
+  writeConnectionSecretToRef:
+    name: clb
+    namespace: default

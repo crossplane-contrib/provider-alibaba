@@ -1,0 +1,229 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.3.0
+  creationTimestamp: null
+  name: clbs.slb.alibaba.crossplane.io
+spec:
+  group: slb.alibaba.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - alibaba
+    kind: CLB
+    listKind: CLBList
+    plural: clbs
+    singular: clb
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CLB is a managed resource that represents an CLB instance
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CLBSpec defines the desired state of CLB
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: CLBParameter is the isolated place to store files
+                properties:
+                  address:
+                    description: Address is the IP address
+                    type: string
+                  addressIPVersion:
+                    type: string
+                  addressType:
+                    description: 'AddressType is the type of IP address that the SLB instance uses to provide services. Valid values: internet: After an Internet-facing SLB instance is created, the system assigns a public IP address to the SLB instance. Then, the SLB instance can forward requests from the Internet. intranet: After an internal-facing SLB instance is created, the system assigns a private IP address to the SLB instance. Then, the SLB instance can forward only internal requests.'
+                    type: string
+                  autoPay:
+                    type: boolean
+                  bandwidth:
+                    description: 'Bandwidth is the maximum bandwidth value of the listener. Unit: Mbit/s. Valid values: -1 and 1 to 5120. -1: For a pay-by-data-transfer Internet-facing SLB instance, you can set the value to -1. This indicates that the bandwidth is unlimited. 1 to 5120: For a pay-by-bandwidth Internet-facing SLB instance, you can specify a bandwidth cap for each listener. The sum of bandwidth limit values of all listeners cannot exceed the maximum bandwidth value of the SLB instance.'
+                    format: int32
+                    type: integer
+                  clientToken:
+                    description: ClientToken that is used to ensure the idempotence of the request. You can use the client to generate the value, but you must ensure that it is unique among different requests. The token can contain only ASCII characters and cannot exceed 64 characters in length.
+                    type: string
+                  deleteProtection:
+                    type: string
+                  duration:
+                    format: int32
+                    type: integer
+                  internetChargeType:
+                    default: paybytraffic
+                    description: 'InternetChargeType is the metering method of the Internet-facing SLB instance. Valid values: paybytraffic (default): pay-by-data-transfer'
+                    type: string
+                  loadBalancerName:
+                    description: LoadBalancerName is the name of the SLB instance.
+                    type: string
+                  loadBalancerSpec:
+                    description: LoadBalancerSpec is the specification of the SLB instance. The types of SLB instance that you can create vary by region.
+                    enum:
+                    - slb.s1.small
+                    - slb.s2.small
+                    - slb.s2.medium
+                    - slb.s3.small
+                    - slb.s3.medium
+                    - slb.s3.large
+                    type: string
+                  masterZoneId:
+                    type: string
+                  modificationProtectionReason:
+                    type: string
+                  modificationProtectionStatus:
+                    type: string
+                  ownerAccount:
+                    type: string
+                  ownerId:
+                    format: int64
+                    type: integer
+                  payType:
+                    type: string
+                  pricingCycle:
+                    type: string
+                  region:
+                    description: Region is the ID of the region where you want to create the SLB instance.
+                    type: string
+                  resourceGroupId:
+                    type: string
+                  resourceOwnerAccount:
+                    type: string
+                  resourceOwnerId:
+                    format: int64
+                    type: integer
+                  slaveZoneId:
+                    type: string
+                  vSwitchId:
+                    description: VSwitchID is the ID of the vSwitch to which the SLB instance is attached. To create an SLB instance that is deployed in a VPC, you must set this parameter. If you specify this parameter, the value of the AddressType parameter is set to intranet by default.
+                    type: string
+                  vpcId:
+                    description: VpcID is the ID of the virtual private cloud (VPC) to which the SLB instance belongs.
+                    type: string
+                required:
+                - region
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: CLBStatus defines the observed state of CLB
+            properties:
+              atProvider:
+                description: CLBObservation is the representation of the current state that is observed.
+                properties:
+                  CreateTime:
+                    type: string
+                  DeleteProtection:
+                    type: string
+                  LoadBalancerStatus:
+                    type: string
+                  MasterZoneId:
+                    type: string
+                  ModificationProtectionReason:
+                    type: string
+                  ModificationProtectionStatus:
+                    type: string
+                  NetworkType:
+                    type: string
+                  ResourceGroupId:
+                    type: string
+                  loadBalancerID:
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
