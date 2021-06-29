@@ -30,7 +30,7 @@ const (
 	errFailedToCreateSLBClient = "failed to crate SLB client"
 )
 
-// ClientInterface create a client inferface
+// ClientInterface creates a client interface
 type ClientInterface interface {
 	DescribeLoadBalancers(region, loadBalancerID, vpcID, vSwitchID *string) (*sdk.DescribeLoadBalancersResponse, error)
 	CreateLoadBalancer(clb v1alpha1.CLBParameter) (*sdk.CreateLoadBalancerResponse, error)
@@ -57,7 +57,7 @@ func NewClient(ctx context.Context, endpoint string, accessKeyID string, accessK
 	return &SDKClient{Client: client}, nil
 }
 
-// DescribeLoadBalancers describes SLB LoadBalancer
+// DescribeLoadBalancers describes a SLBLoadBalancer instance
 func (c *SDKClient) DescribeLoadBalancers(region, loadBalancerID, vpcID, vSwitchID *string) (*sdk.DescribeLoadBalancersResponse, error) {
 	describeLoadBalancersRequest := &sdk.DescribeLoadBalancersRequest{
 		RegionId: region,
@@ -78,23 +78,38 @@ func (c *SDKClient) DescribeLoadBalancers(region, loadBalancerID, vpcID, vSwitch
 	return fs, nil
 }
 
-// CreateLoadBalancer creates SLBLoadBalancer
+// CreateLoadBalancer creates a SLBLoadBalancer instance
 func (c *SDKClient) CreateLoadBalancer(clb v1alpha1.CLBParameter) (*sdk.CreateLoadBalancerResponse, error) {
 	createLoadBalancerRequest := &sdk.CreateLoadBalancerRequest{
-		RegionId:           clb.Region,
-		AddressType:        clb.AddressType,
-		InternetChargeType: clb.InternetChargeType,
-		Bandwidth:          clb.Bandwidth,
-		LoadBalancerName:   clb.LoadBalancerName,
-		VpcId:              clb.VpcID,
-		VSwitchId:          clb.VSwitchID,
-		LoadBalancerSpec:   clb.LoadBalancerSpec,
+		RegionId:                     clb.Region,
+		AddressType:                  clb.AddressType,
+		Address:                      clb.Address,
+		InternetChargeType:           clb.InternetChargeType,
+		Bandwidth:                    clb.Bandwidth,
+		LoadBalancerName:             clb.LoadBalancerName,
+		VpcId:                        clb.VpcID,
+		VSwitchId:                    clb.VSwitchID,
+		LoadBalancerSpec:             clb.LoadBalancerSpec,
+		ClientToken:                  clb.ClientToken,
+		OwnerId:                      clb.OwnerID,
+		ResourceOwnerAccount:         clb.OwnerAccount,
+		ResourceGroupId:              clb.ResourceGroupID,
+		OwnerAccount:                 clb.OwnerAccount,
+		MasterZoneId:                 clb.MasterZoneID,
+		SlaveZoneId:                  clb.SlaveZoneID,
+		PayType:                      clb.PayType,
+		PricingCycle:                 clb.PricingCycle,
+		Duration:                     clb.Duration,
+		AutoPay:                      clb.AutoPay,
+		DeleteProtection:             clb.DeleteProtection,
+		ModificationProtectionStatus: clb.ModificationProtectionStatus,
+		ModificationProtectionReason: clb.ModificationProtectionReason,
 	}
 	res, err := c.Client.CreateLoadBalancer(createLoadBalancerRequest)
 	return res, err
 }
 
-// DeleteLoadBalancer deletes SLBLoadBalancer
+// DeleteLoadBalancer deletes the SLBLoadBalancer instance
 func (c *SDKClient) DeleteLoadBalancer(region, loadBalancerID *string) error {
 	deleteLoadBalancerRequest := &sdk.DeleteLoadBalancerRequest{
 		RegionId:       region,
@@ -104,7 +119,7 @@ func (c *SDKClient) DeleteLoadBalancer(region, loadBalancerID *string) error {
 	return err
 }
 
-// GenerateObservation generates SLBLoadBalancerObservation from LoadBalancer information
+// GenerateObservation generates CLBObservation from LoadBalancer information
 func GenerateObservation(res *sdk.DescribeLoadBalancersResponse) v1alpha1.CLBObservation {
 	observation := v1alpha1.CLBObservation{}
 	if *res.Body.TotalCount == 0 {
@@ -112,15 +127,10 @@ func GenerateObservation(res *sdk.DescribeLoadBalancersResponse) v1alpha1.CLBObs
 	}
 	lb := res.Body.LoadBalancers.LoadBalancer[0]
 	observation = v1alpha1.CLBObservation{
-		LoadBalancerID:               lb.LoadBalancerId,
-		CreateTime:                   lb.CreateTime,
-		NetworkType:                  lb.NetworkType,
-		MasterZoneID:                 lb.MasterZoneId,
-		ModificationProtectionReason: lb.ModificationProtectionReason,
-		ModificationProtectionStatus: lb.ModificationProtectionStatus,
-		LoadBalancerStatus:           lb.LoadBalancerStatus,
-		ResourceGroupID:              lb.ResourceGroupId,
-		DeleteProtection:             lb.DeleteProtection,
+		LoadBalancerID:     lb.LoadBalancerId,
+		CreateTime:         lb.CreateTime,
+		NetworkType:        lb.NetworkType,
+		LoadBalancerStatus: lb.LoadBalancerStatus,
 	}
 	return observation
 }
@@ -137,7 +147,12 @@ func IsUpdateToDate(cr *v1alpha1.CLB, res *sdk.DescribeLoadBalancersResponse) bo
 	if *spec.Region == *lb.RegionId && *spec.LoadBalancerSpec == *lb.LoadBalancerSpec &&
 		*spec.InternetChargeType == *lb.InternetChargeType && *spec.AddressType == *lb.AddressType &&
 		*spec.Address == *lb.Address && *spec.Bandwidth == *lb.Bandwidth && *spec.VpcID == *lb.VpcId &&
-		*spec.VSwitchID == *lb.VSwitchId && *spec.LoadBalancerName == *lb.LoadBalancerName {
+		*spec.VSwitchID == *lb.VSwitchId && *spec.LoadBalancerName == *lb.LoadBalancerName &&
+		*lb.ResourceGroupId == *spec.ResourceGroupID && *lb.MasterZoneId == *spec.MasterZoneID &&
+		*lb.SlaveZoneId == *spec.SlaveZoneID && *lb.PayType == *spec.PayType &&
+		*lb.DeleteProtection == *spec.DeleteProtection &&
+		*lb.ModificationProtectionStatus == *spec.ModificationProtectionStatus &&
+		*lb.ModificationProtectionReason == *spec.ModificationProtectionReason {
 		return true
 	}
 	return false

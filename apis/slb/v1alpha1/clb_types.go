@@ -100,6 +100,27 @@ type CLBParameter struct {
 	// The types of SLB instance that you can create vary by region.
 	// +kubebuilder:validation:Enum:=slb.s1.small;slb.s2.small;slb.s2.medium;slb.s3.small;slb.s3.medium;slb.s3.large
 	LoadBalancerSpec *string `json:"LoadBalancerSpec,omitempty"`
+
+	// ClientToken that is used to ensure the idempotence of the request. You can use the client to generate the value,
+	// but you must ensure that it is unique among different requests. The token can contain only ASCII characters and
+	// cannot exceed 64 characters in length.
+	ClientToken *string `json:"ClientToken,omitempty"`
+
+	OwnerID                      *int64  `json:"ownerId,omitempty"`
+	ResourceOwnerAccount         *string `json:"resourceOwnerAccount,omitempty"`
+	ResourceOwnerID              *int64  `json:"resourceOwnerId,omitempty"`
+	OwnerAccount                 *string `json:"ownerAccount,omitempty"`
+	MasterZoneID                 *string `json:"masterZoneId,omitempty"`
+	SlaveZoneID                  *string `json:"slaveZoneId,omitempty"`
+	ResourceGroupID              *string `json:"resourceGroupId,omitempty"`
+	PayType                      *string `json:"payType,omitempty"`
+	PricingCycle                 *string `json:"pricingCycle,omitempty"`
+	Duration                     *int32  `json:"duration,omitempty"`
+	AutoPay                      *bool   `json:"autoPay,omitempty"`
+	AddressIPVersion             *string `json:"addressIPVersion,omitempty"`
+	DeleteProtection             *string `json:"deleteProtection,omitempty"`
+	ModificationProtectionStatus *string `json:"modificationProtectionStatus,omitempty"`
+	ModificationProtectionReason *string `json:"modificationProtectionReason,omitempty"`
 }
 
 // CLBObservation is the representation of the current state that is observed.

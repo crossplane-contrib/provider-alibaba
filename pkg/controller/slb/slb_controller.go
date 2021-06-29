@@ -52,7 +52,7 @@ const (
 	errNotCLB              = "managed resource is not a CLB custom resource"
 )
 
-// SetupCLB adds a controller that reconciles CLB.
+// SetupCLB adds a controller that reconciles CLB
 func SetupCLB(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(v1alpha1.CLBGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
@@ -116,7 +116,7 @@ func (c *Connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	return &External{ExternalClient: client}, errors.Wrap(err, errCreateClient)
 }
 
-// External includes external NAS client
+// External includes external SLB client
 type External struct {
 	ExternalClient slbclient.ClientInterface
 }
