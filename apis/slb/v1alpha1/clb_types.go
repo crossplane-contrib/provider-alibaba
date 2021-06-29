@@ -83,10 +83,10 @@ type CLBParameter struct {
 	// InternetChargeType is the metering method of the Internet-facing SLB instance. Valid values:
 	// paybytraffic (default): pay-by-data-transfer
 	// +kubebuilder:default:=paybytraffic
-	InternetChargeType *string `json:"internetChargeType"`
+	InternetChargeType *string `json:"internetChargeType,omitempty"`
 
 	// LoadBalancerName is the name of the SLB instance.
-	LoadBalancerName *string `json:"loadBalancerName"`
+	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
 
 	// VpcID is the ID of the virtual private cloud (VPC) to which the SLB instance belongs.
 	VpcID *string `json:"vpcId,omitempty"`
@@ -99,12 +99,12 @@ type CLBParameter struct {
 	// LoadBalancerSpec is the specification of the SLB instance.
 	// The types of SLB instance that you can create vary by region.
 	// +kubebuilder:validation:Enum:=slb.s1.small;slb.s2.small;slb.s2.medium;slb.s3.small;slb.s3.medium;slb.s3.large
-	LoadBalancerSpec *string `json:"LoadBalancerSpec,omitempty"`
+	LoadBalancerSpec *string `json:"loadBalancerSpec,omitempty"`
 
 	// ClientToken that is used to ensure the idempotence of the request. You can use the client to generate the value,
 	// but you must ensure that it is unique among different requests. The token can contain only ASCII characters and
 	// cannot exceed 64 characters in length.
-	ClientToken *string `json:"ClientToken,omitempty"`
+	ClientToken *string `json:"clientToken,omitempty"`
 
 	OwnerID                      *int64  `json:"ownerId,omitempty"`
 	ResourceOwnerAccount         *string `json:"resourceOwnerAccount,omitempty"`

@@ -27,7 +27,6 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -129,7 +128,7 @@ func (e *External) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	lbID := cr.Status.AtProvider.LoadBalancerID
-	if lbID != nil {
+	if lbID == nil {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
@@ -140,7 +139,7 @@ func (e *External) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(err, errFailedToDescribeSLB)
 	}
-	if slb.Body.TotalCount == pointer.Int32Ptr(0) {
+	if *slb.Body.TotalCount == 0 {
 		return managed.ExternalObservation{ResourceExists: false, ResourceUpToDate: true}, nil
 	}
 
@@ -197,11 +196,15 @@ func (e *External) Delete(ctx context.Context, mg resource.Managed) error {
 
 // GetConnectionDetails generates connection details
 func GetConnectionDetails(cr *v1alpha1.CLB) managed.ConnectionDetails {
-	cd := managed.ConnectionDetails{
-		"LoadBalancerId":   []byte(*cr.Status.AtProvider.LoadBalancerID),
-		"Address":          []byte(*cr.Spec.ForProvider.AddressType),
-		"LoadBalancerName": []byte(*cr.Spec.ForProvider.LoadBalancerName),
+	cd := managed.ConnectionDetails{}
+	if cr.Spec.ForProvider.Address != nil {
+		cd["Address"] = []byte(*cr.Spec.ForProvider.Address)
 	}
-
+	if cr.Spec.ForProvider.LoadBalancerName != nil {
+		cd["LoadBalancerName"] = []byte(*cr.Spec.ForProvider.LoadBalancerName)
+	}
+	if cr.Status.AtProvider.LoadBalancerID != nil {
+		cd["LoadBalancerId"] = []byte(*cr.Status.AtProvider.LoadBalancerID)
+	}
 	return cd
 }

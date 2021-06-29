@@ -144,15 +144,12 @@ func IsUpdateToDate(cr *v1alpha1.CLB, res *sdk.DescribeLoadBalancersResponse) bo
 	}
 	lb := res.Body.LoadBalancers.LoadBalancer[0]
 
+	// If BandWith is not set, it will get value `5120` which is not specified in API, so removed it, so did PayType,
+	// LoadBalancerName.
+	// If InternetChargeType is set to `paybytraffic`, the response will be `4`.
+	// If AddressType is set to `internet`, the response will be `intranet`
 	if *spec.Region == *lb.RegionId && *spec.LoadBalancerSpec == *lb.LoadBalancerSpec &&
-		*spec.InternetChargeType == *lb.InternetChargeType && *spec.AddressType == *lb.AddressType &&
-		*spec.Address == *lb.Address && *spec.Bandwidth == *lb.Bandwidth && *spec.VpcID == *lb.VpcId &&
-		*spec.VSwitchID == *lb.VSwitchId && *spec.LoadBalancerName == *lb.LoadBalancerName &&
-		*lb.ResourceGroupId == *spec.ResourceGroupID && *lb.MasterZoneId == *spec.MasterZoneID &&
-		*lb.SlaveZoneId == *spec.SlaveZoneID && *lb.PayType == *spec.PayType &&
-		*lb.DeleteProtection == *spec.DeleteProtection &&
-		*lb.ModificationProtectionStatus == *spec.ModificationProtectionStatus &&
-		*lb.ModificationProtectionReason == *spec.ModificationProtectionReason {
+		*spec.VpcID == *lb.VpcId && *spec.VSwitchID == *lb.VSwitchId {
 		return true
 	}
 	return false

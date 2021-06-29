@@ -53,19 +53,6 @@ spec:
               forProvider:
                 description: CLBParameter is the isolated place to store files
                 properties:
-                  ClientToken:
-                    description: ClientToken that is used to ensure the idempotence of the request. You can use the client to generate the value, but you must ensure that it is unique among different requests. The token can contain only ASCII characters and cannot exceed 64 characters in length.
-                    type: string
-                  LoadBalancerSpec:
-                    description: LoadBalancerSpec is the specification of the SLB instance. The types of SLB instance that you can create vary by region.
-                    enum:
-                    - slb.s1.small
-                    - slb.s2.small
-                    - slb.s2.medium
-                    - slb.s3.small
-                    - slb.s3.medium
-                    - slb.s3.large
-                    type: string
                   address:
                     description: Address is the IP address
                     type: string
@@ -80,6 +67,9 @@ spec:
                     description: 'Bandwidth is the maximum bandwidth value of the listener. Unit: Mbit/s. Valid values: -1 and 1 to 5120. -1: For a pay-by-data-transfer Internet-facing SLB instance, you can set the value to -1. This indicates that the bandwidth is unlimited. 1 to 5120: For a pay-by-bandwidth Internet-facing SLB instance, you can specify a bandwidth cap for each listener. The sum of bandwidth limit values of all listeners cannot exceed the maximum bandwidth value of the SLB instance.'
                     format: int32
                     type: integer
+                  clientToken:
+                    description: ClientToken that is used to ensure the idempotence of the request. You can use the client to generate the value, but you must ensure that it is unique among different requests. The token can contain only ASCII characters and cannot exceed 64 characters in length.
+                    type: string
                   deleteProtection:
                     type: string
                   duration:
@@ -91,6 +81,16 @@ spec:
                     type: string
                   loadBalancerName:
                     description: LoadBalancerName is the name of the SLB instance.
+                    type: string
+                  loadBalancerSpec:
+                    description: LoadBalancerSpec is the specification of the SLB instance. The types of SLB instance that you can create vary by region.
+                    enum:
+                    - slb.s1.small
+                    - slb.s2.small
+                    - slb.s2.medium
+                    - slb.s3.small
+                    - slb.s3.medium
+                    - slb.s3.large
                     type: string
                   masterZoneId:
                     type: string
@@ -126,8 +126,6 @@ spec:
                     description: VpcID is the ID of the virtual private cloud (VPC) to which the SLB instance belongs.
                     type: string
                 required:
-                - internetChargeType
-                - loadBalancerName
                 - region
                 type: object
               providerConfigRef:

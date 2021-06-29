@@ -37,12 +37,12 @@ var (
 
 // GetEndpoint gets endpoints for all cloud resources
 func GetEndpoint(res runtime.Object, region string) (string, error) {
-	if region == "" {
-		return "", errors.New(errRegionNotValid)
-	}
-
 	if res == nil || res.GetObjectKind() == nil {
 		return "", errors.New(errCloudResourceNotSupported)
+	}
+
+	if region == "" && res.GetObjectKind().GroupVersionKind().Kind != slbapi.CLBKind {
+		return "", errors.New(errRegionNotValid)
 	}
 
 	var endpoint string
@@ -50,9 +50,9 @@ func GetEndpoint(res runtime.Object, region string) (string, error) {
 	case ossapi.BucketKind:
 		endpoint = fmt.Sprintf("http://oss-%s.%s", region, Domain)
 	case nasapi.NASFileSystemKind, nasapi.NASMountTargetKind:
-		endpoint = fmt.Sprintf("nas.%s.aliyuncs.com", region)
+		endpoint = fmt.Sprintf("nas.%s.%s", region, Domain)
 	case slbapi.CLBKind:
-		endpoint = "slb.aliyuncs.com"
+		endpoint = fmt.Sprintf("slb.%s", Domain)
 	default:
 		return "", errors.New(errCloudResourceNotSupported)
 	}

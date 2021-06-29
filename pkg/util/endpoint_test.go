@@ -51,7 +51,7 @@ func TestGetEndpoint(t *testing.T) {
 			},
 		},
 		"EmptyRegion": {
-			res:    nil,
+			res:    cr.DeepCopyObject(),
 			region: "",
 			want: want{
 				endpoint: "",
