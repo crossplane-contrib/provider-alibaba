@@ -115,7 +115,7 @@ func TestObserve(t *testing.T) {
 				o: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  false,
-					ConnectionDetails: GetConnectionDetails(validCR)},
+					ConnectionDetails: GetConnectionDetails(pointer.StringPtr("456"), validCR)},
 				err: nil,
 			},
 		},
@@ -166,7 +166,7 @@ func TestCreate(t *testing.T) {
 			mg:     validCR,
 			want: want{
 				o: managed.ExternalCreation{
-					ConnectionDetails: GetConnectionDetails(validCR)},
+					ConnectionDetails: GetConnectionDetails(pointer.StringPtr("123456"), validCR)},
 				err: nil,
 			},
 		},

@@ -157,7 +157,7 @@ func (e *External) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	return managed.ExternalObservation{
 		ResourceExists:    true,
 		ResourceUpToDate:  upToDate,
-		ConnectionDetails: GetConnectionDetails(cr),
+		ConnectionDetails: GetConnectionDetails(&fsID, cr),
 	}, nil
 }
 
@@ -185,7 +185,7 @@ func (e *External) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.Wrap(err, errFailedToDescribeNASFileSystem)
 	}
 	cr.Status.AtProvider = nasclient.GenerateObservation(res.Body.FileSystemId, fsRes)
-	return managed.ExternalCreation{ConnectionDetails: GetConnectionDetails(cr)}, nil
+	return managed.ExternalCreation{ConnectionDetails: GetConnectionDetails(res.Body.FileSystemId, cr)}, nil
 }
 
 // Update managed resource NASFilesystem
@@ -207,12 +207,16 @@ func (e *External) Delete(ctx context.Context, mg resource.Managed) error {
 }
 
 // GetConnectionDetails generates connection details
-func GetConnectionDetails(cr *v1alpha1.NASFileSystem) managed.ConnectionDetails {
+func GetConnectionDetails(fileSystemID *string, cr *v1alpha1.NASFileSystem) managed.ConnectionDetails {
 	cd := managed.ConnectionDetails{
 		"MountTargetDomain": []byte(cr.Status.AtProvider.MountTargetDomain),
+	}
+	if fileSystemID != nil {
+		cd["FileSystemID"] = []byte(*fileSystemID)
 	}
 	if cr.Spec.FileSystemType != nil {
 		cd["FileSystemType"] = []byte(*cr.Spec.FileSystemType)
 	}
+
 	return cd
 }
