@@ -85,9 +85,6 @@ type CLBParameter struct {
 	// +kubebuilder:default:=paybytraffic
 	InternetChargeType *string `json:"internetChargeType,omitempty"`
 
-	// LoadBalancerName is the name of the SLB instance.
-	LoadBalancerName *string `json:"loadBalancerName,omitempty"`
-
 	// VpcID is the ID of the virtual private cloud (VPC) to which the SLB instance belongs.
 	VpcID *string `json:"vpcId,omitempty"`
 
@@ -134,4 +131,6 @@ type CLBObservation struct {
 	LoadBalancerStatus           *string `json:"LoadBalancerStatus,omitempty"`
 	ResourceGroupID              *string `json:"ResourceGroupId,omitempty"`
 	DeleteProtection             *string `json:"DeleteProtection,omitempty"`
+	// Though `Address` is one of the Parameter, but if the parameter it's not set, it still can be generated.
+	Address *string `json:"address,omitempty"`
 }

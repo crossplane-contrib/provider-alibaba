@@ -33,7 +33,7 @@ const (
 // ClientInterface creates a client interface
 type ClientInterface interface {
 	DescribeLoadBalancers(region, loadBalancerID, vpcID, vSwitchID *string) (*sdk.DescribeLoadBalancersResponse, error)
-	CreateLoadBalancer(clb v1alpha1.CLBParameter) (*sdk.CreateLoadBalancerResponse, error)
+	CreateLoadBalancer(name string, clb v1alpha1.CLBParameter) (*sdk.CreateLoadBalancerResponse, error)
 	DeleteLoadBalancer(region, loadBalancerID *string) error
 }
 
@@ -79,14 +79,14 @@ func (c *SDKClient) DescribeLoadBalancers(region, loadBalancerID, vpcID, vSwitch
 }
 
 // CreateLoadBalancer creates a SLBLoadBalancer instance
-func (c *SDKClient) CreateLoadBalancer(clb v1alpha1.CLBParameter) (*sdk.CreateLoadBalancerResponse, error) {
+func (c *SDKClient) CreateLoadBalancer(name string, clb v1alpha1.CLBParameter) (*sdk.CreateLoadBalancerResponse, error) {
 	createLoadBalancerRequest := &sdk.CreateLoadBalancerRequest{
 		RegionId:                     clb.Region,
 		AddressType:                  clb.AddressType,
 		Address:                      clb.Address,
 		InternetChargeType:           clb.InternetChargeType,
 		Bandwidth:                    clb.Bandwidth,
-		LoadBalancerName:             clb.LoadBalancerName,
+		LoadBalancerName:             &name,
 		VpcId:                        clb.VpcID,
 		VSwitchId:                    clb.VSwitchID,
 		LoadBalancerSpec:             clb.LoadBalancerSpec,
@@ -131,6 +131,7 @@ func GenerateObservation(res *sdk.DescribeLoadBalancersResponse) v1alpha1.CLBObs
 		CreateTime:         lb.CreateTime,
 		NetworkType:        lb.NetworkType,
 		LoadBalancerStatus: lb.LoadBalancerStatus,
+		Address:            lb.Address,
 	}
 	return observation
 }
@@ -148,9 +149,17 @@ func IsUpdateToDate(cr *v1alpha1.CLB, res *sdk.DescribeLoadBalancersResponse) bo
 	// LoadBalancerName.
 	// If InternetChargeType is set to `paybytraffic`, the response will be `4`.
 	// If AddressType is set to `internet`, the response will be `intranet`
-	if *spec.Region == *lb.RegionId && *spec.LoadBalancerSpec == *lb.LoadBalancerSpec &&
-		*spec.VpcID == *lb.VpcId && *spec.VSwitchID == *lb.VSwitchId {
-		return true
+	if spec.LoadBalancerSpec != nil && (lb.LoadBalancerSpec == nil || *spec.LoadBalancerSpec != *lb.LoadBalancerSpec) {
+		return false
 	}
-	return false
+	if spec.VpcID != nil && (lb.VpcId == nil || *spec.VpcID != *lb.VpcId) {
+		return false
+	}
+	if spec.VSwitchID != nil && (lb.VSwitchId == nil || *spec.VSwitchID != *lb.VSwitchId) {
+		return false
+	}
+	if *spec.Region != *lb.RegionId {
+		return false
+	}
+	return true
 }

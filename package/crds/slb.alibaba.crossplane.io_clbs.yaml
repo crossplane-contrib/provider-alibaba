@@ -79,9 +79,6 @@ spec:
                     default: paybytraffic
                     description: 'InternetChargeType is the metering method of the Internet-facing SLB instance. Valid values: paybytraffic (default): pay-by-data-transfer'
                     type: string
-                  loadBalancerName:
-                    description: LoadBalancerName is the name of the SLB instance.
-                    type: string
                   loadBalancerSpec:
                     description: LoadBalancerSpec is the specification of the SLB instance. The types of SLB instance that you can create vary by region.
                     enum:
@@ -183,6 +180,9 @@ spec:
                   NetworkType:
                     type: string
                   ResourceGroupId:
+                    type: string
+                  address:
+                    description: Though `Address` is one of the Parameter, but if the parameter it's not set, it still can be generated.
                     type: string
                   loadBalancerID:
                     type: string

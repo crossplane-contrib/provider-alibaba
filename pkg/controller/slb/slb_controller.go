@@ -163,7 +163,7 @@ func (e *External) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotCLB)
 	}
 	cr.SetConditions(xpv1.Creating())
-	res, err := e.ExternalClient.CreateLoadBalancer(cr.Spec.ForProvider)
+	res, err := e.ExternalClient.CreateLoadBalancer(cr.Name, cr.Spec.ForProvider)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errFailedToCreateSLB)
 	}
@@ -196,15 +196,9 @@ func (e *External) Delete(ctx context.Context, mg resource.Managed) error {
 
 // GetConnectionDetails generates connection details
 func GetConnectionDetails(cr *v1alpha1.CLB) managed.ConnectionDetails {
-	cd := managed.ConnectionDetails{}
-	if cr.Spec.ForProvider.Address != nil {
-		cd["Address"] = []byte(*cr.Spec.ForProvider.Address)
-	}
-	if cr.Spec.ForProvider.LoadBalancerName != nil {
-		cd["LoadBalancerName"] = []byte(*cr.Spec.ForProvider.LoadBalancerName)
-	}
-	if cr.Status.AtProvider.LoadBalancerID != nil {
-		cd["LoadBalancerId"] = []byte(*cr.Status.AtProvider.LoadBalancerID)
+	cd := managed.ConnectionDetails{
+		"Address":        []byte(*cr.Status.AtProvider.Address),
+		"LoadBalancerId": []byte(*cr.Status.AtProvider.LoadBalancerID),
 	}
 	return cd
 }
