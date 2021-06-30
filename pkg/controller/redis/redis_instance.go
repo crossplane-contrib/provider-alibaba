@@ -48,7 +48,6 @@ const (
 	errNotInstance         = "managed resource is not an instance custom resource"
 	errNoProvider          = "no provider config or provider specified"
 	errCreateClient        = "cannot create redis client"
-	errGetProvider         = "cannot get provider"
 	errGetProviderConfig   = "cannot get provider config"
 	errTrackUsage          = "cannot track provider config usage"
 	errNoConnectionSecret  = "no connection secret specified"
@@ -118,13 +117,6 @@ func (c *redisConnector) Connect(ctx context.Context, mg resource.Managed) (mana
 		}
 		sel = pc.Spec.Credentials.SecretRef
 		region = pc.Spec.Region
-	case cr.GetProviderReference() != nil:
-		p := &aliv1alpha1.Provider{}
-		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-			return nil, errors.Wrap(err, errGetProvider)
-		}
-		sel = p.Spec.CredentialsSecretRef
-		region = p.Spec.Region
 	default:
 		return nil, errors.New(errNoProvider)
 	}
@@ -300,7 +292,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
 	}
 
-	// The crossplane runtime will send status update back to apiserver.
+	// The Crossplane runtime will send status update back to apiserver.
 	cr.Status.AtProvider.DBInstanceID = instance.ID
 
 	// Any connection details emitted in ExternalClient are cumulative.

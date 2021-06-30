@@ -1,4 +1,3 @@
----
 apiVersion: redis.alibaba.crossplane.io/v1alpha1
 kind: RedisInstance
 metadata:

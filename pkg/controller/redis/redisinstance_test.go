@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -134,7 +135,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, errGetProvider),
+			want: errors.New(errNoProvider),
 		},
 		"NoConnectionSecretError": {
 			reason: "An error should be returned if no connection secret was specified",
@@ -260,78 +261,261 @@ func TestConnector(t *testing.T) {
 	}
 }
 
-func TestExternalClientObserve(t *testing.T) {
+func TestObserve(t *testing.T) {
 	e := &external{client: &fakeRedisClient{}}
-	obj := &v1alpha1.RedisInstance{
-		Spec: v1alpha1.RedisInstanceSpec{
-			ForProvider: v1alpha1.RedisInstanceParameters{
-				MasterUsername: testName,
+	type want struct {
+		ResourceExists   bool
+		ResourceUpToDate bool
+		err              error
+	}
+
+	cases := map[string]struct {
+		mg   resource.Managed
+		want want
+	}{
+		"InstancePort is not set": {
+			mg: &v1alpha1.RedisInstance{
+				Spec: v1alpha1.RedisInstanceSpec{
+					ForProvider: v1alpha1.RedisInstanceParameters{
+						MasterUsername: testName,
+					},
+				},
+				Status: v1alpha1.RedisInstanceStatus{
+					AtProvider: v1alpha1.RedisInstanceObservation{
+						DBInstanceID: testName,
+					},
+				},
+			},
+			want: want{
+				ResourceExists: true, ResourceUpToDate: true, err: nil,
 			},
 		},
-		Status: v1alpha1.RedisInstanceStatus{
-			AtProvider: v1alpha1.RedisInstanceObservation{
-				DBInstanceID: testName,
+		"InstancePort is set": {
+			mg: &v1alpha1.RedisInstance{
+				Spec: v1alpha1.RedisInstanceSpec{
+					ForProvider: v1alpha1.RedisInstanceParameters{
+						MasterUsername: testName,
+						InstancePort:   1234,
+					},
+				},
+				Status: v1alpha1.RedisInstanceStatus{
+					AtProvider: v1alpha1.RedisInstanceObservation{
+						DBInstanceID: testName,
+					},
+				},
+			},
+			want: want{
+				ResourceExists: true, ResourceUpToDate: true, err: nil,
+			},
+		},
+		"PubliclyAccessible is set": {
+			mg: &v1alpha1.RedisInstance{
+				Spec: v1alpha1.RedisInstanceSpec{
+					ForProvider: v1alpha1.RedisInstanceParameters{
+						MasterUsername:     testName,
+						PubliclyAccessible: true,
+						InstancePort:       123,
+					},
+				},
+				Status: v1alpha1.RedisInstanceStatus{
+					AtProvider: v1alpha1.RedisInstanceObservation{
+						DBInstanceID: testName,
+					},
+				},
+			},
+			want: want{
+				ResourceExists: true, ResourceUpToDate: true, err: nil,
 			},
 		},
 	}
-	ob, err := e.Observe(context.Background(), obj)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if obj.Status.AtProvider.DBInstanceStatus != v1alpha1.RedisInstanceStateRunning {
-		t.Errorf("DBInstanceStatus (%v) should be %v", obj.Status.AtProvider.DBInstanceStatus, v1alpha1.RedisInstanceStateRunning)
-	}
-	if obj.Status.AtProvider.AccountReady != true {
-		t.Error("AccountReady should be true")
-	}
-	if string(ob.ConnectionDetails[xpv1.ResourceCredentialsSecretUserKey]) != testName {
-		t.Error("ConnectionDetails should include username=test")
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got, err := e.Observe(context.Background(), tc.mg)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\ne.Observe(...): -want error, +got error:\n%s\n", name, diff)
+			}
+			if diff := cmp.Diff(tc.want.ResourceUpToDate, got.ResourceUpToDate); diff != "" {
+				t.Errorf("\n%s\ne.Observe(...): -want, +got:\n%s\n", name, diff)
+			}
+			if diff := cmp.Diff(tc.want.ResourceExists, got.ResourceExists); diff != "" {
+				t.Errorf("\n%s\ne.Observe(...): -want, +got:\n%s\n", name, diff)
+			}
+		})
 	}
 }
 
-func TestExternalClientCreate(t *testing.T) {
+func TestCreate(t *testing.T) {
 	e := &external{client: &fakeRedisClient{}}
-	obj := &v1alpha1.RedisInstance{
-		ObjectMeta: metav1.ObjectMeta{
-			Annotations: map[string]string{
-				crossplanemeta.AnnotationKeyExternalName: testName,
+	type want struct {
+		u   managed.ExternalCreation
+		err error
+	}
+
+	cases := map[string]struct {
+		mg   resource.Managed
+		want want
+	}{
+		"No a valid managed resource": {
+			mg: nil,
+			want: want{
+				u: managed.ExternalCreation{}, err: errors.New(errNotInstance),
 			},
 		},
-		Spec: v1alpha1.RedisInstanceSpec{
-			ForProvider: v1alpha1.RedisInstanceParameters{
-				MasterUsername:     testName,
-				EngineVersion:      "5.0",
-				InstanceClass:      "redis.logic.sharding.2g.8db.0rodb.8proxy.default",
-				InstancePort:       8080,
-				PubliclyAccessible: true,
+		"DBInstanceStatus is creating": {
+			mg: &v1alpha1.RedisInstance{
+				Status: v1alpha1.RedisInstanceStatus{
+					AtProvider: v1alpha1.RedisInstanceObservation{
+						DBInstanceStatus: v1alpha1.RedisInstanceStateCreating,
+					},
+				},
+			},
+			want: want{
+				u: managed.ExternalCreation{}, err: nil,
+			},
+		},
+		"Successfully create a managed resource": {
+			mg: &v1alpha1.RedisInstance{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						crossplanemeta.AnnotationKeyExternalName: testName,
+					},
+				},
+				Spec: v1alpha1.RedisInstanceSpec{
+					ForProvider: v1alpha1.RedisInstanceParameters{
+						MasterUsername:     testName,
+						EngineVersion:      "5.0",
+						InstanceClass:      "redis.logic.sharding.2g.8db.0rodb.8proxy.default",
+						InstancePort:       8080,
+						PubliclyAccessible: true,
+					},
+				},
+			},
+			want: want{
+				u: managed.ExternalCreation{
+					ConnectionDetails: map[string][]byte{
+						"username": []byte(testName),
+						"endpoint": []byte("172.0.0.1"),
+						"port":     []byte(strconv.Itoa(8888)),
+					}},
+				err: nil,
 			},
 		},
 	}
-	ob, err := e.Create(context.Background(), obj)
-	if err != nil {
-		t.Fatal(err)
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got, err := e.Create(context.Background(), tc.mg)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\ne.Update(...): -want error, +got error:\n%s\n", name, diff)
+			}
+			if diff := cmp.Diff(tc.want.u, got); diff != "" {
+				t.Errorf("\n%s\ne.Update(...): -want, +got:\n%s\n", name, diff)
+			}
+		})
 	}
-	if obj.Status.AtProvider.DBInstanceID != testName {
-		t.Error("DBInstanceID should be set to 'test'")
+
+}
+
+func TestUpdate(t *testing.T) {
+	e := &external{client: &fakeRedisClient{}}
+	type want struct {
+		u   managed.ExternalUpdate
+		err error
 	}
-	if string(ob.ConnectionDetails[xpv1.ResourceCredentialsSecretEndpointKey]) != "172.0.0.1" ||
-		string(ob.ConnectionDetails[xpv1.ResourceCredentialsSecretPortKey]) != "8888" {
-		t.Error("ConnectionDetails should include endpoint=172.0.0.1 and port=8888")
+
+	cases := map[string]struct {
+		mg   resource.Managed
+		want want
+	}{
+		"No a valid managed resource": {
+			mg: nil,
+			want: want{
+				u: managed.ExternalUpdate{}, err: errors.New(errNotInstance),
+			},
+		},
+		"Successfully update a managed resource": {
+			mg: &v1alpha1.RedisInstance{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{crossplanemeta.AnnotationKeyExternalName: testName},
+				},
+				Spec: v1alpha1.RedisInstanceSpec{
+					ForProvider: v1alpha1.RedisInstanceParameters{
+						InstanceClass: "class-test",
+					},
+				},
+			},
+			want: want{
+				u: managed.ExternalUpdate{}, err: nil,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got, err := e.Update(context.Background(), tc.mg)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\ne.Update(...): -want error, +got error:\n%s\n", name, diff)
+			}
+			if diff := cmp.Diff(tc.want.u, got); diff != "" {
+				t.Errorf("\n%s\ne.Update(...): -want, +got:\n%s\n", name, diff)
+			}
+		})
 	}
 }
 
-func TestExternalClientDelete(t *testing.T) {
+func TestDelete(t *testing.T) {
 	e := &external{client: &fakeRedisClient{}}
-	obj := &v1alpha1.RedisInstance{
-		Status: v1alpha1.RedisInstanceStatus{
-			AtProvider: v1alpha1.RedisInstanceObservation{
-				DBInstanceID: testName,
+	type want struct {
+		err error
+	}
+
+	cases := map[string]struct {
+		mg   resource.Managed
+		want want
+	}{
+		"No a valid managed resource": {
+			mg: nil,
+			want: want{
+				err: errors.New(errNotInstance),
+			},
+		},
+		"Managed resource is already in a delete state": {
+			mg: &v1alpha1.RedisInstance{
+				Status: v1alpha1.RedisInstanceStatus{
+					AtProvider: v1alpha1.RedisInstanceObservation{
+						DBInstanceStatus: v1alpha1.RedisInstanceStateDeleting,
+					},
+				},
+			},
+			want: want{
+				err: nil,
+			},
+		},
+		"Successfully delete a managed resource": {
+			mg: &v1alpha1.RedisInstance{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{crossplanemeta.AnnotationKeyExternalName: testName},
+				},
+				Status: v1alpha1.RedisInstanceStatus{
+					AtProvider: v1alpha1.RedisInstanceObservation{
+						DBInstanceID: testName,
+					},
+				},
+			},
+			want: want{
+				err: nil,
 			},
 		},
 	}
-	err := e.Delete(context.Background(), obj)
-	if err != nil {
-		t.Fatal(err)
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := e.Delete(context.Background(), tc.mg)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\n%s\ne.Update(...): -want error, +got error:\n%s\n", name, diff)
+			}
+		})
 	}
 }
 
