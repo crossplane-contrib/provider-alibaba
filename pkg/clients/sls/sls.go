@@ -50,7 +50,8 @@ var (
 	// ErrFailedToDeleteSLSStore is the error of failing to delete an SLS store
 	ErrFailedToDeleteSLSStore = "FailedToDeleteSLSStore"
 
-	errCodeLogtailNotExist = "ConfigNotExist"
+	// ErrCodeLogtailNotExist is the error code when Logtail doesn't exist
+	ErrCodeLogtailNotExist = "ConfigNotExist"
 )
 
 // LogClientInterface is the Log client interface
@@ -326,7 +327,7 @@ func IsLogtailNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == errCodeLogtailNotExist) {
+	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeLogtailNotExist) {
 		return true
 	}
 	return false
