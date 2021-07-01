@@ -20,19 +20,19 @@ package sls
 
 import (
 	"context"
+	"testing"
 
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
-	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
+	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
 )
 
 const (
@@ -45,12 +45,11 @@ var validLogtailCR = &slsv1alpha1.Logtail{
 		Annotations: map[string]string{meta.AnnotationKeyExternalName: configName},
 	},
 	Spec: slsv1alpha1.LogtailSpec{
-		ForProvider: slsv1alpha1.LogtailParameters{
-		},
+		ForProvider: slsv1alpha1.LogtailParameters{},
 	},
 }
 
-func (c *fakeSDKClient) DescribeConfig(Logtail string, config string) (*sdk.LogConfig, error) {
+func (c *fakeSDKClient) DescribeConfig(logtail string, config string) (*sdk.LogConfig, error) {
 	switch config {
 	case "":
 		return nil, sdk.Error{Code: slsclient.ErrCodeLogtailNotExist, HTTPCode: int32(0)}
@@ -62,18 +61,17 @@ func (c *fakeSDKClient) DescribeConfig(Logtail string, config string) (*sdk.LogC
 		}, nil
 
 	}
-	return nil, nil
 }
 
 func (c *fakeSDKClient) CreateConfig(name string, config slsv1alpha1.LogtailParameters) error {
 	return nil
 }
 
-func (c *fakeSDKClient) UpdateConfig(Logtail string, config *sdk.LogConfig) error {
+func (c *fakeSDKClient) UpdateConfig(logtail string, config *sdk.LogConfig) error {
 	return nil
 }
 
-func (c *fakeSDKClient) DeleteConfig(Logtail string, config string) error {
+func (c *fakeSDKClient) DeleteConfig(logtail string, config string) error {
 	return nil
 }
 
@@ -116,8 +114,7 @@ func TestLogtailObserve(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{meta.AnnotationKeyExternalName: badConfigName},
 				},
-				Spec: slsv1alpha1.LogtailSpec{ForProvider: slsv1alpha1.LogtailParameters{
-				}}},
+				Spec: slsv1alpha1.LogtailSpec{ForProvider: slsv1alpha1.LogtailParameters{}}},
 			want: want{
 				o:   managed.ExternalObservation{},
 				err: errors.Wrap(errors.New("unknown error"), errDescribeLogtail),
