@@ -1,0 +1,20 @@
+apiVersion: sls.alibaba.crossplane.io/v1alpha1
+kind: Logtail
+metadata:
+  name: sls-logtail-test
+spec:
+  forProvider:
+    inputType: file
+    inputDetail:
+      logType: common_reg_log
+      logPath: /tmp
+      filePattern: "*.log"
+      topicFormat: default
+      keys:
+        - "content"
+      logBeginRegex: "(?![\\s]*at ).*"
+      regex: "(.*)"
+    outputType: LogService
+    outputDetail:
+      projectName: crossplane-poc
+      logstoreName: sls-store-test

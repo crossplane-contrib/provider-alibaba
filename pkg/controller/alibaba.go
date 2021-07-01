@@ -35,6 +35,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		database.SetupRDSInstance,
 		sls.SetupProject,
 		sls.SetupStore,
+		sls.SetupLogtail,
 		oss.SetupBucket,
 		nas.SetupNASFileSystem,
 		nas.SetupNASMountTarget,
