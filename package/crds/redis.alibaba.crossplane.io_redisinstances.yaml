@@ -4,20 +4,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: clbs.slb.alibaba.crossplane.io
+  name: redisinstances.redis.alibaba.crossplane.io
 spec:
-  group: slb.alibaba.crossplane.io
+  group: redis.alibaba.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - alibaba
-    kind: CLB
-    listKind: CLBList
-    plural: clbs
-    shortNames:
-    - redis
-    singular: clb
+    kind: RedisInstance
+    listKind: RedisInstanceList
+    plural: redisinstances
+    singular: redisinstance
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -27,13 +25,22 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
+    - jsonPath: .status.atProvider.dbInstanceStatus
+      name: STATE
+      type: string
+    - jsonPath: .spec.forProvider.instanceType
+      name: INSTANCE_TYPE
+      type: string
+    - jsonPath: .spec.forProvider.engineVersion
+      name: VERSION
+      type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CLB is a managed resource that represents an CLB instance
+        description: RedisInstance is the Schema for the redisinstances API An RedisInstance is a managed resource that represents an Redis instance.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -44,7 +51,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: CLBSpec defines the desired state of CLB
+            description: RedisInstanceSpec defines the desired state of RedisInstance
             properties:
               deletionPolicy:
                 description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
@@ -53,79 +60,50 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: CLBParameter is the isolated place to store files
+                description: RedisInstanceParameters define the desired state of an Redis instance.
                 properties:
-                  address:
-                    description: Address is the IP address
+                  chargeType:
+                    default: PostPaid
+                    description: ChargeType is indicates payment type ChargeType：PrePaid/PostPaid
                     type: string
-                  addressIPVersion:
-                    type: string
-                  addressType:
-                    description: 'AddressType is the type of IP address that the SLB instance uses to provide services. Valid values: internet: After an Internet-facing SLB instance is created, the system assigns a public IP address to the SLB instance. Then, the SLB instance can forward requests from the Internet. intranet: After an internal-facing SLB instance is created, the system assigns a private IP address to the SLB instance. Then, the SLB instance can forward only internal requests.'
-                    type: string
-                  autoPay:
-                    type: boolean
-                  bandwidth:
-                    description: 'Bandwidth is the maximum bandwidth value of the listener. Unit: Mbit/s. Valid values: -1 and 1 to 5120. -1: For a pay-by-data-transfer Internet-facing SLB instance, you can set the value to -1. This indicates that the bandwidth is unlimited. 1 to 5120: For a pay-by-bandwidth Internet-facing SLB instance, you can specify a bandwidth cap for each listener. The sum of bandwidth limit values of all listeners cannot exceed the maximum bandwidth value of the SLB instance.'
-                    format: int32
-                    type: integer
-                  clientToken:
-                    description: ClientToken that is used to ensure the idempotence of the request. You can use the client to generate the value, but you must ensure that it is unique among different requests. The token can contain only ASCII characters and cannot exceed 64 characters in length.
-                    type: string
-                  deleteProtection:
-                    type: string
-                  duration:
-                    format: int32
-                    type: integer
-                  internetChargeType:
-                    default: paybytraffic
-                    description: 'InternetChargeType is the metering method of the Internet-facing SLB instance. Valid values: paybytraffic (default): pay-by-data-transfer'
-                    type: string
-                  loadBalancerSpec:
-                    description: LoadBalancerSpec is the specification of the SLB instance. The types of SLB instance that you can create vary by region.
+                  engineVersion:
+                    description: EngineVersion indicates the database engine version. Redis：4.0/5.0
                     enum:
-                    - slb.s1.small
-                    - slb.s2.small
-                    - slb.s2.medium
-                    - slb.s3.small
-                    - slb.s3.medium
-                    - slb.s3.large
+                    - "4.0"
+                    - "5.0"
                     type: string
-                  masterZoneId:
+                  instanceClass:
+                    description: InstanceClass is the machine class of the instance, e.g. "redis.logic.sharding.2g.8db.0rodb.8proxy.default"
                     type: string
-                  modificationProtectionReason:
+                  instanceType:
+                    description: Engine is the name of the database engine to be used for this instance. Engine is a required field.
+                    enum:
+                    - Redis
                     type: string
-                  modificationProtectionStatus:
+                  masterUsername:
+                    description: 'MasterUsername is the name for the master user. Constraints:    * Required for Redis.    * Must be 1 to 16 letters or numbers.    * First character must be a letter.    * Cannot be a reserved word for the chosen database engine.'
                     type: string
-                  ownerAccount:
+                  networkType:
+                    default: CLASSIC
+                    description: NetworkType is indicates service network type NetworkType：CLASSIC/VPC
                     type: string
-                  ownerId:
-                    format: int64
+                  port:
+                    description: InstancePort is indicates the database service port
                     type: integer
-                  payType:
-                    type: string
-                  pricingCycle:
-                    type: string
-                  region:
-                    description: Region is the ID of the region where you want to create the SLB instance.
-                    type: string
-                  resourceGroupId:
-                    type: string
-                  resourceOwnerAccount:
-                    type: string
-                  resourceOwnerId:
-                    format: int64
-                    type: integer
-                  slaveZoneId:
-                    type: string
+                  publiclyAccessible:
+                    description: PubliclyAccessible is Public network of service exposure
+                    type: boolean
                   vSwitchId:
-                    description: VSwitchID is the ID of the vSwitch to which the SLB instance is attached. To create an SLB instance that is deployed in a VPC, you must set this parameter. If you specify this parameter, the value of the AddressType parameter is set to intranet by default.
+                    description: VSwitchId is indicates VSwitch ID
                     type: string
                   vpcId:
-                    description: VpcID is the ID of the virtual private cloud (VPC) to which the SLB instance belongs.
+                    description: VpcId is indicates VPC ID
                     type: string
                 required:
-                - region
+                - engineVersion
+                - instanceClass
+                - instanceType
+                - publiclyAccessible
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
@@ -162,32 +140,27 @@ spec:
             - forProvider
             type: object
           status:
-            description: CLBStatus defines the observed state of CLB
+            description: RedisInstanceStatus defines the observed state of RedisInstance
             properties:
               atProvider:
-                description: CLBObservation is the representation of the current state that is observed.
+                description: RedisInstanceObservation is the representation of the current state that is observed.
                 properties:
-                  CreateTime:
+                  accountReady:
+                    description: AccountReady specifies whether the initial user account (username + password) is ready
+                    type: boolean
+                  connectionReady:
+                    description: ConnectionReady specifies whether the network connect is ready
+                    type: boolean
+                  dbInstanceID:
+                    description: DBInstanceID specifies the Redis instance ID.
                     type: string
-                  DeleteProtection:
+                  dbInstanceStatus:
+                    description: DBInstanceStatus specifies the current state of this database.
                     type: string
-                  LoadBalancerStatus:
-                    type: string
-                  MasterZoneId:
-                    type: string
-                  ModificationProtectionReason:
-                    type: string
-                  ModificationProtectionStatus:
-                    type: string
-                  NetworkType:
-                    type: string
-                  ResourceGroupId:
-                    type: string
-                  address:
-                    description: Though `Address` is one of the Parameter, but if the parameter it's not set, it still can be generated.
-                    type: string
-                  loadBalancerID:
-                    type: string
+                required:
+                - accountReady
+                - connectionReady
+                - dbInstanceID
                 type: object
               conditions:
                 description: Conditions of the resource.

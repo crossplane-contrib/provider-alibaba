@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane/provider-alibaba/pkg/controller/database"
 	"github.com/crossplane/provider-alibaba/pkg/controller/nas"
 	"github.com/crossplane/provider-alibaba/pkg/controller/oss"
+	"github.com/crossplane/provider-alibaba/pkg/controller/redis"
 	"github.com/crossplane/provider-alibaba/pkg/controller/slb"
 	"github.com/crossplane/provider-alibaba/pkg/controller/sls"
 )
@@ -33,6 +34,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
 		config.Setup,
 		database.SetupRDSInstance,
+		redis.SetupRedisInstance,
 		sls.SetupProject,
 		sls.SetupStore,
 		oss.SetupBucket,

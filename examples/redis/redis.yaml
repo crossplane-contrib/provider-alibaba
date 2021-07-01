@@ -1,0 +1,20 @@
+apiVersion: redis.alibaba.crossplane.io/v1alpha1
+kind: RedisInstance
+metadata:
+  name: example
+  labels:
+    example: "true"
+    engine: redis
+spec:
+  forProvider:
+    instanceType: Redis
+    engineVersion: "5.0"
+    instanceClass: redis.basic.small.default
+    port: 8080
+    publiclyAccessible: true
+  writeConnectionSecretToRef:
+    namespace: crossplane-system
+    name: example-redis
+  providerConfigRef:
+    name: default
+  deletionPolicy: Delete

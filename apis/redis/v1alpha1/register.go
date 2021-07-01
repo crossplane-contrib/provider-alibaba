@@ -25,7 +25,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "database.alibaba.crossplane.io"
+	Group   = "redis.alibaba.crossplane.io"
 	Version = "v1alpha1"
 )
 
@@ -37,14 +37,14 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// RDSInstanceClass type metadata.
+// RedisInstanceClass type metadata.
 var (
-	RDSInstanceKind             = reflect.TypeOf(RDSInstance{}).Name()
-	RDSInstanceGroupKind        = schema.GroupKind{Group: Group, Kind: RDSInstanceKind}.String()
-	RDSInstanceKindAPIVersion   = RDSInstanceKind + "." + SchemeGroupVersion.String()
-	RDSInstanceGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceKind)
+	RedisInstanceKind             = reflect.TypeOf(RedisInstance{}).Name()
+	RedisInstanceGroupKind        = schema.GroupKind{Group: Group, Kind: RedisInstanceKind}.String()
+	RedisInstanceKindAPIVersion   = RedisInstanceKind + "." + SchemeGroupVersion.String()
+	RedisInstanceGroupVersionKind = SchemeGroupVersion.WithKind(RedisInstanceKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&RDSInstance{}, &RDSInstanceList{})
+	SchemeBuilder.Register(&RedisInstance{}, &RedisInstanceList{})
 }
