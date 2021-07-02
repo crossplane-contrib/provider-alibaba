@@ -37,7 +37,6 @@ import (
 
 const (
 	errCreateClient           = "cannot create OSS client"
-	errTrackUsage             = "cannot track provider config usage"
 	errFailedToCreateBucket   = "failed to create OSS bucket"
 	errFailedToUpdateBucket   = "failed to update OSS bucket"
 	errFailedToDeleteBucket   = "failed to delete OSS bucket"

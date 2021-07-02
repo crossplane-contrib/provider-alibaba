@@ -42,7 +42,7 @@ func GetEndpoint(res runtime.Object, region string) (string, error) {
 		return "", errors.New(errCloudResourceNotSupported)
 	}
 
-	if region == "" && res.GetObjectKind().GroupVersionKind().Kind != slbapi.CLBKind {
+	if region == "" && res.GetObjectKind().GroupVersionKind().Kind != slb.CLBKind {
 		return "", errors.New(errRegionNotValid)
 	}
 

@@ -21,12 +21,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	sdkerror "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -35,9 +29,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
-	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/redis"
 )
 
@@ -77,7 +76,7 @@ func SetupRedisInstance(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha1.RedisInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&redisConnector{
 				client:         mgr.GetClient(),
-				usage:          resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1alpha1.ProviderConfigUsage{}),
+				usage:          resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1beta1.ProviderConfigUsage{}),
 				newRedisClient: redis.NewClient,
 			}),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -108,7 +107,7 @@ func (c *redisConnector) Connect(ctx context.Context, mg resource.Managed) (mana
 			return nil, errors.Wrap(err, errTrackUsage)
 		}
 
-		pc := &aliv1alpha1.ProviderConfig{}
+		pc := &aliv1beta1.ProviderConfig{}
 		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
 			return nil, errors.Wrap(err, errGetProviderConfig)
 		}

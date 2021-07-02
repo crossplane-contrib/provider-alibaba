@@ -5,21 +5,19 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	crossplanemeta "github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
-	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/redis"
 )
 
@@ -91,14 +89,12 @@ func TestConnector(t *testing.T) {
 			reason: "An error should be returned if the selected credentials source is unsupported",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
-						t := obj.(*aliv1alpha1.ProviderConfig)
-						*t = aliv1alpha1.ProviderConfig{
-							Spec: aliv1alpha1.ProviderConfigSpec{
-								ProviderConfigSpec: xpv1.ProviderConfigSpec{
-									Credentials: xpv1.ProviderCredentials{
-										Source: xpv1.CredentialsSource("wat"),
-									},
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+						t := obj.(*aliv1beta1.ProviderConfig)
+						*t = aliv1beta1.ProviderConfig{
+							Spec: aliv1beta1.ProviderConfigSpec{
+								Credentials: aliv1beta1.ProviderCredentials{
+									Source: xpv1.CredentialsSource("wat"),
 								},
 							},
 						}
@@ -141,14 +137,12 @@ func TestConnector(t *testing.T) {
 			reason: "An error should be returned if no connection secret was specified",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
-						t := obj.(*aliv1alpha1.ProviderConfig)
-						*t = aliv1alpha1.ProviderConfig{
-							Spec: aliv1alpha1.ProviderConfigSpec{
-								ProviderConfigSpec: xpv1.ProviderConfigSpec{
-									Credentials: xpv1.ProviderCredentials{
-										Source: xpv1.CredentialsSourceSecret,
-									},
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+						t := obj.(*aliv1beta1.ProviderConfig)
+						*t = aliv1beta1.ProviderConfig{
+							Spec: aliv1beta1.ProviderConfigSpec{
+								Credentials: aliv1beta1.ProviderCredentials{
+									Source: xpv1.CredentialsSourceSecret,
 								},
 							},
 						}
@@ -172,23 +166,21 @@ func TestConnector(t *testing.T) {
 			reason: "Errors getting a secret should be returned",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
 						switch t := obj.(type) {
 						case *corev1.Secret:
 							return errBoom
-						case *aliv1alpha1.ProviderConfig:
-							*t = aliv1alpha1.ProviderConfig{
-								Spec: aliv1alpha1.ProviderConfigSpec{
-									ProviderConfigSpec: xpv1.ProviderConfigSpec{
-										Credentials: xpv1.ProviderCredentials{
-											Source: xpv1.CredentialsSourceSecret,
-											SecretRef: &xpv1.SecretKeySelector{
-												SecretReference: xpv1.SecretReference{
-													Name: "coolsecret",
-												},
-											},
-										},
+						case *aliv1beta1.ProviderConfig:
+							*t = aliv1beta1.ProviderConfig{
+								Spec: aliv1beta1.ProviderConfigSpec{
+									Credentials: aliv1beta1.ProviderCredentials{
+										Source: xpv1.CredentialsSourceSecret,
 									},
+								},
+							}
+							t.Spec.Credentials.SecretRef = &xpv1.SecretKeySelector{
+								SecretReference: xpv1.SecretReference{
+									Name: "coolsecret",
 								},
 							}
 						}
@@ -212,20 +204,18 @@ func TestConnector(t *testing.T) {
 			reason: "Errors getting a secret should be returned",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
-						if t, ok := obj.(*aliv1alpha1.ProviderConfig); ok {
-							*t = aliv1alpha1.ProviderConfig{
-								Spec: aliv1alpha1.ProviderConfigSpec{
-									ProviderConfigSpec: xpv1.ProviderConfigSpec{
-										Credentials: xpv1.ProviderCredentials{
-											Source: xpv1.CredentialsSourceSecret,
-											SecretRef: &xpv1.SecretKeySelector{
-												SecretReference: xpv1.SecretReference{
-													Name: "coolsecret",
-												},
-											},
-										},
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+						if t, ok := obj.(*aliv1beta1.ProviderConfig); ok {
+							*t = aliv1beta1.ProviderConfig{
+								Spec: aliv1beta1.ProviderConfigSpec{
+									Credentials: aliv1beta1.ProviderCredentials{
+										Source: xpv1.CredentialsSourceSecret,
 									},
+								},
+							}
+							t.Spec.Credentials.SecretRef = &xpv1.SecretKeySelector{
+								SecretReference: xpv1.SecretReference{
+									Name: "coolsecret",
 								},
 							}
 						}

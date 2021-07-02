@@ -19,6 +19,8 @@
 package sls
 
 import (
+	"fmt"
+
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
 	"github.com/pkg/errors"
 
