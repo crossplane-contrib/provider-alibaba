@@ -70,6 +70,11 @@ type LogClientInterface interface {
 	CreateConfig(name string, config v1alpha1.LogtailParameters) error
 	UpdateConfig(project string, config *sdk.LogConfig) error
 	DeleteConfig(project string, config string) error
+
+	DescribeIndex(project, logstore *string) (*sdk.Index, error)
+	CreateIndex(param v1alpha1.LogstoreIndexParameters) error
+	UpdateIndex(project, logstore *string, index *sdk.Index) error
+	DeleteIndex(project, logstore *string) error
 }
 
 // LogClient is the SDK client of SLS

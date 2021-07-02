@@ -76,6 +76,62 @@ func (mg *LogStore) SetWriteConnectionSecretToReference(r *xpv1.SecretReference)
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
+// GetCondition of this LogstoreIndex.
+func (mg *LogstoreIndex) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this LogstoreIndex.
+func (mg *LogstoreIndex) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this LogstoreIndex.
+func (mg *LogstoreIndex) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this LogstoreIndex.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *LogstoreIndex) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this LogstoreIndex.
+func (mg *LogstoreIndex) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this LogstoreIndex.
+func (mg *LogstoreIndex) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this LogstoreIndex.
+func (mg *LogstoreIndex) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this LogstoreIndex.
+func (mg *LogstoreIndex) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this LogstoreIndex.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *LogstoreIndex) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this LogstoreIndex.
+func (mg *LogstoreIndex) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetCondition of this Logtail.
 func (mg *Logtail) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)

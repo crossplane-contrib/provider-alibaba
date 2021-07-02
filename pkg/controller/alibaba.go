@@ -38,6 +38,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		sls.SetupProject,
 		sls.SetupStore,
 		sls.SetupLogtail,
+		sls.SetupIndex,
 		oss.SetupBucket,
 		nas.SetupNASFileSystem,
 		nas.SetupNASMountTarget,
