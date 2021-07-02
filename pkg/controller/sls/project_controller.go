@@ -71,7 +71,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotProject)
 	}
 
-	clientEstablishmentInfo, err := util.PrepareClient(ctx, mg, cr.DeepCopyObject(), c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
+	clientEstablishmentInfo, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}

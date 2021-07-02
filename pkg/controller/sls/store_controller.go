@@ -74,7 +74,7 @@ func (c *logStoreConnector) Connect(ctx context.Context, mg resource.Managed) (m
 		return nil, errors.New(errNotStore)
 	}
 
-	info, err := util.PrepareClient(ctx, mg, cr.DeepCopyObject(), c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
+	info, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}

@@ -73,7 +73,7 @@ func (c *Connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotNASFileSystem)
 	}
 
-	info, err := util.PrepareClient(ctx, mg, cr.DeepCopyObject(), c.Client, c.Usage, cr.Spec.ProviderConfigReference.Name)
+	info, err := util.PrepareClient(ctx, mg, cr, c.Client, c.Usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}
