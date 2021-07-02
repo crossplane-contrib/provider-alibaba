@@ -75,6 +75,11 @@ type LogClientInterface interface {
 	CreateIndex(param v1alpha1.LogstoreIndexParameters) error
 	UpdateIndex(project, logstore *string, index *sdk.Index) error
 	DeleteIndex(project, logstore *string) error
+
+	DescribeMachineGroup(project *string, name string) (*sdk.MachineGroup, error)
+	CreateMachineGroup(name string, param v1alpha1.MachineGroupParameters) error
+	UpdateMachineGroup(project, logstore *string, machineGroup *sdk.MachineGroup) error
+	DeleteMachineGroup(project *string, logstore string) error
 }
 
 // LogClient is the SDK client of SLS
