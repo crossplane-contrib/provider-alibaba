@@ -61,7 +61,19 @@ var (
 	StoreGroupVersionKind = GroupVersion.WithKind(StoreKind)
 )
 
+var (
+	// LogtailKind is the kind of Logtail
+	LogtailKind = reflect.TypeOf(Logtail{}).Name()
+
+	// LogtailGroupKind is the group and kind of Logtail
+	LogtailGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: LogtailKind}.String()
+
+	// LogtailGroupVersionKind is the group, version and kind of Logtail
+	LogtailGroupVersionKind = GroupVersion.WithKind(LogtailKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&Project{}, &ProjectList{})
 	SchemeBuilder.Register(&LogStore{}, &LogStoreList{})
+	SchemeBuilder.Register(&Logtail{}, &LogtailList{})
 }

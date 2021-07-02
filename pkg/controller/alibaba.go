@@ -37,6 +37,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		redis.SetupRedisInstance,
 		sls.SetupProject,
 		sls.SetupStore,
+		sls.SetupLogtail,
 		oss.SetupBucket,
 		nas.SetupNASFileSystem,
 		nas.SetupNASMountTarget,
