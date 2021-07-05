@@ -74,7 +74,7 @@ func (c *LogClient) DeleteMachineGroup(project *string, machineGroup string) err
 // GenerateMachineGroupObservation is used to produce observation information
 func GenerateMachineGroupObservation(machineGroup *sdk.MachineGroup) v1alpha1.MachineGroupObservation {
 	return v1alpha1.MachineGroupObservation{
-		CreateTime: machineGroup.CreateTime,
+		CreateTime:     machineGroup.CreateTime,
 		LastModifyTime: machineGroup.LastModifyTime,
 	}
 }
