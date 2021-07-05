@@ -71,10 +71,12 @@ func (c *LogClient) DeleteMachineGroup(project *string, machineGroup string) err
 	return errors.Wrap(err, ErrDeleteMachineGroup)
 }
 
-// GenerateMachineGroupObservation is used to produce v1alpha1.LogstoreObservation
+// GenerateMachineGroupObservation is used to produce observation information
 func GenerateMachineGroupObservation(machineGroup *sdk.MachineGroup) v1alpha1.MachineGroupObservation {
-	// TODO(zzxwill) Currently nothing is needed to set for observation
-	return v1alpha1.MachineGroupObservation{}
+	return v1alpha1.MachineGroupObservation{
+		CreateTime: machineGroup.CreateTime,
+		LastModifyTime: machineGroup.LastModifyTime,
+	}
 }
 
 // IsMachineGroupUpdateToDate checks whether cr is up to date
