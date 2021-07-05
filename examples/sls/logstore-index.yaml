@@ -1,0 +1,17 @@
+apiVersion: sls.alibaba.crossplane.io/v1alpha1
+kind: LogstoreIndex
+metadata:
+  name: sls-index-test
+spec:
+  forProvider:
+    projectName: crossplane-poc
+    logstoreName: sls-store-test
+    keys:
+      agent:
+        token:
+          - ","
+          - " "
+        docValue: true
+        caseSensitive: true
+        alias: "agent_alias"
+        type: "text"

@@ -72,8 +72,20 @@ var (
 	LogtailGroupVersionKind = GroupVersion.WithKind(LogtailKind)
 )
 
+var (
+	// IndexKind is the kind of Logstore index
+	IndexKind = reflect.TypeOf(LogstoreIndex{}).Name()
+
+	// IndexGroupKind is the group and kind of Logstore index
+	IndexGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: IndexKind}.String()
+
+	// IndexGroupVersionKind is the group, version and kind of Logstore index
+	IndexGroupVersionKind = GroupVersion.WithKind(IndexKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&Project{}, &ProjectList{})
 	SchemeBuilder.Register(&LogStore{}, &LogStoreList{})
 	SchemeBuilder.Register(&Logtail{}, &LogtailList{})
+	SchemeBuilder.Register(&LogstoreIndex{}, &LogstoreIndexList{})
 }
