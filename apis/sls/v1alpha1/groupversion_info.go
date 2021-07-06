@@ -81,6 +81,15 @@ var (
 
 	// IndexGroupVersionKind is the group, version and kind of Logstore index
 	IndexGroupVersionKind = GroupVersion.WithKind(IndexKind)
+
+	// MachineGroupKind is the kind of MachineGroup
+	MachineGroupKind = reflect.TypeOf(MachineGroup{}).Name()
+
+	// MachineGroupGroupKind is the group and kind of MachineGroup
+	MachineGroupGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: MachineGroupKind}.String()
+
+	// MachineGroupVersionKind is the group, version and kind of MachineGroup
+	MachineGroupVersionKind = GroupVersion.WithKind(MachineGroupKind)
 )
 
 func init() {
@@ -88,4 +97,5 @@ func init() {
 	SchemeBuilder.Register(&LogStore{}, &LogStoreList{})
 	SchemeBuilder.Register(&Logtail{}, &LogtailList{})
 	SchemeBuilder.Register(&LogstoreIndex{}, &LogstoreIndexList{})
+	SchemeBuilder.Register(&MachineGroup{}, &MachineGroupList{})
 }
