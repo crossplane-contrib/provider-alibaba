@@ -90,6 +90,15 @@ var (
 
 	// MachineGroupVersionKind is the group, version and kind of MachineGroup
 	MachineGroupVersionKind = GroupVersion.WithKind(MachineGroupKind)
+
+	// MachineGroupBindingKind is the kind of MachineGroupBinding
+	MachineGroupBindingKind = reflect.TypeOf(MachineGroupBinding{}).Name()
+
+	// MachineGroupBindingGroupKind is the group and kind of MachineGroupBinding
+	MachineGroupBindingGroupKind = schema.GroupKind{Group: GroupVersion.Group, Kind: MachineGroupBindingKind}.String()
+
+	// MachineGroupBindingGroupVersionKind is the group, version and kind of MachineGroupBinding
+	MachineGroupBindingGroupVersionKind = GroupVersion.WithKind(MachineGroupBindingKind)
 )
 
 func init() {
@@ -98,4 +107,5 @@ func init() {
 	SchemeBuilder.Register(&Logtail{}, &LogtailList{})
 	SchemeBuilder.Register(&LogstoreIndex{}, &LogstoreIndexList{})
 	SchemeBuilder.Register(&MachineGroup{}, &MachineGroupList{})
+	SchemeBuilder.Register(&MachineGroupBinding{}, &MachineGroupBindingList{})
 }

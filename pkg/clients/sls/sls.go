@@ -80,6 +80,10 @@ type LogClientInterface interface {
 	CreateMachineGroup(name string, param v1alpha1.MachineGroupParameters) error
 	UpdateMachineGroup(project, logstore *string, machineGroup *sdk.MachineGroup) error
 	DeleteMachineGroup(project *string, logstore string) error
+
+	GetAppliedConfigs(projectName *string, groupName *string) ([]string, error)
+	ApplyConfigToMachineGroup(projectName, groupName, confName *string) error
+	RemoveConfigFromMachineGroup(projectName, groupName, confName *string) error
 }
 
 // LogClient is the SDK client of SLS
