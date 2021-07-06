@@ -6,7 +6,7 @@ metadata:
 spec:
   forProvider:
     projectName: crossplane-poc
-    groupName: sls-store-test
+    groupName: sls-machinegroup-test
     configName: sls-logtail-test
   writeConnectionSecretToRef:
     name: machine-group-binding

@@ -139,8 +139,7 @@ func (c *LogClient) RemoveConfigFromMachineGroup(projectName,
 }
 
 // GenerateMachineGroupBindingObservation is used to produce observation message
-func
-GenerateMachineGroupBindingObservation(configs []string) v1alpha1.MachineGroupBindingObservation {
+func GenerateMachineGroupBindingObservation(configs []string) v1alpha1.MachineGroupBindingObservation {
 	return v1alpha1.MachineGroupBindingObservation{
 		Configs: configs,
 	}
