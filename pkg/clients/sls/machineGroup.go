@@ -34,6 +34,13 @@ var (
 	ErrCreateMachineGroup = "failed to create a Logtail MachineGroup"
 	// ErrDeleteMachineGroup is the error when failed to delete the resource
 	ErrDeleteMachineGroup = "failed to delete the Logtail MachineGroup"
+
+	// ErrGetAppliedConfigs is the error when getting configs from a machine group
+	ErrGetAppliedConfigs = "failed to get applied configs from a machine group"
+	// ErrApplyConfigToMachineGroup is the error when applying a config to a machine group
+	ErrApplyConfigToMachineGroup = "failed to apply a config to a machine group"
+	// ErrRemoveConfigFromMachineGroup is the error when removing a config from a machine group
+	ErrRemoveConfigFromMachineGroup = "failed to remove a config from a machine group"
 )
 
 // DescribeMachineGroup describes SLS Logtail MachineGroup
@@ -108,4 +115,32 @@ func IsMachineGroupNotFoundError(err error) bool {
 		return true
 	}
 	return false
+}
+
+// GetAppliedConfigs gets applied configs to a machine group
+func (c *LogClient) GetAppliedConfigs(projectName *string,
+	groupName *string) ([]string, error) {
+	configs, err := c.Client.GetAppliedConfigs(*projectName, *groupName)
+	return configs, errors.Wrap(err, ErrGetAppliedConfigs)
+}
+
+// ApplyConfigToMachineGroup applied a config to a machine group
+func (c *LogClient) ApplyConfigToMachineGroup(projectName,
+	groupName, confName *string) error {
+	err := c.Client.ApplyConfigToMachineGroup(*projectName, *confName, *groupName)
+	return errors.Wrap(err, ErrApplyConfigToMachineGroup)
+}
+
+// RemoveConfigFromMachineGroup remove a config from a machine group
+func (c *LogClient) RemoveConfigFromMachineGroup(projectName,
+	groupName, confName *string) error {
+	err := c.Client.RemoveConfigFromMachineGroup(*projectName, *confName, *groupName)
+	return errors.Wrap(err, ErrRemoveConfigFromMachineGroup)
+}
+
+// GenerateMachineGroupBindingObservation is used to produce observation message
+func GenerateMachineGroupBindingObservation(configs []string) v1alpha1.MachineGroupBindingObservation {
+	return v1alpha1.MachineGroupBindingObservation{
+		Configs: configs,
+	}
 }

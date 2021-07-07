@@ -1,0 +1,13 @@
+apiVersion: sls.alibaba.crossplane.io/v1alpha1
+kind: MachineGroupBinding
+metadata:
+  name: sls-machine-group-binding
+  namespace: default
+spec:
+  forProvider:
+    projectName: crossplane-poc
+    groupName: sls-machinegroup-test
+    configName: sls-logtail-test
+  writeConnectionSecretToRef:
+    name: machine-group-binding
+    namespace: default
