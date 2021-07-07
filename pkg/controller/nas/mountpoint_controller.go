@@ -22,6 +22,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -124,14 +125,13 @@ func (e *mountTargetExternal) Observe(ctx context.Context, mg resource.Managed) 
 		return managed.ExternalObservation{}, errors.New(errNotNASMountTarget)
 	}
 
-	domain := cr.Status.AtProvider.MountTargetDomain
-	if domain == nil {
+	if meta.GetExternalName(mg) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
 
-	mountTarget, err := e.ExternalClient.DescribeMountTargets(cr.Spec.ForProvider.FileSystemID, domain)
+	mountTarget, err := e.ExternalClient.DescribeMountTargets(cr.Spec.ForProvider.FileSystemID, cr.Status.AtProvider.MountTargetDomain)
 	if err != nil {
 		// Managed resource `NASMountTarget` is special, the identifier of if `name` is different to the cloud resource identifier `MountTargetDomain`
 		if nasclient.IsMountTargetNotFoundError(err) {

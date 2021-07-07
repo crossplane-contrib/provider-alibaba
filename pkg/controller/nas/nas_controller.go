@@ -22,6 +22,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -133,7 +134,7 @@ func (e *External) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	fsID := cr.Status.AtProvider.FileSystemID
-	if fsID == "" {
+	if meta.GetExternalName(mg) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
