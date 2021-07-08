@@ -22,6 +22,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -127,14 +128,13 @@ func (e *External) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotCLB)
 	}
 
-	lbID := cr.Status.AtProvider.LoadBalancerID
-	if lbID == nil {
+	if meta.GetExternalName(mg) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
 
-	slb, err := e.ExternalClient.DescribeLoadBalancers(cr.Spec.ForProvider.Region, lbID, cr.Spec.ForProvider.VpcID,
+	slb, err := e.ExternalClient.DescribeLoadBalancers(cr.Spec.ForProvider.Region, cr.Status.AtProvider.LoadBalancerID, cr.Spec.ForProvider.VpcID,
 		cr.Spec.ForProvider.VSwitchID)
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(err, errFailedToDescribeSLB)
