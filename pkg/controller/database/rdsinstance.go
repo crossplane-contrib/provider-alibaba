@@ -28,34 +28,25 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
-	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/rds"
 	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
-	errNotRDSInstance = "managed resource is not an RDS instance custom resource"
-
-	errNoProvider          = "no provider config or provider specified"
-	errCreateRDSClient     = "cannot create RDS client"
-	errGetProvider         = "cannot get provider"
-	errGetProviderConfig   = "cannot get provider config"
-	errTrackUsage          = "cannot track provider config usage"
-	errNoConnectionSecret  = "no connection secret specified"
-	errGetConnectionSecret = "cannot get connection secret"
-
-	errCreateFailed        = "cannot create RDS instance"
-	errCreateAccountFailed = "cannot create RDS database account"
-	errDeleteFailed        = "cannot delete RDS instance"
-	errDescribeFailed      = "cannot describe RDS instance"
-
-	errFmtUnsupportedCredSource = "credentials source %q is not currently supported"
+	errNotRDSInstance           = "managed resource is not an RDS instance custom resource"
+	errCreateRDSClient          = "cannot create RDS client"
+	errTrackUsage               = "cannot track provider config usage"
+	errCreateFailed             = "cannot create RDS instance"
+	errCreateAccountFailed      = "cannot create RDS database account"
+	errDeleteFailed             = "cannot delete RDS instance"
+	errDescribeFailed           = "cannot describe RDS instance"
+	errFmtUnsupportedCredSource = "no extraction handler registered for source: %s"
+	errGetCredentials           = "cannot get credentials"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
@@ -69,7 +60,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{
 				client:       mgr.GetClient(),
-				usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1alpha1.ProviderConfigUsage{}),
+				usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &aliv1beta1.ProviderConfigUsage{}),
 				newRDSClient: rds.NewClient,
 			}),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -90,49 +81,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotRDSInstance)
 	}
 
-	// TODO(negz): This connection logic should be generalised once this
-	// provider has more than one kind of managed resource.
-	var (
-		sel    *xpv1.SecretKeySelector
-		region string
-	)
-	switch {
-	case cr.GetProviderConfigReference() != nil:
-		if err := c.usage.Track(ctx, mg); err != nil {
-			return nil, errors.Wrap(err, errTrackUsage)
-		}
-
-		pc := &aliv1alpha1.ProviderConfig{}
-		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
-			return nil, errors.Wrap(err, errGetProviderConfig)
-		}
-		if s := pc.Spec.Credentials.Source; s != xpv1.CredentialsSourceSecret {
-			return nil, errors.Errorf(errFmtUnsupportedCredSource, s)
-		}
-		sel = pc.Spec.Credentials.SecretRef
-		region = pc.Spec.Region
-	case cr.GetProviderReference() != nil:
-		p := &aliv1alpha1.Provider{}
-		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-			return nil, errors.Wrap(err, errGetProvider)
-		}
-		sel = p.Spec.CredentialsSecretRef
-		region = p.Spec.Region
-	default:
-		return nil, errors.New(errNoProvider)
+	clientEstablishmentInfo, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
+	if err != nil {
+		return nil, err
 	}
 
-	if sel == nil {
-		return nil, errors.New(errNoConnectionSecret)
-	}
-
-	s := &corev1.Secret{}
-	nn := types.NamespacedName{Namespace: sel.Namespace, Name: sel.Name}
-	if err := c.client.Get(ctx, nn, s); err != nil {
-		return nil, errors.Wrap(err, errGetConnectionSecret)
-	}
-
-	rdsClient, err := c.newRDSClient(ctx, string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]), region)
+	rdsClient, err := c.newRDSClient(ctx, clientEstablishmentInfo.AccessKeyID, clientEstablishmentInfo.AccessKeySecret,
+		clientEstablishmentInfo.SecurityToken, clientEstablishmentInfo.Region)
 	return &external{client: rdsClient}, errors.Wrap(err, errCreateRDSClient)
 }
 
@@ -165,10 +120,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		if err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errCreateAccountFailed)
 		}
-	case v1alpha1.RDSInstanceStateCreating:
-		cr.Status.SetConditions(xpv1.Creating())
-	case v1alpha1.RDSInstanceStateDeleting:
-		cr.Status.SetConditions(xpv1.Deleting())
 	default:
 		cr.Status.SetConditions(xpv1.Unavailable())
 	}
@@ -209,7 +160,6 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotRDSInstance)
 	}
 
-	cr.SetConditions(xpv1.Creating())
 	if cr.Status.AtProvider.DBInstanceStatus == v1alpha1.RDSInstanceStateCreating {
 		return managed.ExternalCreation{}, nil
 	}
@@ -236,7 +186,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if !ok {
 		return errors.New(errNotRDSInstance)
 	}
-	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.DBInstanceStatus == v1alpha1.RDSInstanceStateDeleting {
 		return nil
 	}

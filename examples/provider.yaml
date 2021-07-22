@@ -5,7 +5,7 @@ metadata:
   name: crossplane-system
 
 ---
-apiVersion: alibaba.crossplane.io/v1alpha1
+apiVersion: alibaba.crossplane.io/v1beta1
 kind: ProviderConfig
 metadata:
   name: default
@@ -17,14 +17,3 @@ spec:
       name: alibaba-account-creds
       key: credentials
   region: cn-beijing
-
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: alibaba-account-creds
-  namespace: crossplane-system
-type: Opaque
-stringData:
-  accessKeyId: ((ACCESS_KEY_ID))
-  accessKeySecret: ((ACCESS_KEY_SECRET))

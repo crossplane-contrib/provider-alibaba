@@ -4,25 +4,28 @@ import (
 	"context"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	crossplanemeta "github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
-	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
 	"github.com/crossplane/provider-alibaba/pkg/clients/rds"
+	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
-const testName = "test"
+const (
+	testName                = "test"
+	errExtractSecretKey     = "cannot extract from secret key when none specified"
+	errGetCredentialsSecret = "cannot get credentials secret"
+)
 
 func TestConnector(t *testing.T) {
 	errBoom := errors.New("boom")
@@ -36,6 +39,13 @@ func TestConnector(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		mg  resource.Managed
+	}
+
+	var configSpec = aliv1beta1.ProviderCredentials{Source: xpv1.CredentialsSourceSecret}
+	configSpec.SecretRef = &xpv1.SecretKeySelector{
+		SecretReference: xpv1.SecretReference{
+			Name: "coolsecret",
+		},
 	}
 
 	cases := map[string]struct {
@@ -84,20 +94,18 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, errGetProviderConfig),
+			want: errors.Wrap(errors.Wrap(errBoom, util.ErrGetProviderConfig), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"UnsupportedCredentialsError": {
 			reason: "An error should be returned if the selected credentials source is unsupported",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
-						t := obj.(*aliv1alpha1.ProviderConfig)
-						*t = aliv1alpha1.ProviderConfig{
-							Spec: aliv1alpha1.ProviderConfigSpec{
-								ProviderConfigSpec: xpv1.ProviderConfigSpec{
-									Credentials: xpv1.ProviderCredentials{
-										Source: xpv1.CredentialsSource("wat"),
-									},
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+						t := obj.(*aliv1beta1.ProviderConfig)
+						*t = aliv1beta1.ProviderConfig{
+							Spec: aliv1beta1.ProviderConfigSpec{
+								Credentials: aliv1beta1.ProviderCredentials{
+									Source: "wat",
 								},
 							},
 						}
@@ -107,6 +115,7 @@ func TestConnector(t *testing.T) {
 				usage: resource.TrackerFn(func(ctx context.Context, mg resource.Managed) error { return nil }),
 			},
 			args: args{
+				ctx: context.TODO(),
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
@@ -115,7 +124,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Errorf(errFmtUnsupportedCredSource, "wat"),
+			want: errors.Wrap(errors.Wrap(errors.Errorf(errFmtUnsupportedCredSource, "wat"), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"GetProviderError": {
 			reason: "Errors getting a Provider should be returned",
@@ -129,25 +138,23 @@ func TestConnector(t *testing.T) {
 				mg: &v1alpha1.RDSInstance{
 					Spec: v1alpha1.RDSInstanceSpec{
 						ResourceSpec: xpv1.ResourceSpec{
-							ProviderReference: &xpv1.Reference{},
+							ProviderConfigReference: &xpv1.Reference{},
 						},
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, errGetProvider),
+			want: errors.Wrap(errors.Wrap(errBoom, util.ErrGetProviderConfig), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"NoConnectionSecretError": {
 			reason: "An error should be returned if no connection secret was specified",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
-						t := obj.(*aliv1alpha1.ProviderConfig)
-						*t = aliv1alpha1.ProviderConfig{
-							Spec: aliv1alpha1.ProviderConfigSpec{
-								ProviderConfigSpec: xpv1.ProviderConfigSpec{
-									Credentials: xpv1.ProviderCredentials{
-										Source: xpv1.CredentialsSourceSecret,
-									},
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+						t := obj.(*aliv1beta1.ProviderConfig)
+						*t = aliv1beta1.ProviderConfig{
+							Spec: aliv1beta1.ProviderConfigSpec{
+								Credentials: aliv1beta1.ProviderCredentials{
+									Source: xpv1.CredentialsSourceSecret,
 								},
 							},
 						}
@@ -165,29 +172,20 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.New(errNoConnectionSecret),
+			want: errors.Wrap(errors.Wrap(errors.New(errExtractSecretKey), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"GetConnectionSecretError": {
 			reason: "Errors getting a secret should be returned",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
 						switch t := obj.(type) {
 						case *corev1.Secret:
 							return errBoom
-						case *aliv1alpha1.ProviderConfig:
-							*t = aliv1alpha1.ProviderConfig{
-								Spec: aliv1alpha1.ProviderConfigSpec{
-									ProviderConfigSpec: xpv1.ProviderConfigSpec{
-										Credentials: xpv1.ProviderCredentials{
-											Source: xpv1.CredentialsSourceSecret,
-											SecretRef: &xpv1.SecretKeySelector{
-												SecretReference: xpv1.SecretReference{
-													Name: "coolsecret",
-												},
-											},
-										},
-									},
+						case *aliv1beta1.ProviderConfig:
+							*t = aliv1beta1.ProviderConfig{
+								Spec: aliv1beta1.ProviderConfigSpec{
+									Credentials: configSpec,
 								},
 							}
 						}
@@ -205,26 +203,17 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, errGetConnectionSecret),
+			want: errors.Wrap(errors.Wrap(errors.Wrap(errBoom, errGetCredentialsSecret), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
 		},
 		"NewRDSClientError": {
 			reason: "Errors getting a secret should be returned",
 			fields: fields{
 				client: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil, func(obj runtime.Object) error {
-						if t, ok := obj.(*aliv1alpha1.ProviderConfig); ok {
-							*t = aliv1alpha1.ProviderConfig{
-								Spec: aliv1alpha1.ProviderConfigSpec{
-									ProviderConfigSpec: xpv1.ProviderConfigSpec{
-										Credentials: xpv1.ProviderCredentials{
-											Source: xpv1.CredentialsSourceSecret,
-											SecretRef: &xpv1.SecretKeySelector{
-												SecretReference: xpv1.SecretReference{
-													Name: "coolsecret",
-												},
-											},
-										},
-									},
+					MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+						if t, ok := obj.(*aliv1beta1.ProviderConfig); ok {
+							*t = aliv1beta1.ProviderConfig{
+								Spec: aliv1beta1.ProviderConfigSpec{
+									Credentials: configSpec,
 								},
 							}
 						}
@@ -245,7 +234,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errBoom, errCreateRDSClient),
+			want: errors.Wrap(errors.New(util.ErrAccessKeyNotComplete), util.ErrPrepareClientEstablishmentInfo),
 		},
 	}
 

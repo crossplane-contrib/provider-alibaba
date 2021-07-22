@@ -140,10 +140,8 @@ demo:
 	docker build . -t ${IMG} -f ./hack/demo/Dockerfile
 	kind load docker-image $(IMG) || { echo >&2 "kind not installed or error loading image: $(IMG)"; exit 1; }
 	kubectl apply -f ./package/crds
-	cat ./examples/provider.yaml | sed \
-		-e "s|((ACCESS_KEY_ID))|"${ACCESS_KEY_ID}"|g" \
-		-e "s|((ACCESS_KEY_SECRET))|"${ACCESS_KEY_SECRET}"|g" \
-		| kubectl apply -f -
+	./hack/demo/prepare-alibaba-credentials.sh
+	kubectl apply -f ./examples/provider.yaml
 	./hack/demo/helm_install_crossplane_master.sh
 	kubectl apply -f ./examples/database/rds.yaml
 	kubectl apply -f ./hack/demo/deploy/

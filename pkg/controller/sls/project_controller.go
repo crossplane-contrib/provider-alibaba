@@ -29,26 +29,16 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
-	"github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	"github.com/crossplane/provider-alibaba/apis/v1beta1"
 	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
 	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
-const (
-	errNotProject               = "managed resource is not a SLS project custom resource"
-	errNoProvider               = "no provider config or provider specified"
-	errGetProviderConfig        = "cannot get provider config"
-	errTrackUsage               = "cannot track provider config usage"
-	errNoConnectionSecret       = "no connection secret specified"
-	errGetConnectionSecret      = "cannot get connection secret"
-	errFmtUnsupportedCredSource = "credentials source %q is not currently supported"
-)
+const errNotProject = "managed resource is not a SLS project custom resource"
 
 // SetupProject adds a controller that reconciles SLSProjects.
 func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
@@ -56,7 +46,7 @@ func SetupProject(mgr ctrl.Manager, l logging.Logger) error {
 	options := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{
 			client:      mgr.GetClient(),
-			usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &v1alpha1.ProviderConfigUsage{}),
+			usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &v1beta1.ProviderConfigUsage{}),
 			NewClientFn: slsclient.NewClient,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
@@ -81,41 +71,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotProject)
 	}
 
-	var (
-		sel    *xpv1.SecretKeySelector
-		region string
-	)
-
-	switch {
-	case cr.GetProviderConfigReference() != nil:
-		if err := c.usage.Track(ctx, mg); err != nil {
-			return nil, errors.Wrap(err, errTrackUsage)
-		}
-
-		pc := &v1alpha1.ProviderConfig{}
-		if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
-			return nil, errors.Wrap(err, errGetProviderConfig)
-		}
-		if s := pc.Spec.Credentials.Source; s != xpv1.CredentialsSourceSecret {
-			return nil, errors.Errorf(errFmtUnsupportedCredSource, s)
-		}
-		sel = pc.Spec.Credentials.SecretRef
-		region = pc.Spec.Region
-	default:
-		return nil, errors.New(errNoProvider)
+	clientEstablishmentInfo, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
+	if err != nil {
+		return nil, err
 	}
 
-	if sel == nil {
-		return nil, errors.New(errNoConnectionSecret)
-	}
-
-	s := &corev1.Secret{}
-	nn := types.NamespacedName{Namespace: sel.Namespace, Name: sel.Name}
-	if err := c.client.Get(ctx, nn, s); err != nil {
-		return nil, errors.Wrap(err, errGetConnectionSecret)
-	}
-
-	slsClient := c.NewClientFn(string(s.Data[util.AccessKeyID]), string(s.Data[util.AccessKeySecret]), string(s.Data[util.SecurityToken]), region)
+	slsClient := c.NewClientFn(clientEstablishmentInfo.AccessKeyID, clientEstablishmentInfo.AccessKeySecret,
+		clientEstablishmentInfo.SecurityToken, clientEstablishmentInfo.Region)
 	return &external{client: slsClient}, nil
 }
 
@@ -161,7 +123,6 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	name := meta.GetExternalName(cr)
 	description := cr.Spec.ForProvider.Description
-	cr.SetConditions(xpv1.Creating())
 	project, err := e.client.Create(name, description)
 	if err != nil {
 		return managed.ExternalCreation{}, err
@@ -176,7 +137,6 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	name := meta.GetExternalName(cr)
 	description := cr.Spec.ForProvider.Description
-	cr.Status.SetConditions(xpv1.Creating())
 	got, err := e.client.Update(name, description)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
@@ -194,7 +154,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotProject)
 	}
 	name := meta.GetExternalName(cr)
-	cr.SetConditions(xpv1.Deleting())
 	if err := e.client.Delete(name); err != nil && !slsclient.IsNotFoundError(err) {
 		return err
 	}

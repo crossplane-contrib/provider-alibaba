@@ -22,9 +22,10 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	nasapi "github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
-	ossapi "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
-	slbapi "github.com/crossplane/provider-alibaba/apis/slb/v1alpha1"
+	nas "github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
+	oss "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
+	slb "github.com/crossplane/provider-alibaba/apis/slb/v1alpha1"
+	sls "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 )
 
 // Domain is Alibaba Cloud Domain
@@ -41,18 +42,20 @@ func GetEndpoint(res runtime.Object, region string) (string, error) {
 		return "", errors.New(errCloudResourceNotSupported)
 	}
 
-	if region == "" && res.GetObjectKind().GroupVersionKind().Kind != slbapi.CLBKind {
+	if region == "" && res.GetObjectKind().GroupVersionKind().Kind != slb.CLBKind {
 		return "", errors.New(errRegionNotValid)
 	}
 
 	var endpoint string
 	switch res.GetObjectKind().GroupVersionKind().Kind {
-	case ossapi.BucketKind:
+	case oss.BucketKind:
 		endpoint = fmt.Sprintf("http://oss-%s.%s", region, Domain)
-	case nasapi.NASFileSystemKind, nasapi.NASMountTargetKind:
+	case nas.NASFileSystemKind, nas.NASMountTargetKind:
 		endpoint = fmt.Sprintf("nas.%s.%s", region, Domain)
-	case slbapi.CLBKind:
+	case slb.CLBKind:
 		endpoint = fmt.Sprintf("slb.%s", Domain)
+	case sls.ProjectGroupKind:
+		endpoint = fmt.Sprintf("%s.log.%s", region, Domain)
 	default:
 		return "", errors.New(errCloudResourceNotSupported)
 	}

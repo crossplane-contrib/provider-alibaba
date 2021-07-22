@@ -26,13 +26,13 @@ import (
 	redisv1alpha1 "github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
 	slbv1alpha1 "github.com/crossplane/provider-alibaba/apis/slb/v1alpha1"
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
-	"github.com/crossplane/provider-alibaba/apis/v1alpha1"
+	"github.com/crossplane/provider-alibaba/apis/v1beta1"
 )
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
-		v1alpha1.SchemeBuilder.AddToScheme,
+		v1beta1.SchemeBuilder.AddToScheme,
 		databasev1alpha1.SchemeBuilder.AddToScheme,
 		slsv1alpha1.AddToScheme,
 		ossv1alpha1.SchemeBuilder.AddToScheme,

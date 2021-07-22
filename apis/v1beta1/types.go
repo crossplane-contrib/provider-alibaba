@@ -14,55 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// A ProviderSpec defines the desired state of a Provider.
-type ProviderSpec struct {
-	xpv1.ProviderSpec `json:",inline"`
-
-	// Region for managed resources created using this Alibaba Cloud provider,
-	// e.g. "cn-hangzhou".
-	Region string `json:"region"`
-}
-
-// +kubebuilder:object:root=true
-
-// A Provider configures an Alibaba Cloud 'provider', i.e. a connection to a
-// particular cloud account.
-// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1
-// +kubebuilder:resource:scope=Cluster,categories={crossplane,provider,alibaba}
-type Provider struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec ProviderSpec `json:"spec"`
-}
-
-// +kubebuilder:object:root=true
-
-// ProviderList contains a list of Provider
-type ProviderList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Provider `json:"items"`
-}
-
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
-	xpv1.ProviderConfigSpec `json:",inline"`
+	// Credentials required to authenticate to this provider.
+	Credentials ProviderCredentials `json:"credentials"`
 
 	// Region for managed resources created using this Alibaba Cloud provider,
 	// e.g. "cn-hangzhou".
 	Region string `json:"region"`
 }
 
-// A ProviderConfigStatus represents the status of a ProviderConfig.
+// ProviderCredentials required to authenticate.
+type ProviderCredentials struct {
+	// Source of the provider credentials.
+	// +kubebuilder:validation:Enum=None;Secret;Environment;Filesystem
+	Source                         xpv1.CredentialsSource `json:"source"`
+	xpv1.CommonCredentialSelectors `json:",inline"`
+}
+
+// A ProviderConfigStatus reflects the observed state of a ProviderConfig.
 type ProviderConfigStatus struct {
 	xpv1.ProviderConfigStatus `json:",inline"`
 }
@@ -72,7 +49,7 @@ type ProviderConfigStatus struct {
 // A ProviderConfig configures an Alibaba Cloud 'provider', i.e. a connection to
 // a particular cloud account.
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1
+// +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentials.secretRef.name",priority=1
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,provider,alibaba}
 // +kubebuilder:subresource:status
 type ProviderConfig struct {
