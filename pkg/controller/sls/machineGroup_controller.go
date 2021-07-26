@@ -70,7 +70,7 @@ type machineGroupConnector struct {
 func (c *machineGroupConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mg.(*aliv1alpha1.MachineGroup)
 	if !ok {
-		return nil, errors.New(errNotLogtail)
+		return nil, errors.New(errNotMachineGroup)
 	}
 
 	info, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)

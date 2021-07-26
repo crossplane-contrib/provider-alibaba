@@ -71,7 +71,7 @@ type machineGroupBindingConnector struct {
 func (c *machineGroupBindingConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mg.(*aliv1alpha1.MachineGroupBinding)
 	if !ok {
-		return nil, errors.New(errNotLogtail)
+		return nil, errors.New(errNotMachineGroupBinding)
 	}
 
 	info, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
