@@ -72,7 +72,7 @@ type indexConnector struct {
 func (c *indexConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mg.(*aliv1alpha1.LogstoreIndex)
 	if !ok {
-		return nil, errors.New(errNotLogtail)
+		return nil, errors.New(errNotIndex)
 	}
 
 	info, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
