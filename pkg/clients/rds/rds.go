@@ -36,7 +36,10 @@ var (
 )
 
 const (
+	// HTTPSScheme indicates request scheme
 	httpsScheme = "https"
+	// VPCNetworkType indicates network type by vpc
+	VPCNetworkType = "VPC"
 )
 
 // Client defines RDS client operations
@@ -70,6 +73,11 @@ type CreateDBInstanceRequest struct {
 	SecurityIPList        string
 	DBInstanceClass       string
 	DBInstanceStorageInGB int
+	NetworkType           string
+	VpcID                 string
+	VSwitchID             string
+	ZoneID                string
+	ZoneIDSlave1          string
 }
 
 type client struct {
@@ -132,6 +140,14 @@ func (c *client) CreateDBInstance(req *CreateDBInstanceRequest) (*DBInstance, er
 	request.PayType = "Postpaid"
 	request.ReadTimeout = 60 * time.Second
 	request.ClientToken = req.Name
+	request.InstanceNetworkType = req.NetworkType
+
+	if req.NetworkType == VPCNetworkType {
+		request.ZoneId = req.ZoneID
+		request.ZoneIdSlave1 = req.ZoneIDSlave1
+		request.VPCId = req.VpcID
+		request.VSwitchId = req.VSwitchID
+	}
 
 	resp, err := c.rdsCli.CreateDBInstance(request)
 	if err != nil {
@@ -193,6 +209,11 @@ func MakeCreateDBInstanceRequest(name string, p *v1alpha1.RDSInstanceParameters)
 		SecurityIPList:        p.SecurityIPList,
 		DBInstanceClass:       p.DBInstanceClass,
 		DBInstanceStorageInGB: p.DBInstanceStorageInGB,
+		NetworkType:           p.NetworkType,
+		VpcID:                 p.VpcID,
+		VSwitchID:             p.VSwitchID,
+		ZoneID:                p.ZoneID,
+		ZoneIDSlave1:          p.ZoneIDSlave1,
 	}
 }
 
