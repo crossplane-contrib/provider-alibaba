@@ -17,8 +17,8 @@ import (
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
+	alibabacloud "github.com/crossplane/provider-alibaba/pkg/clients"
 	"github.com/crossplane/provider-alibaba/pkg/clients/rds"
-	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
@@ -94,7 +94,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.Wrap(errBoom, util.ErrGetProviderConfig), util.ErrPrepareClientEstablishmentInfo),
+			want: errors.Wrap(errors.Wrap(errBoom, alibabacloud.ErrGetProviderConfig), alibabacloud.ErrPrepareClientEstablishmentInfo),
 		},
 		"UnsupportedCredentialsError": {
 			reason: "An error should be returned if the selected credentials source is unsupported",
@@ -124,7 +124,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.Wrap(errors.Errorf(errFmtUnsupportedCredSource, "wat"), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
+			want: errors.Wrap(errors.Wrap(errors.Errorf(errFmtUnsupportedCredSource, "wat"), errGetCredentials), alibabacloud.ErrPrepareClientEstablishmentInfo),
 		},
 		"GetProviderError": {
 			reason: "Errors getting a Provider should be returned",
@@ -143,7 +143,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.Wrap(errBoom, util.ErrGetProviderConfig), util.ErrPrepareClientEstablishmentInfo),
+			want: errors.Wrap(errors.Wrap(errBoom, alibabacloud.ErrGetProviderConfig), alibabacloud.ErrPrepareClientEstablishmentInfo),
 		},
 		"NoConnectionSecretError": {
 			reason: "An error should be returned if no connection secret was specified",
@@ -172,7 +172,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.Wrap(errors.New(errExtractSecretKey), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
+			want: errors.Wrap(errors.Wrap(errors.New(errExtractSecretKey), errGetCredentials), alibabacloud.ErrPrepareClientEstablishmentInfo),
 		},
 		"GetConnectionSecretError": {
 			reason: "Errors getting a secret should be returned",
@@ -203,7 +203,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.Wrap(errors.Wrap(errBoom, errGetCredentialsSecret), errGetCredentials), util.ErrPrepareClientEstablishmentInfo),
+			want: errors.Wrap(errors.Wrap(errors.Wrap(errBoom, errGetCredentialsSecret), errGetCredentials), alibabacloud.ErrPrepareClientEstablishmentInfo),
 		},
 		"NewRDSClientError": {
 			reason: "Errors getting a secret should be returned",
@@ -234,7 +234,7 @@ func TestConnector(t *testing.T) {
 					},
 				},
 			},
-			want: errors.Wrap(errors.New(util.ErrAccessKeyNotComplete), util.ErrPrepareClientEstablishmentInfo),
+			want: errors.Wrap(errors.New(alibabacloud.ErrAccessKeyNotComplete), alibabacloud.ErrPrepareClientEstablishmentInfo),
 		},
 	}
 

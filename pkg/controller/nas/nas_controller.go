@@ -31,8 +31,8 @@ import (
 
 	"github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
 	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
+	alibabacloud "github.com/crossplane/provider-alibaba/pkg/clients"
 	nasclient "github.com/crossplane/provider-alibaba/pkg/clients/nas"
-	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
@@ -74,7 +74,7 @@ func (c *Connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotNASFileSystem)
 	}
 
-	info, err := util.PrepareClient(ctx, mg, cr, c.Client, c.Usage, cr.Spec.ProviderConfigReference.Name)
+	info, err := alibabacloud.PrepareClient(ctx, mg, cr, c.Client, c.Usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}

@@ -33,8 +33,8 @@ import (
 
 	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
 	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
+	alibabacloud "github.com/crossplane/provider-alibaba/pkg/clients"
 	"github.com/crossplane/provider-alibaba/pkg/clients/rds"
-	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
@@ -81,7 +81,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotRDSInstance)
 	}
 
-	clientEstablishmentInfo, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
+	clientEstablishmentInfo, err := alibabacloud.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}

@@ -34,8 +34,8 @@ import (
 
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 	"github.com/crossplane/provider-alibaba/apis/v1beta1"
+	alibabacloud "github.com/crossplane/provider-alibaba/pkg/clients"
 	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
-	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const errNotProject = "managed resource is not a SLS project custom resource"
@@ -71,7 +71,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errNotProject)
 	}
 
-	clientEstablishmentInfo, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
+	clientEstablishmentInfo, err := alibabacloud.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}

@@ -32,8 +32,8 @@ import (
 
 	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 	"github.com/crossplane/provider-alibaba/apis/v1beta1"
+	alibabacloud "github.com/crossplane/provider-alibaba/pkg/clients"
 	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
-	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
@@ -74,13 +74,12 @@ func (c *machineGroupBindingConnector) Connect(ctx context.Context, mg resource.
 		return nil, errors.New(errNotMachineGroupBinding)
 	}
 
-	info, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
+	info, err := alibabacloud.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	slsClient := c.NewClientFn(info.AccessKeyID, info.AccessKeySecret,
-		info.SecurityToken, info.Region)
+	slsClient := c.NewClientFn(info.AccessKeyID, info.AccessKeySecret, info.SecurityToken, info.Region)
 	return &machineGroupBindingExternal{client: slsClient}, nil
 }
 

@@ -34,8 +34,8 @@ import (
 
 	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
 	"github.com/crossplane/provider-alibaba/apis/v1beta1"
+	alibabacloud "github.com/crossplane/provider-alibaba/pkg/clients"
 	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
-	"github.com/crossplane/provider-alibaba/pkg/util"
 )
 
 const (
@@ -74,7 +74,7 @@ func (c *logStoreConnector) Connect(ctx context.Context, mg resource.Managed) (m
 		return nil, errors.New(errNotStore)
 	}
 
-	info, err := util.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
+	info, err := alibabacloud.PrepareClient(ctx, mg, cr, c.client, c.usage, cr.Spec.ProviderConfigReference.Name)
 	if err != nil {
 		return nil, err
 	}
