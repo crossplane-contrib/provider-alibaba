@@ -2,7 +2,7 @@
 # Setup Project
 
 PROJECT_NAME := provider-alibaba
-PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
+PROJECT_REPO := github.com/crossplane-contrib/$(PROJECT_NAME)
 IMG ?= crossplane/provider-alibaba:v1
 
 PLATFORMS ?= linux_amd64 linux_arm64
@@ -77,16 +77,6 @@ crds.clean:
 
 generate: crds.clean
 
-# Ensure a PR is ready for review.
-reviewable: generate lint
-	@go mod tidy
-
-# Ensure branch is clean.
-check-diff: reviewable
-	@$(INFO) checking that branch is clean
-	@test -z "$$(git status --porcelain)" || $(FAIL)
-	@$(OK) branch is clean
-
 # integration tests
 e2e.run: test-integration
 
@@ -112,7 +102,7 @@ run: go.build
 manifests:
 	@$(INFO) Deprecated. Run make generate instead.
 
-.PHONY: cobertura reviewable submodules fallthrough run crds.clean manifests
+.PHONY: cobertura submodules fallthrough run crds.clean manifests
 
 # ====================================================================================
 # Special Targets
@@ -120,7 +110,6 @@ manifests:
 define CROSSPLANE_MAKE_HELP
 Crossplane Targets:
     cobertura             Generate a coverage report for cobertura applying exclusions on generated files.
-    reviewable            Ensure a PR is ready for review.
     submodules            Update the submodules, such as the common build scripts.
     run                   Run crossplane locally, out-of-cluster. Useful for development.
 
