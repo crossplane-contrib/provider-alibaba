@@ -28,8 +28,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	ossv1alpha1 "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
-	ossclient "github.com/crossplane/provider-alibaba/pkg/clients/oss"
+	ossv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/oss/v1alpha1"
+	ossclient "github.com/crossplane-contrib/provider-alibaba/pkg/clients/oss"
 )
 
 type fakeSDKClient struct {

@@ -26,8 +26,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
-	"github.com/crossplane/provider-alibaba/apis"
-	"github.com/crossplane/provider-alibaba/pkg/controller"
+	"github.com/crossplane-contrib/provider-alibaba/apis"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/controller"
 )
 
 func main() {

@@ -24,7 +24,7 @@ import (
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/pkg/errors"
 
-	"github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/nas/v1alpha1"
 )
 
 // ErrCodeNoSuchNASFileSystem is the error code "NoSuchNASFileSystem" returned by SDK

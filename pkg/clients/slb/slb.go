@@ -23,7 +23,7 @@ import (
 	sdk "github.com/alibabacloud-go/slb-20140515/v2/client"
 	"github.com/pkg/errors"
 
-	"github.com/crossplane/provider-alibaba/apis/slb/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/slb/v1alpha1"
 )
 
 const (

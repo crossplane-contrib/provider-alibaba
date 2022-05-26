@@ -32,8 +32,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 
-	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
-	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
+	slsv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/sls/v1alpha1"
+	slsclient "github.com/crossplane-contrib/provider-alibaba/pkg/clients/sls"
 )
 
 var (

@@ -30,7 +30,7 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
+	slsv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/sls/v1alpha1"
 )
 
 var (

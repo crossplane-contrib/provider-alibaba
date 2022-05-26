@@ -9,7 +9,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/database/v1alpha1"
 )
 
 func TestGenerateObservation(t *testing.T) {

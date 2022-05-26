@@ -25,7 +25,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	alirds "github.com/aliyun/alibaba-cloud-sdk-go/services/rds"
 
-	"github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/database/v1alpha1"
 )
 
 var (

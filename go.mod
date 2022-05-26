@@ -1,4 +1,4 @@
-module github.com/crossplane/provider-alibaba
+module github.com/crossplane-contrib/provider-alibaba
 
 go 1.14
 
