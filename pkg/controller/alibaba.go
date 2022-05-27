@@ -20,13 +20,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplane/provider-alibaba/pkg/controller/config"
-	"github.com/crossplane/provider-alibaba/pkg/controller/database"
-	"github.com/crossplane/provider-alibaba/pkg/controller/nas"
-	"github.com/crossplane/provider-alibaba/pkg/controller/oss"
-	"github.com/crossplane/provider-alibaba/pkg/controller/redis"
-	"github.com/crossplane/provider-alibaba/pkg/controller/slb"
-	"github.com/crossplane/provider-alibaba/pkg/controller/sls"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/controller/config"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/controller/database"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/controller/nas"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/controller/oss"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/controller/redis"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/controller/slb"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/controller/sls"
 )
 
 // Setup creates Alibaba controllers with the supplied logger and adds them to the supplied manager.

@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-alibaba/apis/v1beta1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/v1beta1"
 )
 
 func TestGetCredentials(t *testing.T) {

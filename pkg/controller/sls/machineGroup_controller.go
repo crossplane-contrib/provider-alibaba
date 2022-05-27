@@ -29,10 +29,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	aliv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
-	"github.com/crossplane/provider-alibaba/apis/v1beta1"
-	slsclient "github.com/crossplane/provider-alibaba/pkg/clients/sls"
-	"github.com/crossplane/provider-alibaba/pkg/util"
+	aliv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/sls/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/v1beta1"
+	slsclient "github.com/crossplane-contrib/provider-alibaba/pkg/clients/sls"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/util"
 )
 
 const (

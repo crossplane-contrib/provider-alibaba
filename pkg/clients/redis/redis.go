@@ -26,7 +26,7 @@ import (
 	sdkerrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 	aliredis "github.com/aliyun/alibaba-cloud-sdk-go/services/r-kvstore"
 
-	"github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/redis/v1alpha1"
 )
 
 var (

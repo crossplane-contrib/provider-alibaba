@@ -16,9 +16,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
-	aliv1beta1 "github.com/crossplane/provider-alibaba/apis/v1beta1"
-	"github.com/crossplane/provider-alibaba/pkg/clients/redis"
+	"github.com/crossplane-contrib/provider-alibaba/apis/redis/v1alpha1"
+	aliv1beta1 "github.com/crossplane-contrib/provider-alibaba/apis/v1beta1"
+	"github.com/crossplane-contrib/provider-alibaba/pkg/clients/redis"
 )
 
 const testName = "test"

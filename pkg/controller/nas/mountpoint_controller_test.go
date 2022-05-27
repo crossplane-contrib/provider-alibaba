@@ -30,7 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 
-	"github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/nas/v1alpha1"
 )
 
 func (c *fakeSDKClient) DescribeMountTargets(fileSystemID, mountTargetDomain *string) (*sdk.DescribeMountTargetsResponse, error) {

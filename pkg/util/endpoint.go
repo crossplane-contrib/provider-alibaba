@@ -22,10 +22,10 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	nas "github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
-	oss "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
-	slb "github.com/crossplane/provider-alibaba/apis/slb/v1alpha1"
-	sls "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
+	nas "github.com/crossplane-contrib/provider-alibaba/apis/nas/v1alpha1"
+	oss "github.com/crossplane-contrib/provider-alibaba/apis/oss/v1alpha1"
+	slb "github.com/crossplane-contrib/provider-alibaba/apis/slb/v1alpha1"
+	sls "github.com/crossplane-contrib/provider-alibaba/apis/sls/v1alpha1"
 )
 
 // Domain is Alibaba Cloud Domain

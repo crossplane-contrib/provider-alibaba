@@ -22,7 +22,7 @@ import (
 	sdk "github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/pkg/errors"
 
-	"github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/oss/v1alpha1"
 )
 
 // ErrCodeNoSuchBucket is the error code "NoSuchBucket" returned by SDK

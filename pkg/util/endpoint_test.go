@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/oss/v1alpha1"
 )
 
 func TestGetEndpoint(t *testing.T) {

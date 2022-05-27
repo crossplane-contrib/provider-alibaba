@@ -64,7 +64,7 @@ guidelines to get started.
 ## Report a Bug
 
 For filing bugs, suggesting improvements, or requesting new features, please
-open an [issue](https://github.com/crossplane/provider-alibaba/issues).
+open an [issue](https://github.com/crossplane-contrib/provider-alibaba/issues).
 
 ## Contact
 

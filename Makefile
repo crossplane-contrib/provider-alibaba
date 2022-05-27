@@ -2,8 +2,12 @@
 # Setup Project
 
 PROJECT_NAME := provider-alibaba
-PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
+PROJECT_REPO := github.com/crossplane-contrib/$(PROJECT_NAME)
 IMG ?= crossplane/provider-alibaba:v1
+
+# kind-related versions
+KIND_VERSION ?= v0.11.1
+KIND_NODE_IMAGE_TAG ?= v1.19.11
 
 PLATFORMS ?= linux_amd64 linux_arm64
 # -include will silently skip missing files, which allows us
@@ -77,23 +81,13 @@ crds.clean:
 
 generate: crds.clean
 
-# Ensure a PR is ready for review.
-reviewable: generate lint
-	@go mod tidy
-
-# Ensure branch is clean.
-check-diff: reviewable
-	@$(INFO) checking that branch is clean
-	@test -z "$$(git status --porcelain)" || $(FAIL)
-	@$(OK) branch is clean
-
 # integration tests
 e2e.run: test-integration
 
 # Run integration tests.
-test-integration: $(KIND) $(KUBECTL) $(HELM3)
+test-integration: $(KIND) $(KUBECTL) $(UP) $(HELM3)
 	@$(INFO) running integration tests using kind $(KIND_VERSION)
-	@$(ROOT_DIR)/cluster/local/integration_tests.sh || $(FAIL)
+	KIND_NODE_IMAGE_TAG=${KIND_NODE_IMAGE_TAG} $(ROOT_DIR)/cluster/local/integration_tests.sh || $(FAIL)
 	@$(OK) integration tests passed
 
 # Update the submodules, such as the common build scripts.
@@ -112,7 +106,7 @@ run: go.build
 manifests:
 	@$(INFO) Deprecated. Run make generate instead.
 
-.PHONY: cobertura reviewable submodules fallthrough run crds.clean manifests
+.PHONY: cobertura submodules fallthrough run crds.clean manifests
 
 # ====================================================================================
 # Special Targets
@@ -120,7 +114,6 @@ manifests:
 define CROSSPLANE_MAKE_HELP
 Crossplane Targets:
     cobertura             Generate a coverage report for cobertura applying exclusions on generated files.
-    reviewable            Ensure a PR is ready for review.
     submodules            Update the submodules, such as the common build scripts.
     run                   Run crossplane locally, out-of-cluster. Useful for development.
 

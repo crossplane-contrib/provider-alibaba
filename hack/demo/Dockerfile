@@ -27,7 +27,7 @@ ENV CGO_ENABLED 0
 ENV GOOS linux
 ENV GOARCH amd64
 
-WORKDIR /go/src/github.com/crossplane/provider-alibaba
+WORKDIR /go/src/github.com/crossplane-contrib/provider-alibaba
 ADD . .
 
 # Build the manager binary
@@ -37,5 +37,5 @@ FROM alpine
 
 RUN apk --no-cache add ca-certificates && mkdir -p /app
 WORKDIR /app
-COPY --from=builder /go/src/github.com/crossplane/provider-alibaba/bin/provider .
+COPY --from=builder /go/src/github.com/crossplane-contrib/provider-alibaba/bin/provider .
 CMD ["/app/provider"]

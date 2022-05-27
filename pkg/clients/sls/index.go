@@ -22,7 +22,7 @@ import (
 	sdk "github.com/aliyun/aliyun-log-go-sdk"
 	"github.com/pkg/errors"
 
-	"github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/sls/v1alpha1"
 )
 
 var (

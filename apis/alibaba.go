@@ -20,13 +20,13 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	databasev1alpha1 "github.com/crossplane/provider-alibaba/apis/database/v1alpha1"
-	nasv1alpha1 "github.com/crossplane/provider-alibaba/apis/nas/v1alpha1"
-	ossv1alpha1 "github.com/crossplane/provider-alibaba/apis/oss/v1alpha1"
-	redisv1alpha1 "github.com/crossplane/provider-alibaba/apis/redis/v1alpha1"
-	slbv1alpha1 "github.com/crossplane/provider-alibaba/apis/slb/v1alpha1"
-	slsv1alpha1 "github.com/crossplane/provider-alibaba/apis/sls/v1alpha1"
-	"github.com/crossplane/provider-alibaba/apis/v1beta1"
+	databasev1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/database/v1alpha1"
+	nasv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/nas/v1alpha1"
+	ossv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/oss/v1alpha1"
+	redisv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/redis/v1alpha1"
+	slbv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/slb/v1alpha1"
+	slsv1alpha1 "github.com/crossplane-contrib/provider-alibaba/apis/sls/v1alpha1"
+	"github.com/crossplane-contrib/provider-alibaba/apis/v1beta1"
 )
 
 func init() {
