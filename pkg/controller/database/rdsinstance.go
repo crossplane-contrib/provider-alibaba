@@ -142,12 +142,17 @@ func (e *external) createAccountIfNeeded(cr *v1alpha1.RDSInstance) (string, erro
 	err = e.client.CreateAccount(cr.Status.AtProvider.DBInstanceID, cr.Spec.ForProvider.MasterUsername, pw)
 	if err != nil {
 		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
-		if sdkErr, ok := err.(sdkerror.Error); ok {
-			if sdkErr.ErrorCode() == "InvalidAccountName.Duplicate" {
-				cr.Status.AtProvider.AccountReady = true
-				return "", nil
-			}
+		var sdkerr sdkerror.Error
+
+		if !errors.As(err, sdkerr) {
+			return "", err
 		}
+
+		if sdkerr.ErrorCode() == "InvalidAccountName.Duplicate" {
+			cr.Status.AtProvider.AccountReady = true
+			return "", nil
+		}
+
 		return "", err
 	}
 	cr.Status.AtProvider.AccountReady = true

@@ -202,8 +202,9 @@ func IsErrorNotFound(err error) bool {
 		return false
 	}
 	// If instance already remove from console.  should ignore when delete instance
-	if e, ok := err.(*sdkerrors.ServerError); ok && e.ErrorCode() == ErrCodeInstanceNotFound {
-		return true
+	var srverr *sdkerrors.ServerError
+	if !errors.As(err, &srverr) {
+		return false || errors.Is(err, ErrDBInstanceNotFound)
 	}
-	return errors.Is(err, ErrDBInstanceNotFound)
+	return srverr.ErrorCode() == ErrCodeInstanceNotFound
 }

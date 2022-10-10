@@ -3,9 +3,10 @@ package rds
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"testing"
 
-	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
+	sdkerrors "github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
@@ -47,7 +48,7 @@ func TestIsErrorNotFound(t *testing.T) {
 	var response = make(map[string]string)
 	response["Code"] = ErrCodeInstanceNotFound
 
-	responseContent, _ := json.Marshal(response)
+	responseContent, _ := json.Marshal(response) //nolint:errchkjson
 
 	type args struct {
 		httpStatus      int
@@ -75,7 +76,7 @@ func TestIsErrorNotFound(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := errors.NewServerError(tc.args.httpStatus, tc.args.responseContent, tc.args.comment)
+			err := sdkerrors.NewServerError(tc.args.httpStatus, tc.args.responseContent, tc.args.comment)
 			isErrorNotFound := IsErrorNotFound(err)
 			if diff := cmp.Diff(tc.want.found, isErrorNotFound, test.EquateConditions()); diff != "" {
 				t.Errorf("\nIsErrorNotFound(...) %s\n", diff)
@@ -152,9 +153,9 @@ func TestDescribeDBInstance(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			db, err := c.DescribeDBInstance(tc.args.id)
 			if err != nil {
-				e, ok := err.(*errors.ServerError)
-				if ok {
-					if diff := cmp.Diff(tc.want.errCode, e.ErrorCode(), test.EquateConditions()); diff != "" {
+				var srverr *sdkerrors.ServerError
+				if errors.As(err, &srverr) {
+					if diff := cmp.Diff(tc.want.errCode, srverr.ErrorCode(), test.EquateConditions()); diff != "" {
 						t.Errorf("\nDescribeDBInstance(...) -want errorCode, +got errorCode:\n%s\n", diff)
 					}
 				}
@@ -203,9 +204,9 @@ func TestCreateDBInstance(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			db, err := c.CreateDBInstance(&tc.args.req)
 			if err != nil {
-				e, ok := err.(*errors.ServerError)
-				if ok {
-					if diff := cmp.Diff(tc.want.errCode, e.ErrorCode(), test.EquateConditions()); diff != "" {
+				var srverr *sdkerrors.ServerError
+				if errors.As(err, &srverr) {
+					if diff := cmp.Diff(tc.want.errCode, srverr.ErrorCode(), test.EquateConditions()); diff != "" {
 						t.Errorf("\nCreateDBInstance(...) -want errorCode, +got errorCode:\n%s\n", diff)
 					}
 				}
@@ -245,9 +246,9 @@ func TestDeleteDBInstance(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			err := c.DeleteDBInstance(tc.args.id)
 			if err != nil {
-				e, ok := err.(*errors.ServerError)
-				if ok {
-					if diff := cmp.Diff(tc.want.errCode, e.ErrorCode(), test.EquateConditions()); diff != "" {
+				var srverr *sdkerrors.ServerError
+				if errors.As(err, &srverr) {
+					if diff := cmp.Diff(tc.want.errCode, srverr.ErrorCode(), test.EquateConditions()); diff != "" {
 						t.Errorf("\nDeleteDBInstance(...) -want errorCode, +got errorCode:\n%s\n", diff)
 					}
 				}
@@ -287,9 +288,9 @@ func TestCreateAccount(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			err := c.CreateAccount(tc.args.id, tc.args.username, tc.args.password)
 			if err != nil {
-				e, ok := err.(*errors.ServerError)
-				if ok {
-					if diff := cmp.Diff(tc.want.errCode, e.ErrorCode(), test.EquateConditions()); diff != "" {
+				var srverr *sdkerrors.ServerError
+				if errors.As(err, &srverr) {
+					if diff := cmp.Diff(tc.want.errCode, srverr.ErrorCode(), test.EquateConditions()); diff != "" {
 						t.Errorf("\nCreateAccount(...) -want errorCode, +got errorCode:\n%s\n", diff)
 					}
 				}

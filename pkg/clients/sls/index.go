@@ -104,8 +104,6 @@ func IsIndexNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeLogstoreIndexNotExist) {
-		return true
-	}
-	return false
+	var slserr *sdk.Error
+	return errors.As(err, &slserr) && slserr.Code == ErrCodeLogstoreIndexNotExist
 }

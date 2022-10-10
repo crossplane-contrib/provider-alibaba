@@ -147,10 +147,8 @@ func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := errors.Cause(err).(*tea.SDKError); ok && (*e.Code == errCodeFileSystemNotExist) {
-		return true
-	}
-	return false
+	var sdkerr *tea.SDKError
+	return errors.As(err, &sdkerr) && *sdkerr.Code == errCodeFileSystemNotExist
 }
 
 // -------------------------------- MountTarget ----------------------------------------------------
@@ -233,8 +231,6 @@ func IsMountTargetNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := errors.Cause(err).(*tea.SDKError); ok && (*e.Code == errMountTargetNotExisted) {
-		return true
-	}
-	return false
+	var sdkerr *tea.SDKError
+	return errors.As(err, &sdkerr) && *sdkerr.Code == errMountTargetNotExisted
 }

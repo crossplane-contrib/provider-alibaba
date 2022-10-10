@@ -140,10 +140,8 @@ func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := errors.Cause(err).(sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
-		return true
-	}
-	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeProjectNotExist) {
+	var slserr sdk.Error
+	if errors.As(err, &slserr) && slserr.Code == ErrCodeProjectNotExist {
 		return true
 	}
 	return false
@@ -192,15 +190,13 @@ func IsStoreUpdateToDate(cr *v1alpha1.LogStore, store *sdk.LogStore) bool {
 	return false
 }
 
-// IsStoreNotFoundError helper function to test for SLS project not found error
+// IsStoreNotFoundError helper function to test for SLS Store not found error
 func IsStoreNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeStoreNotExist) {
-		return true
-	}
-	return false
+	var slserr *sdk.Error
+	return errors.As(err, &slserr) && slserr.Code == ErrCodeStoreNotExist
 }
 
 // ----------------------SLS Logtail------------------------------ //
@@ -335,13 +331,11 @@ func IsLogtailUpdateToDate(cr *v1alpha1.Logtail, config *sdk.LogConfig) bool {
 	return true
 }
 
-// IsLogtailNotFoundError helper function to test for SLS project not found error
+// IsLogtailNotFoundError helper function to test for SLS Logtail not found error
 func IsLogtailNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeLogtailNotExist) {
-		return true
-	}
-	return false
+	var slserr *sdk.Error
+	return errors.As(err, &slserr) && slserr.Code == ErrCodeLogtailNotExist
 }
