@@ -20,7 +20,7 @@ func TestIsErrorNotFound(t *testing.T) {
 	var response = make(map[string]string)
 	response["Code"] = "InvalidInstanceId.NotFound"
 
-	responseContent, _ := json.Marshal(response)
+	responseContent, _ := json.Marshal(response) //nolint:errchkjson
 	err := errors.NewServerError(404, string(responseContent), "comment")
 	isErrorNotFound := IsErrorNotFound(err)
 	if !isErrorNotFound {

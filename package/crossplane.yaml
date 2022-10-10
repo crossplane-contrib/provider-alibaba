@@ -1,33 +1,22 @@
-apiVersion: meta.pkg.crossplane.io/v1alpha1
+apiVersion: meta.pkg.crossplane.io/v1
 kind: Provider
 metadata:
   name: provider-alibaba
   annotations:
-    company: Crossplane
-    maintainer: Crossplane Maintainers <info@crossplane.io>
-    source: github.com/crossplane-contrib/provider-alibaba
-    license: Apache-2.0
-    descriptionShort: |
+    meta.crossplane.io/maintainer: Crossplane Maintainers <info@crossplane.io>
+    meta.crossplane.io/source: github.com/crossplane-contrib/provider-alibaba
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/description: |
       The Alibaba Cloud Crossplane provider enables infrastructure management
-      for the Alibaba Cloud.
-
-    description: |
-      The Alibaba Cloud Crossplane provider adds support for managing Alibaba
-      Cloud resources in Kubernetes.
-
-    readme: |
+      for Alibaba Cloud in Kubernetes.
+    meta.crossplane.io/readme: |
       `provider-alibaba` is the Crossplane infrastructure provider for [Alibaba
       Cloud](https://alibabacloud.com/).
 
       Available resources and their fields can be found in the [CRD
-      Docs](https://doc.crds.dev/github.com/crossplane-contrib/provider-alibaba).
+      Docs](https://marketplace.upbound.io/providers/crossplane-contrib/provider-alibaba/latest/crds).
 
       If you encounter an issue please reach out on
       [slack.crossplane.io](https://slack.crossplane.io) and create an issue in
       the [crossplane/provider-alibaba](https://github.com/crossplane-contrib/provider-alibaba)
       repo.
-    iconData: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNjUiIGhlaWdodD0iNjUiPjxkZWZzPjxwYXRoIGlkPSJjIiBkPSJNLjAwMDAyNjMxLjA0MTM4MzQzSDE2LjQ1ODA4MDVWMjRILjAwMDAyNjMxeiIvPjxwYXRoIGlkPSJlIiBkPSJNLjExMzE4MzU3LjA0MTM4MzQzSDE2LjU2OTYwNjVWMjRILjExMzE4MzU3eiIvPjxyZWN0IGlkPSJhIiB3aWR0aD0iNjUiIGhlaWdodD0iNjUiIHg9IjAiIHk9IjAiIHJ4PSIxNiIvPjwvZGVmcz48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxtYXNrIGlkPSJiIiBmaWxsPSIjZmZmIj48dXNlIHhsaW5rOmhyZWY9IiNhIi8+PC9tYXNrPjx1c2UgZmlsbD0iI0ZGNkEwMyIgZmlsbC1ydWxlPSJub256ZXJvIiB4bGluazpocmVmPSIjYSIvPjxnIG1hc2s9InVybCgjYikiPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEzIDIxKSI+PG1hc2sgaWQ9ImQiIGZpbGw9IiNmZmYiPjx1c2UgeGxpbms6aHJlZj0iI2MiLz48L21hc2s+PHBhdGggZmlsbD0iI0ZGRkZGRiIgZD0iTTE1LjUzMjUxMTQgMjAuMzEyNzY0NmwtOC42MjkxMjkxNC0xLjg5MTQ5MTdjLS43ODY2NTQ3Ni0uMTgyNDUzLTEuMzc4NDg3NS0uODc2OTk0NC0xLjQxMzM0NzYyLTEuNzE2MDY2My0uMDAzNTUxNzgtLjAyNDM5NzgtLjAwMzU1MTc4LTkuMzQ0NjE4NzUgMC05LjM2ODQ4NjE2LjAzNDg2MDEyLS44MzkzMzcwMS42MjY2OTI4Ni0xLjUzNDAxMTA1IDEuNDEzMzQ3NjItMS43MTY1OTY2OGw4LjYyOTEyOTE0LTEuODkxNDkxNzIuOTI1NTY5MS0zLjY4NzI0ODYxSDYuNDAyMDU0MjljLTMuNTI2NzkxNjcgMC02LjM4ODA4MzkzIDIuODczOTAwNTUtNi40MDIwMjc5OCA2LjQyNDk3MjM3djExLjEwODE1NDdjLjAxMzk0NDA1IDMuNTUxMjA0NCAyLjg3NTIzNjMxIDYuNDI1NTAyOCA2LjQwMjAyNzk4IDYuNDI1NTAyOEgxNi40NTgwODA1bC0uOTI1NTY5MS0zLjY4NzI0ODd6IiBtYXNrPSJ1cmwoI2QpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM1LjQyNSAyMSkiPjxtYXNrIGlkPSJmIiBmaWxsPSIjZmZmIj48dXNlIHhsaW5rOmhyZWY9IiNlIi8+PC9tYXNrPjxwYXRoIGZpbGw9IiNGRkZGRkYiIGQ9Ik0xLjAzOTE0NzI2IDIwLjMxMjc2NDZsOC42Mjc4MTM2OS0xLjg5MTQ5MTdjLjc4NzA0OTQ1LS4xODI0NTMgMS4zNzgyMjQ0NS0uODc2OTk0NCAxLjQxMzA4NDU1LTEuNzE2MDY2My4wMDQzNDEtLjAyNDM5NzguMDA0MzQxLTkuMzQ0NjE4NzUgMC05LjM2ODQ4NjE2LS4wMzQ4NjAxLS44MzkzMzcwMS0uNjI2MDM1MS0xLjUzNDAxMTA1LTEuNDEzMDg0NTUtMS43MTY1OTY2OEwxLjAzOTE0NzI2IDMuNzI4NjMyMDQuMTEzMTgzNTcuMDQxMzgzNDNIMTAuMTY4Mjg4OWMzLjUyNjc5MTcgMCA2LjM4ODQ3ODYgMi44NzM5MDA1NSA2LjQwMTM3MDMgNi40MjQ5NzIzN3YxMS4xMDgxNTQ3Yy0uMDEyODkxNyAzLjU1MTIwNDQtMi44NzQ1Nzg2IDYuNDI1NTAyOC02LjQwMTM3MDMgNi40MjU1MDI4SC4xMTMxODM1N2wuOTI1OTYzNjktMy42ODcyNDg3eiIgbWFzaz0idXJsKCNmKSIvPjwvZz48cGF0aCBmaWxsPSIjRkZGRkZGIiBkPSJNMjYgMzJoMTR2M0gyNnoiLz48L2c+PC9nPjwvc3ZnPg==
-
-spec:
-  controller:
-    image: crossplane/provider-alibaba-controller:VERSION

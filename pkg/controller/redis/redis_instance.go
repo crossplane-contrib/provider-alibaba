@@ -206,8 +206,9 @@ func (e *external) createPrivateConnectionIfNeeded(cr *v1alpha1.RedisInstance) (
 	connectionDomain, err := e.client.ModifyDBInstanceConnectionString(cr.Status.AtProvider.DBInstanceID, cr.Spec.ForProvider.InstancePort)
 	if err != nil {
 		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
-		if sdkErr, ok := err.(sdkerror.Error); ok {
-			if sdkErr.ErrorCode() == errDuplicateConnectionPort {
+		var sdkerr sdkerror.Error
+		if errors.As(err, &sdkerr) {
+			if sdkerr.ErrorCode() == errDuplicateConnectionPort {
 				cr.Status.AtProvider.ConnectionReady = true
 				return domain, port, nil
 			}
@@ -231,8 +232,9 @@ func (e *external) createPublicConnectionIfNeeded(cr *v1alpha1.RedisInstance) (s
 	_, err := e.client.AllocateInstancePublicConnection(cr.Status.AtProvider.DBInstanceID, cr.Spec.ForProvider.InstancePort)
 	if err != nil {
 		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
-		if sdkErr, ok := err.(sdkerror.Error); ok {
-			if sdkErr.ErrorCode() == errDuplicateConnectionPort || sdkErr.ErrorCode() == "NetTypeExists" {
+		var sdkerr sdkerror.Error
+		if errors.As(err, &sdkerr) {
+			if sdkerr.ErrorCode() == errDuplicateConnectionPort || sdkerr.ErrorCode() == "NetTypeExists" {
 				cr.Status.AtProvider.ConnectionReady = true
 				return domain, port, nil
 			}
@@ -261,8 +263,9 @@ func (e *external) createAccountIfNeeded(cr *v1alpha1.RedisInstance) (string, er
 	err = e.client.CreateAccount(cr.Status.AtProvider.DBInstanceID, cr.Spec.ForProvider.MasterUsername, pw)
 	if err != nil {
 		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
-		if sdkErr, ok := err.(sdkerror.Error); ok {
-			if sdkErr.ErrorCode() == errAccountNameDuplicate {
+		var sdkerr sdkerror.Error
+		if errors.As(err, &sdkerr) {
+			if sdkerr.ErrorCode() == errAccountNameDuplicate {
 				cr.Status.AtProvider.AccountReady = true
 				return "", nil
 			}

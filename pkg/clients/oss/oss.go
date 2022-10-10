@@ -124,8 +124,11 @@ func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	e, ok := errors.Cause(err).(sdk.ServiceError)
-	return ok && e.Code == ErrCodeNoSuchBucket
+	var osserr sdk.ServiceError
+	if errors.As(err, &osserr) && osserr.Code == ErrCodeNoSuchBucket {
+		return true
+	}
+	return false
 }
 
 // GenerateObservation generates BucketObservation from bucket information

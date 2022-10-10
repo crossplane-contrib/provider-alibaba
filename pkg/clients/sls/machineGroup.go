@@ -111,10 +111,8 @@ func IsMachineGroupNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if e, ok := errors.Cause(err).(*sdk.Error); ok && (e.Code == ErrCodeMachineGroupNotExist) {
-		return true
-	}
-	return false
+	var slserr *sdk.Error
+	return errors.As(err, &slserr) && slserr.Code == ErrCodeMachineGroupNotExist
 }
 
 // GetAppliedConfigs gets applied configs to a machine group

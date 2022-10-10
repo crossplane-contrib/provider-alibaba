@@ -206,10 +206,12 @@ func IsErrorNotFound(err error) bool {
 		return false
 	}
 	// If the instance is already removed, errors should be ignored when deleting it.
-	if e, ok := err.(*sdkerrors.ServerError); ok && e.ErrorCode() == "InvalidInstanceId.NotFound" {
-		return true
+	var srverr *sdkerrors.ServerError
+	if !errors.As(err, &srverr) {
+		return false || errors.Is(err, ErrDBInstanceNotFound)
 	}
-	return errors.Is(err, ErrDBInstanceNotFound)
+
+	return srverr.ErrorCode() == "InvalidInstanceId.NotFound"
 }
 
 func (c *client) AllocateInstancePublicConnection(id string, port int) (string, error) {

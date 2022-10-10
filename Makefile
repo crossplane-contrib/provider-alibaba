@@ -24,6 +24,9 @@ PLATFORMS ?= linux_amd64 linux_arm64
 # ====================================================================================
 # Setup Go
 
+# TODO(jastang): Upgrade Go version to be in-line with build submodule.
+GO_REQUIRED_VERSION = 1.17
+
 # Set a sane default so that the nprocs calculation below is less noisy on the initial
 # loading of this file
 NPROCS ?= 1
@@ -42,14 +45,29 @@ GO111MODULE = on
 # ====================================================================================
 # Setup Kubernetes tools
 
+UP_VERSION = v0.13.0
+UP_CHANNEL = stable
 -include build/makelib/k8s_tools.mk
 
 # ====================================================================================
 # Setup Images
 
-DOCKER_REGISTRY = crossplane
-IMAGES = provider-alibaba provider-alibaba-controller
--include build/makelib/image.mk
+IMAGES = provider-alibaba
+-include build/makelib/imagelight.mk
+
+# ====================================================================================
+# Setup XPKG
+
+XPKG_REG_ORGS ?= xpkg.upbound.io/crossplan-contrib index.docker.io/crossplanecontrib
+# NOTE(hasheddan): skip promoting on xpkg.upbound.io as channel tags are
+# inferred.
+XPKG_REG_ORGS_NO_PROMOTE ?= xpkg.upbound.io/crossplane-contrib
+XPKGS = provider-alibaba
+-include build/makelib/xpkg.mk
+
+# NOTE(hasheddan): we force image building to happen prior to xpkg build so that
+# we ensure image is present in daemon.
+xpkg.build.provider-alibaba: do.build.images
 
 # ====================================================================================
 # Targets
@@ -94,6 +112,11 @@ test-integration: $(KIND) $(KUBECTL) $(UP) $(HELM3)
 submodules:
 	@git submodule sync
 	@git submodule update --init --recursive
+
+# NOTE(hasheddan): we must ensure up is installed in tool cache prior to build
+# as including the k8s_tools machinery prior to the xpkg machinery sets UP to
+# point to tool cache.
+build.init: $(UP)
 
 # This is for running out-of-cluster locally, and is for convenience. Running
 # this make target will print out the command which was used. For more control,
