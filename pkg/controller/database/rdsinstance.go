@@ -144,7 +144,7 @@ func (e *external) createAccountIfNeeded(cr *v1alpha1.RDSInstance) (string, erro
 		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
 		var sdkerr sdkerror.Error
 
-		if !errors.As(err, sdkerr) {
+		if !errors.As(err, &sdkerr) {
 			return "", err
 		}
 

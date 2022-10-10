@@ -207,7 +207,7 @@ func (e *external) createPrivateConnectionIfNeeded(cr *v1alpha1.RedisInstance) (
 	if err != nil {
 		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
 		var sdkerr sdkerror.Error
-		if errors.As(err, sdkerr) {
+		if errors.As(err, &sdkerr) {
 			if sdkerr.ErrorCode() == errDuplicateConnectionPort {
 				cr.Status.AtProvider.ConnectionReady = true
 				return domain, port, nil
@@ -233,7 +233,7 @@ func (e *external) createPublicConnectionIfNeeded(cr *v1alpha1.RedisInstance) (s
 	if err != nil {
 		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
 		var sdkerr sdkerror.Error
-		if errors.As(err, sdkerr) {
+		if errors.As(err, &sdkerr) {
 			if sdkerr.ErrorCode() == errDuplicateConnectionPort || sdkerr.ErrorCode() == "NetTypeExists" {
 				cr.Status.AtProvider.ConnectionReady = true
 				return domain, port, nil
@@ -264,7 +264,7 @@ func (e *external) createAccountIfNeeded(cr *v1alpha1.RedisInstance) (string, er
 	if err != nil {
 		// The previous request might fail due to timeout. That's fine we will eventually reconcile it.
 		var sdkerr sdkerror.Error
-		if errors.As(err, sdkerr) {
+		if errors.As(err, &sdkerr) {
 			if sdkerr.ErrorCode() == errAccountNameDuplicate {
 				cr.Status.AtProvider.AccountReady = true
 				return "", nil
