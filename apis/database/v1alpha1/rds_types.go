@@ -108,6 +108,24 @@ type RDSInstanceParameters struct {
 	// +immutable
 	// +optional
 	MasterUsername string `json:"masterUsername"`
+
+	// NetworkType is indicates service network type
+	// NetworkType：CLASSIC/VPC
+	// +optional
+	// +kubebuilder:default="CLASSIC"
+	NetworkType string `json:"networkType"`
+
+	// VpcId is indicates VPC ID
+	// +optional
+	VpcID string `json:"vpcId"`
+
+	// VSwitchId is indicates VSwitch ID
+	// +optional
+	VSwitchID string `json:"vSwitchId"`
+
+	// ZoneId and ZoneIdSlave is the available region
+	ZoneID       string `json:"zoneId"`
+	ZoneIDSlave1 string `json:"zoneIdSlave1"`
 }
 
 // RDS instance states.
