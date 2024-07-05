@@ -1,10 +1,9 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.3.0
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: rdsinstances.database.alibaba.crossplane.io
 spec:
@@ -45,10 +44,14 @@ spec:
         description: An RDSInstance is a managed resource that represents an RDS instance.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -56,28 +59,43 @@ spec:
             description: An RDSInstanceSpec defines the desired state of an RDSInstance.
             properties:
               deletionPolicy:
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
                 type: string
               forProvider:
-                description: RDSInstanceParameters define the desired state of an RDS instance.
+                description: RDSInstanceParameters define the desired state of an
+                  RDS instance.
                 properties:
                   dbInstanceClass:
-                    description: DBInstanceClass is the machine class of the instance, e.g. "rds.pg.s1.small"
+                    description: DBInstanceClass is the machine class of the instance,
+                      e.g. "rds.pg.s1.small"
                     type: string
                   dbInstanceStorageInGB:
-                    description: DBInstanceStorageInGB indicates the size of the storage in GB. Increments by 5GB. For "rds.pg.s1.small", the range is 20-600 (GB). See https://help.aliyun.com/document_detail/26312.html
+                    description: DBInstanceStorageInGB indicates the size of the storage
+                      in GB. Increments by 5GB. For "rds.pg.s1.small", the range is
+                      20-600 (GB). See https://help.aliyun.com/document_detail/26312.html
                     type: integer
                   engine:
-                    description: Engine is the name of the database engine to be used for this instance. Engine is a required field.
+                    description: Engine is the name of the database engine to be used
+                      for this instance. Engine is a required field.
                     type: string
                   engineVersion:
-                    description: EngineVersion indicates the database engine version. MySQL：5.5/5.6/5.7/8.0 PostgreSQL：9.4/10.0/11.0/12.0
+                    description: EngineVersion indicates the database engine version.
+                      MySQL：5.5/5.6/5.7/8.0 PostgreSQL：9.4/10.0/11.0/12.0
                     type: string
                   masterUsername:
-                    description: 'MasterUsername is the name for the master user. MySQL Constraints:    * Required for MySQL.    * Must be 1 to 16 letters or numbers.    * First character must be a letter.    * Cannot be a reserved word for the chosen database engine. PostgreSQL Constraints:    * Required for PostgreSQL.    * Must be 1 to 63 letters or numbers.    * First character must be a letter.    * Cannot be a reserved word for the chosen database engine.'
+                    description: 'MasterUsername is the name for the master user.
+                      MySQL Constraints: * Required for MySQL. * Must be 1 to 16 letters
+                      or numbers. * First character must be a letter. * Cannot be
+                      a reserved word for the chosen database engine. PostgreSQL Constraints:
+                      * Required for PostgreSQL. * Must be 1 to 63 letters or numbers.
+                      * First character must be a letter. * Cannot be a reserved word
+                      for the chosen database engine.'
                     type: string
                   securityIPList:
                     description: SecurityIPList is the IP whitelist for RDS instances
@@ -90,7 +108,11 @@ spec:
                 - securityIPList
                 type: object
               providerConfigRef:
-                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -99,7 +121,9 @@ spec:
                 - name
                 type: object
               providerRef:
-                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -108,7 +132,11 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
                 properties:
                   name:
                     description: Name of the secret.
@@ -124,19 +152,23 @@ spec:
             - forProvider
             type: object
           status:
-            description: An RDSInstanceStatus represents the observed state of an RDSInstance.
+            description: An RDSInstanceStatus represents the observed state of an
+              RDSInstance.
             properties:
               atProvider:
-                description: RDSInstanceObservation is the representation of the current state that is observed.
+                description: RDSInstanceObservation is the representation of the current
+                  state that is observed.
                 properties:
                   accountReady:
-                    description: AccountReady specifies whether the initial user account (username + password) is ready
+                    description: AccountReady specifies whether the initial user account
+                      (username + password) is ready
                     type: boolean
                   dbInstanceID:
                     description: DBInstanceID specifies the DB instance ID.
                     type: string
                   dbInstanceStatus:
-                    description: DBInstanceStatus specifies the current state of this database.
+                    description: DBInstanceStatus specifies the current state of this
+                      database.
                     type: string
                 required:
                 - accountReady
@@ -148,20 +180,25 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
                       type: string
                     reason:
-                      description: A Reason for this condition's last transition from one status to another.
+                      description: A Reason for this condition's last transition from
+                        one status to another.
                       type: string
                     status:
-                      description: Status of this condition; is it currently True, False, or Unknown?
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime

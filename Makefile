@@ -25,7 +25,7 @@ PLATFORMS ?= linux_amd64 linux_arm64
 # Setup Go
 
 # TODO(jastang): Upgrade Go version to be in-line with build submodule.
-GO_REQUIRED_VERSION = 1.17
+GO_REQUIRED_VERSION = 1.20
 
 # Set a sane default so that the nprocs calculation below is less noisy on the initial
 # loading of this file

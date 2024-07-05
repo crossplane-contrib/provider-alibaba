@@ -1,5 +1,5 @@
 # Base build image
-FROM golang:1.14 AS build_base
+FROM golang:1.20 AS build_base
 
 WORKDIR /go/src/github.com/creativesoftwarefdn/weaviate
 

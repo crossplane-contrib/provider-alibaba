@@ -7,11 +7,17 @@ metadata:
     engine: redis
 spec:
   forProvider:
+    regionId: eu-central-1
+    zoneId: eu-central-1a
+    secondaryZoneId: eu-central-1c
+    chargeType: PostPaid
+    networkType: VPC
     instanceType: Redis
-    engineVersion: "5.0"
-    instanceClass: redis.basic.small.default
+    instanceClass: redis.shard.small.ce
     port: 8080
-    publiclyAccessible: true
+    engineVersion: "5.0"
+    shardCount: 2
+    masterUsername: exampleUser
   writeConnectionSecretToRef:
     namespace: crossplane-system
     name: example-redis

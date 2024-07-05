@@ -1,10 +1,9 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.3.0
+    controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
   name: redisinstances.redis.alibaba.crossplane.io
 spec:
@@ -27,7 +26,7 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .status.atProvider.dbInstanceStatus
+    - jsonPath: .status.atProvider.InstanceStatus
       name: STATE
       type: string
     - jsonPath: .spec.forProvider.instanceType
@@ -42,13 +41,18 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: RedisInstance is the Schema for the redisinstances API An RedisInstance is a managed resource that represents an Redis instance.
+        description: RedisInstance is the Schema for the redisinstances API An RedisInstance
+          is a managed resource that represents an Redis instance.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -56,59 +60,252 @@ spec:
             description: RedisInstanceSpec defines the desired state of RedisInstance
             properties:
               deletionPolicy:
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
                 type: string
               forProvider:
-                description: RedisInstanceParameters define the desired state of an Redis instance.
+                description: RedisInstanceParameters define the desired state of an
+                  Redis instance. Detailed information can be found in https://www.alibabacloud.com/help/en/redis/developer-reference/api-r-kvstore-2015-01-01-createinstance-redis
                 properties:
+                  appendonly:
+                    description: 'Specifies whether to enable append-only file (AOF)
+                      persistence for the instance. Valid values: yes (default): enables
+                      AOF persistence no: disables AOF persistence Description: This
+                      parameter is applicable to classic instances, and is unavailable
+                      for cloud-native instances.'
+                    type: string
+                  autoRenew:
+                    description: 'Specifies whether to enable auto-renewal for the
+                      instance. Default value: false Valid values: true: enables auto-renewal
+                      false: disables auto-renewal'
+                    type: string
+                  autoRenewPeriod:
+                    description: 'The subscription duration that is supported by auto-renewal.
+                      Unit: months. Valid values: 1, 2, 3, 6, and 12 Note: This parameter
+                      is required only if the AutoRenew parameter is set to true.'
+                    type: string
+                  autoUseCoupon:
+                    description: 'Specifies whether to use a coupon. Default value:
+                      false Valid values: true: uses a coupon false: does not use
+                      a coupon'
+                    type: string
+                  backupId:
+                    description: 'The ID of the backup file of the original instance.
+                      If you want to create an instance based on a backup file of
+                      a specified instance, you can specify this parameter after you
+                      specify the SrcDBInstanceId parameter. Then, the system creates
+                      an instance based on the backup file that is specified by this
+                      parameter. Note: After you specify the SrcDBInstanceId parameter,
+                      you must use the BackupId or RestoreTime parameter to specify
+                      the backup file.'
+                    type: string
+                  businessInfo:
+                    description: The ID of the promotional event or business information.
+                    type: string
+                  capacity:
+                    description: 'The storage capacity of the instance. Unit: MB.
+                      Note: You must specify at least one of the Capacity and InstanceClass
+                      parameters when you call this operation.'
+                    type: integer
                   chargeType:
-                    default: PostPaid
-                    description: ChargeType is indicates payment type ChargeType：PrePaid/PostPaid
+                    description: 'ChargeType is indicates payment type Default value:
+                      PrePaid. Valid values: PrePaid: subscription PostPaid: pay-as-you-go'
+                    type: string
+                  clusterBackupId:
+                    description: The backup set ID.
+                    type: string
+                  connectionStringPrefix:
+                    description: The operation that you want to perform. Set the value
+                      to AllocateInstancePublicConnection.
+                    type: string
+                  couponNo:
+                    description: 'The coupon code. Default value: default.'
+                    type: string
+                  dedicatedHostGroupId:
+                    description: The ID of the dedicated cluster. This parameter is
+                      required if you create an instance in a dedicated cluster.
+                    type: string
+                  effectiveTime:
+                    description: 'Effective time for Instance Updates Valid values:
+                      Immediately (default): The configurations are immediately changed
+                      MaintainTime: The configurations are changed within the maintenance
+                      window.'
                     type: string
                   engineVersion:
-                    description: EngineVersion indicates the database engine version. Redis：4.0/5.0
-                    enum:
-                    - "4.0"
-                    - "5.0"
+                    description: 'The database engine version of the instance. Valid
+                      values: 4.0 5.0 6.0 7.0'
+                    type: string
+                  globalInstance:
+                    description: 'Specifies whether to use the new instance as the
+                      first child instance of the distributed instance. Default value:
+                      false Valid values: true: uses the new instance as the first
+                      child instance false: does not use the new instance as the first
+                      child instance If you want to create an ApsaraDB for Redis Enhanced
+                      Edition (Tair) DRAM-based instance that runs Redis 5.0, you
+                      must set this parameter to true. This parameter is available
+                      only on the China site (aliyun.com).'
+                    type: boolean
+                  globalInstanceId:
+                    description: The ID of the distributed instance. This parameter
+                      is available only on the China site (aliyun.com).
+                    type: string
+                  globalSecurityGroupIds:
+                    description: The global IP whitelist template for the instance.
+                      Multiple IP whitelist templates should be separated by English
+                      commas (,) and cannot be duplicated.
                     type: string
                   instanceClass:
-                    description: InstanceClass is the machine class of the instance, e.g. "redis.logic.sharding.2g.8db.0rodb.8proxy.default"
+                    description: The instance type. For example, redis.master.small.default
+                      indicates a Community Edition standard master-replica instance
+                      that has 1 GB of memory. For more information, see https://www.alibabacloud.com/help/en/redis/product-overview/overview-4.
+                    type: string
+                  instanceName:
+                    description: 'The name of the instance. The name must be 2 to
+                      80 characters in length and must start with a letter. It cannot
+                      contain spaces or specific special characters. These special
+                      characters include @ / : = " < > { [ ] }'
                     type: string
                   instanceType:
-                    description: Engine is the name of the database engine to be used for this instance. Engine is a required field.
-                    enum:
-                    - Redis
-                    type: string
-                  masterUsername:
-                    description: 'MasterUsername is the name for the master user. Constraints:    * Required for Redis.    * Must be 1 to 16 letters or numbers.    * First character must be a letter.    * Cannot be a reserved word for the chosen database engine.'
+                    description: 'The category of the instance. Default value: Redis
+                      Valid values: Redis Memcache'
                     type: string
                   networkType:
-                    default: CLASSIC
-                    description: NetworkType is indicates service network type NetworkType：CLASSIC/VPC
+                    description: 'The network type of the instance. Default value:
+                      VPC Valid values: VPC'
+                    type: string
+                  nodeType:
+                    description: 'The node type. Valid values: MASTER_SLAVE: high
+                      availability (master-replica) STAND_ALONE: standalone double:
+                      master-replica single: standalone Note: To create a cloud-native
+                      instance, set this parameter to MASTER_SLAVE or STAND_ALONE.
+                      To create a classic instance, set this parameter to double or
+                      single.'
+                    type: string
+                  paramGroupId:
+                    description: The parameter template ID, which must be globally
+                      unique.
+                    type: string
+                  parameterConfig:
+                    description: 'The instance parameter settings that you want to
+                      modify. Specify this parameter in the JSON format. The new value
+                      of a parameter overwrites the original value. Supported parameters
+                      can be found here: https://www.alibabacloud.com/help/en/redis/user-guide/supported-parameters'
+                    type: string
+                  password:
+                    description: 'The password that is used to connect to the instance.
+                      The password must be 8 to 32 characters in length and must contain
+                      at least three of the following character types: uppercase letters,
+                      lowercase letters, digits, and specific special characters.
+                      These special characters include ! @ # $ % ^ & * ( ) _ + - ='
+                    type: string
+                  period:
+                    description: 'The subscription duration. Valid values: 1, 2, 3,
+                      4, 5, 6, 7, 8, 9, 12, 24,36, and 60. Unit: months. Note: This
+                      parameter is available and required only if the ChargeType parameter
+                      is set to PrePaid.'
                     type: string
                   port:
-                    description: InstancePort is indicates the database service port
+                    description: 'Port is indicates the database service port Valid
+                      values: 1024 to 65535 Default value: 6379'
                     type: integer
-                  publiclyAccessible:
-                    description: PubliclyAccessible is Public network of service exposure
-                    type: boolean
+                  privateIpAddress:
+                    description: 'The private IP address of the instance. Note: The
+                      private IP address must be available within the CIDR block of
+                      the vSwitch to which to connect the instance.'
+                    type: string
+                  readOnlyCount:
+                    description: 'The number of read-only nodes in the instance. This
+                      parameter is available only if you create a read/write splitting
+                      instance that uses cloud disks. Valid values: 1 to 5'
+                    type: integer
+                  regionId:
+                    description: The ID of the region where you want to create the
+                      instance.
+                    type: string
+                  resourceGroupId:
+                    description: The ID of the resource group.
+                    type: string
+                  restoreTime:
+                    description: 'The point in time at which the specified original
+                      instance is backed up. The point in time must be within the
+                      retention period of backup files of the original instance. If
+                      you want to create an instance based on a backup file of a specified
+                      instance, you can set this parameter to specify a point in time
+                      after you set the SrcDBInstanceId parameter. Then, the system
+                      creates an instance based on the backup file that was created
+                      at the specified point in time for the original instance. Specify
+                      the time in the ISO 8601 standard in the yyyy-MM-ddTHH:mm:ssZ
+                      format. The time must be in UTC. Note: After you specify the
+                      SrcDBInstanceId parameter, you must use the BackupId or RestoreTime
+                      parameter to specify the backup file.'
+                    type: string
+                  secondaryZoneId:
+                    description: 'The secondary zone ID of the instance. The master
+                      node and replica node of the instance can be deployed in different
+                      zones and disaster recovery is implemented across zones. Note:
+                      If you specify this parameter, the master node and replica node
+                      of the instance can be deployed in different zones and disaster
+                      recovery is implemented across zones. The instance can withstand
+                      failures in data centers.'
+                    type: string
+                  securityIps:
+                    description: A list of IP addresses should be whitelisted. Separate
+                      multiple IP addresses with a comma (,).
+                    type: string
+                  shardCount:
+                    description: The number of data shards. This parameter is available
+                      only if you create a cluster instance that uses cloud disks.
+                    type: integer
+                  srcDBInstanceId:
+                    description: The ID of the original instance. If you want to create
+                      an instance based on a backup file of a specified instance,
+                      you can specify this parameter and use the BackupId or RestoreTime
+                      parameter to specify the backup file.
+                    type: string
+                  tag:
+                    description: The tags of the instance.
+                    items:
+                      description: A Tag is used to tag the Redis resources in AliCloud.
+                      properties:
+                        key:
+                          description: Key for the tag.
+                          type: string
+                        value:
+                          description: Value of the tag.
+                          type: string
+                      required:
+                      - key
+                      type: object
+                    type: array
+                  token:
+                    description: The client token that is used to ensure the idempotence
+                      of the request. You can use the client to generate the value,
+                      but you must make sure that the token is unique among different
+                      requests. The token is case-sensitive. The token can contain
+                      only ASCII characters and cannot exceed 64 characters in length.
+                    type: string
                   vSwitchId:
-                    description: VSwitchId is indicates VSwitch ID
+                    description: The ID of the vSwitch to which you want the instance
+                      to connect.
                     type: string
                   vpcId:
-                    description: VpcId is indicates VPC ID
+                    description: The ID of the virtual private cloud (VPC).
                     type: string
-                required:
-                - engineVersion
-                - instanceClass
-                - instanceType
-                - publiclyAccessible
+                  zoneId:
+                    description: The primary zone ID of the instance.
+                    type: string
                 type: object
               providerConfigRef:
-                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -117,7 +314,9 @@ spec:
                 - name
                 type: object
               providerRef:
-                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -126,7 +325,11 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
                 properties:
                   name:
                     description: Name of the secret.
@@ -145,24 +348,49 @@ spec:
             description: RedisInstanceStatus defines the observed state of RedisInstance
             properties:
               atProvider:
-                description: RedisInstanceObservation is the representation of the current state that is observed.
+                description: RedisInstanceObservation is the representation of the
+                  current state that is observed.
                 properties:
-                  accountReady:
-                    description: AccountReady specifies whether the initial user account (username + password) is ready
-                    type: boolean
-                  connectionReady:
-                    description: ConnectionReady specifies whether the network connect is ready
-                    type: boolean
-                  dbInstanceID:
-                    description: DBInstanceID specifies the Redis instance ID.
+                  InstanceStatus:
+                    description: InstanceStatus specifies the current state of this
+                      database.
                     type: string
-                  dbInstanceStatus:
-                    description: DBInstanceStatus specifies the current state of this database.
+                  architectureType:
+                    description: 'The architecture of the instance. Valid values:
+                      cluster: cluster architecture standard: standard architecture
+                      rwsplit: read/write splitting architecture'
                     type: string
-                required:
-                - accountReady
-                - connectionReady
-                - dbInstanceID
+                  config:
+                    description: 'The parameter configurations of the instance in
+                      the JSON format. For more information, see Parameter descriptions:
+                      https://www.alibabacloud.com/help/en/redis/user-guide/supported-parameters'
+                    type: string
+                  connectionDomain:
+                    description: ConnectionDomain contains domain name used to connect
+                      with the Redis instance
+                    type: string
+                  instanceClass:
+                    description: The instance type
+                    type: string
+                  port:
+                    description: Port contains the port number used to connect with
+                      the Redis instance
+                    type: string
+                  realInstanceClass:
+                    description: If the instance is a cluster instance that uses cloud
+                      disks, this parameter indicates the actual instance type of
+                      individual shards in the instance. The InstanceClass parameter
+                      indicates the virtual instance type.
+                    type: string
+                  securityIPList:
+                    description: The IP addresses in the whitelist.
+                    type: string
+                  vpcAuthMode:
+                    description: 'Indicates whether password authentication is enabled.
+                      Valid values: Open: Password authentication is enabled. Close:
+                      Password authentication is disabled and password-free access
+                      is enabled.'
+                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.
@@ -170,20 +398,25 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
                       type: string
                     reason:
-                      description: A Reason for this condition's last transition from one status to another.
+                      description: A Reason for this condition's last transition from
+                        one status to another.
                       type: string
                     status:
-                      description: Status of this condition; is it currently True, False, or Unknown?
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
